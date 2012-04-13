@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="TIC.svg"
+   inkscape:export-filename="/Users/mkljun/Desktop/PhD/TIC/ff-extension-files/content/images/TIC.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="343.57142"
+     inkscape:cy="520"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1322"
+     inkscape:window-height="753"
+     inkscape:window-x="57"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="arc"
+       style="fill:#e70000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:28.300967;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path2985"
+       sodipodi:cx="314.28571"
+       sodipodi:cy="442.36218"
+       sodipodi:rx="97.14286"
+       sodipodi:ry="92.85714"
+       d="m 411.42857,442.36218 a 97.14286,92.85714 0 1 1 -194.28572,0 97.14286,92.85714 0 1 1 194.28572,0 z"
+       transform="matrix(1.2250415,0,0,1.2484833,-194.44162,-293.7033)" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#ffea00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:25.40242024000000143;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3755"
+       sodipodi:cx="487.14285"
+       sodipodi:cy="315.21933"
+       sodipodi:rx="58.57143"
+       sodipodi:ry="60"
+       d="m 545.71428,315.21933 a 58.57143,60 0 1 1 -117.14286,0 58.57143,60 0 1 1 117.14286,0 z"
+       transform="matrix(1.4067714,0,0,1.3494673,-278.44146,-20.730267)" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#32ff00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:37.69075114999999698;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3757"
+       sodipodi:cx="112.85714"
+       sodipodi:cy="399.50504"
+       sodipodi:rx="70"
+       sodipodi:ry="67.14286"
+       d="m 182.85714,399.50504 a 70,67.14286 0 1 1 -140,0 70,67.14286 0 1 1 140,0 z"
+       transform="matrix(0.91367999,0,0,0.94378352,43.188255,121.88735)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:25;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 154.28571,432.36218 11.42858,-62.85714"
+       id="path3770"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:25;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 334.28571,360.93361 285.71429,323.79075"
+       id="path3772"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

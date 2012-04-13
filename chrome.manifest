@@ -1,0 +1,8 @@
+content	tic				content/
+skin	tic	classic/1.0	skin/
+locale	tic	en-US		locale/en-US/
+resource  tic    		resource/
+
+#Firefox
+overlay	chrome://browser/content/browser.xul			chrome://tic/content/overlays/overlayFF.xul
+style	chrome://global/content/customizeToolbar.xul	chrome://tic/skin/overlayFF.css

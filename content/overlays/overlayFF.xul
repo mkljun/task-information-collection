@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://tic/skin/overlayFF.css" type="text/css"?>
+
+<!-- !DOCTYPE window SYSTEM "chrome://tic/locale/tic.dtd" -->
+<overlay 
+  id = "tic-overlay"
+  xmlns = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script
+    type="application/x-javascript" 
+    src="chrome://tic/content/overlays/overlay.js"/>
+
+  <!-- Firefox Tools menu -->
+  <menupopup id="menu_ToolsPopup">
+    <menuitem
+      id="tic-toolsmenu" 
+      label="Tasks Information collections" 
+      oncommand="org.menola.tic.open()"
+      accesskey="T" 
+      position="9" 
+      class="menuitem-iconic"/>
+  </menupopup>
+
+  <!-- Firefox Toolbar button -->
+  <toolbarpalette id="BrowserToolbarPalette">
+    <toolbarbutton 
+      id="tic-button" 
+      label="Tasks Information collections" 
+      oncommand="org.menola.tic.open()" 
+      class="toolbarbutton-1"
+      tooltiptext="Tasks Information collections"/>
+  </toolbarpalette>
+
+
+</overlay>

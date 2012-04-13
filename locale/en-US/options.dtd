@@ -1,0 +1,11 @@
+<!ENTITY  prefwinTitle	"Tasks Information Collections Options">
+
+<!ENTITY  paneMain.title	"Main">
+
+<!ENTITY  pref-openMode.label	"Start TIC">
+<!ENTITY  pref-openMode-win	"in a new window">
+<!ENTITY  pref-openMode-win.ak	"w">
+<!ENTITY  pref-openMode-tab	"in a new tab">
+<!ENTITY  pref-openMode-tab.ak	"t">
+<!ENTITY  pref-share4research.label	"Participate in research">
+<!ENTITY  pref-share4research.checkbox	"Yes">

@@ -1,0 +1,15 @@
+#tic-button {
+  list-style-image : url("chrome://tic/skin/images/TIC24.png");
+}
+
+#tic-toolsmenu {
+  list-style-image : url("chrome://tic/skin/images/TIC24.png");
+}
+
+toolbar[iconsize="small"] #tic-button {
+  list-style-image : url("chrome://tic/skin/images/TIC16.png");
+}
+
+toolbar[iconsize="small"] #tic-toolsmenu {
+  list-style-image : url("chrome://tic/skin/images/TIC16.png");
+}

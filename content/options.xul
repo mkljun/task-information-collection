@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+
+<!DOCTYPE window SYSTEM "chrome://tic/locale/options.dtd">
+
+<prefwindow type="prefwindow" id="TICPreferences"
+  windowtype="Browser:Preferences" title="&prefwinTitle;"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  style="">
+
+  <prefpane id="main-options" label="&paneMain.title;">
+    <preferences>
+      <preference id="pref-openMode"        name="extensions.tic.openMode" type="int"/>
+      <preference id="pref-share4research"  name="extensions.tic.share4research" type="bool"/>        
+    </preferences>
+    <groupbox>
+      <caption label="&pref-openMode.label;"/>
+      <radiogroup id="rg-openMode" value="2" preference="pref-openMode">
+        <radio label="&pref-openMode-win;" value="1" accesskey="&pref-openMode-win.ak;"/>
+        <radio label="&pref-openMode-tab;" value="2" accesskey="&pref-openMode-tab.ak;"  selected="true"/>
+      </radiogroup>
+    </groupbox>
+    <groupbox>
+      <caption label="&pref-share4research.label;"/>
+      <checkbox id="cb-share4research" 
+        label="&pref-share4research.checkbox;"
+        preference="pref-share4research" 
+        checked="true"/>
+    </groupbox>
+  </prefpane>
+</prefwindow>
