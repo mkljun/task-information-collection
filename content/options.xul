@@ -13,7 +13,7 @@
   <prefpane id="main-options" label="&paneMain.title;">
     <preferences>
       <preference id="pref-openMode"        name="extensions.tic.openMode" type="int"/>
-      <preference id="pref-share4research"  name="extensions.tic.share4research" type="bool"/>        
+      <preference id="pref-share4research2" name="extensions.tic.share4research2" type="int"/>   
     </preferences>
     <groupbox>
       <caption label="&pref-openMode.label;"/>
@@ -22,12 +22,19 @@
         <radio label="&pref-openMode-tab;" value="2" accesskey="&pref-openMode-tab.ak;"  selected="true"/>
       </radiogroup>
     </groupbox>
-    <groupbox>
-      <caption label="&pref-share4research.label;"/>
-      <checkbox id="cb-share4research" 
+    <!-- groupbox -->
+      <!-- caption label="&pref-share4research.label;"/ -->
+      <!-- checkbox id="cb-share4research" 
         label="&pref-share4research.checkbox;"
         preference="pref-share4research" 
-        checked="true"/>
-    </groupbox>
+        checked="true"/ -->
+    <!-- /groupbox -->
+    <groupbox>
+      <caption label="&pref-share4research.label;"/>
+      <radiogroup id="rg-share4research2" value="2" preference="pref-share4research2">
+        <radio label="&pref-share4research2.checkboxN;" value="1" accesskey="&pref-share4research2.n.ak;"/>
+        <radio label="&pref-share4research2.checkboxY;" value="2" accesskey="&pref-share4research2.y.ak;"  selected="true"/>
+      </radiogroup>
+    </groupbox>    
   </prefpane>
 </prefwindow>

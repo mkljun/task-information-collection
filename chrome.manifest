@@ -1,8 +1,13 @@
 content	tic				content/
 skin	tic	classic/1.0	skin/
 locale	tic	en-US		locale/en-US/
-resource  tic    		resource/
 
 #Firefox
 overlay	chrome://browser/content/browser.xul			chrome://tic/content/overlays/overlayFF.xul
 style	chrome://global/content/customizeToolbar.xul	chrome://tic/skin/overlayFF.css
+
+# Thunderbird
+overlay chrome://messenger/content/mailWindowOverlay.xul	chrome://sqlitemanager/content/overlays/overlayTB.xul		application={3550f703-e582-4d05-9a08-453d09bdfdc6}
+
+#Sunbird
+overlay chrome://sunbird/content/calendar.xul chrome://sqlitemanager/content/overlays/overlaySM.xul application={718e30fb-e89b-41dd-9da7-e25a45638b28}

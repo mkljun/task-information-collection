@@ -8,14 +8,15 @@
     <em:name>Task Information Management</em:name>
     <em:type>2</em:type>
     <em:version>1.0</em:version>
-    <em:description>Manage task or project related information links on a spatial area by dragging them on.</em:description>
+    <em:description>Project/task management of information on a spatial area by creating links to files, folders, web pages, web based email and pieces of text by dragging them over the extension page.
+    </em:description>
     <em:creator>mkljun</em:creator>
     <!-- optional items -->
     <em:contributor>Tine Mezgec</em:contributor>
     <em:contributor>Alan Dix</em:contributor>
     <em:homepageURL>http://pim.famnit.upr.si/tic/</em:homepageURL>
     <em:iconURL>chrome://tic/skin/images/TIC32.png</em:iconURL>
-    <em:aboutURL>chrome://tic/content/about.xul</em:aboutURL>
+    <!-- em:aboutURL>chrome://tic/content/about.xul</em:aboutURL -->
     <em:optionsURL>chrome://tic/content/options.xul</em:optionsURL>
     <!-- type 2 means inline options -->
     <!-- em:optionsType>2</em:optionsType -->

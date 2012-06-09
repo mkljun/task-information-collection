@@ -27,7 +27,7 @@
       id="tic-button" 
       label="Tasks Information collections" 
       oncommand="org.menola.tic.open()" 
-      class="toolbarbutton-1"
+      class="toolbarbutton-1 chromeclass-toolbar-additional"
       tooltiptext="Tasks Information collections"/>
   </toolbarpalette>
 

@@ -9,3 +9,7 @@
 <!ENTITY  pref-openMode-tab.ak	"t">
 <!ENTITY  pref-share4research.label	"Participate in research">
 <!ENTITY  pref-share4research.checkbox	"Yes">
+<!ENTITY  pref-share4research2.checkboxN	"No">
+<!ENTITY  pref-share4research2.checkboxY	"Yes">
+<!ENTITY  pref-share4research2.y.ak	"y">
+<!ENTITY  pref-share4research2.n.ak	"n">

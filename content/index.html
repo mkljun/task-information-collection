@@ -8,6 +8,7 @@
 <script language="JavaScript" type="text/javascript" src="scripts/tic-scripts.js"></script>
 <script language="JavaScript" type="text/javascript" src="scripts/string.utf8.js"></script>
 <script language="JavaScript" type="text/javascript" src="scripts/string.md5.js"></script>
+<script language="JavaScript" type="text/javascript" src="scripts/iuppiter.js"></script>
 
 <meta http-equiv="cache-control" content="no-cache" />
 
@@ -44,6 +45,7 @@
 	    padding: 5px;
 		background-color:rgba(112,138,144,1.0);
 		-moz-border-radius: 5px 5px 5px 5px;
+		border-radius: 5px 5px 5px 5px;	
 	    text-align: center;
 		-moz-transition: opacity 0.5s ease-in-out;
 	}
@@ -65,6 +67,7 @@
 		background-color:rgba(112,138,144,0.8);
 		-moz-transition-duration: 0.3s;
 		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;
 	}
 	#tasksSlideoutInner {
 		position: fixed;
@@ -77,6 +80,7 @@
 		-moz-transition-duration: 0.3s;
 		text-align: left;
 		-moz-border-radius: 0px 5px 5px 0px;	
+		border-radius: 0px 5px 5px 0px;
 	}
 	#tasksSlideout:hover {
 		left: 235px;
@@ -102,6 +106,7 @@
 		background-color:rgba(112,138,144,0.8);
 		-moz-transition-duration: 0.3s;
 		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;
 	}
 	#timelineSlideoutInner {
 		position: fixed;
@@ -115,6 +120,7 @@
 		-moz-transition-duration: 0.3s;
 		text-align: left;
 		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;
 	}
 	#timelineSlideout:hover {
 		left: 235px;
@@ -137,6 +143,7 @@
 		background-color:rgba(112,138,144,0.8);
 		-moz-transition-duration: 0.3s;
 		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;
 	}
 	#commentSlideoutInner {
 		position: fixed;
@@ -148,7 +155,8 @@
 		height: 600px;
 		-moz-transition-duration: 0.3s;
 		text-align: left;
-		-moz-border-radius: 0px 5px 5px 0px;	
+		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;	
 	}
 	#commentSlideout:hover {
 		left: 235px;
@@ -175,6 +183,7 @@
 	div#printText {	
 		opacity: 1;
 		visibility: visible;
+		-moz-border-radius: 8px;
 		border-radius: 8px;
         height: 120px;
         position: relative;
@@ -235,6 +244,7 @@
 		height: 90%;
 		position: relative; 
 		font-size: 12px; 
+		-moz-border-radius: 30px;
 		border-radius: 30px; 
 		background-color:rgba(112,138,144,0.9); 
 		padding: 20px 20px 40px 20px;
@@ -293,10 +303,11 @@
 	<div id="timelineSlideoutInner"></div>
 </div>
 
-<div id="commentSlideout">
+<!-- <div id="commentSlideout">
 	<p class="verticalTab" style="top: 165px;">Comment<p>
 	<div id="commentSlideoutInner"></div>
 </div>
+ -->
 
 <div id="taskName"></div>
 <div id="importanceCircles"></div>
@@ -307,11 +318,11 @@
 <div id="aboutO">
 <div id="aboutI"> 
 	<div style="overflow-y: scroll; height: 100%;">
-		<h3>About Task Information Collections</h3>
+		<h3>Welcome to Task Information Collections and thank you for installing it.</h3>
 
-		<p>TIC is a different task/project information management, where you drag your information to. It is  not just a standard to-do list.</p>
+		<p>TIC is a different task/project information management, where you drag your information to the extension page. More information can be found on <a href="https://pim.famnit.upr.si/tic/" target="_new">https://pim.famnit.upr.si/tic/</a></p>
 		
-		<p>This extension is a part of the research about how project/task collections of information are formed, used and changed over time. We need your help in this study. Your participation will also help further development of the extension. However, if you do not want to participate, please deselect the "Participate in research" in the properties settings.</p>
+		<p>This extension is a part of the research about how project/task collections of information are formed, used and changed over time. We need your help in this study. Your participation will also help further development of the extension.</p>
 
 		<li>
 			<span style="font-weight:bold;">Is this extension free to use and what can I do with it?</span>
@@ -321,11 +332,11 @@
 		<br />
 		<li>
 			<span style="font-weight:bold;">What is happening to my data which is dragged to this extension?</span><br />
-			We leave your information (files, email, web pages) intact and the content is never touched or changed. When files, folders and web pages are dragged over, only links to them are stored (files also the size and modified time). All additionally entered data is stored on your computer (in your browser's profile folder). If you participate in the research, your data is also backed up on our servers.</li>
+			We leave your information (files, email, web pages) intact and the content is never touched or changed or sent to anyone. When files, folders and web pages are dragged over, only paths to them are stored (files also the size and modified time). All additionally entered data is stored on your computer (in your browser's profile folder). If you participate in the research, your TICs will also backed up on our servers and will be harvested by us. We have no means to access your files brom the backup.</li>
 		<br />
 		<li>
 			<span style="font-weight:bold;">How do I participate?</span><br />
-			You do not have to do anything other than use the extension. The backup of your data will once a week be transferred over a secure and encrypted connection to the server administered by our research team.	
+			You do not have to do anything other than use the extension. The backup of your will once a week be transferred over a secure and encrypted connection to the server administered by our research team. However, if you do not wish to participate, please select "No" under the "Participate in research" in the properties settings of the extension.
 		</li>
 		<br />		
 		<li>
@@ -335,13 +346,13 @@
 		<br />
 		<li>
 			<span style="font-weight:bold;">Is participating in the research safe?</span><br />
-			No information will ever be shared with agents or entities outside the research group or used for any purpose other than tool research and development.	We do not know any information other than one you enter in the tool. The data you enter will be transmitted to, and kept on a professionally managed server by our research team at Lancaster University. While data integrity and security will be maintained on a best effort basis, we take no responsibility for data that is accidentally lost or stolen.
+			No information will ever be shared with agents or entities outside the research group or used for any purpose other than tool research and development.	We do not know any information other than one you enter in the tool. The data you enter will be transmitted to, and kept on a professionally managed server by our research team at Lancaster University. While data integrity and security will be maintained on a best effort basis, we take no responsibility for data that is accidentally lost or stolen. However, if you do not wish to participate, please select "No" under the "Participate in research" in the properties settings of the extension.
 		</li>
 		<br />
-		<li>
+<!-- 		<li>
 			<span style="font-weight:bold;">Can I get a backup</span><br />
 			You can always get your latest back up from our server if you register your user id with a username and password (Describe HOW in the comments). If you do not want to disclose this information and you have your user id (see the Comments tab of the extension). If you want to, we can delete your back up.
-		</li>
+		</li> -->
 		<br />
 	    <li>
 	    	<span style="font-weight:bold;">The terms and conditions of using this extension (MIT Licence):</span><br />

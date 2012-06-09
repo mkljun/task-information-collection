@@ -32,9 +32,11 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	//get and draw data from the last selected task
 	databaseDrawTaskCollection(currentTaskId);
 		//$("msg").innerHTML += "v4-";
-	//drawGeneralIcons();
-	//databaseDump();
-	printAboutShow();
+	//draw home, desktop and note icons
+	drawGeneralIcons();
+		//$("msg").innerHTML += "v5-";
+	//for test purposes only - dump the database on reload 
+	//databaseDump();	
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
@@ -55,7 +57,7 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 //set the last task to the currently selected
 (function() { databaseSetLastTask() }).periodical(180000);
 //try to send the dump of the database every hour ... acctualy it sends it every 7 days
-(function() { databaseSendDump() }).periodical(3600000);
+(function() { databaseDump() }).periodical(3600000);
 
 /***************************************************************************
 Function draws elements of a selected task on the page
@@ -1299,24 +1301,24 @@ function databaseConnect() {
    	file = FileUtils.getFile("ProfD", ["TaskInformationCollections.sqlite"]); 
    	if (file.exists()) {
    		dbConn = Services.storage.openDatabase(file);
+   		printAboutHide();
    		return dbConn;
    	} else {
    		//Will also create the file if it does not exist			
    		dbConn = Services.storage.openDatabase(file);
-		//create tables: 	
+		//create tables: 
    		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id INTEGER, coll_timestamp TEXT, coll_items TEXT)");
    		dbConn.executeSimpleSQL("INSERT INTO tasks (task_id, task_name) VALUES('1', 'My first task')");
    		dbConn.executeSimpleSQL("INSERT INTO tasks_last (last_id, last_task) VALUES('1','1')");
-   		dbConn.executeSimpleSQL("CREATE TABLE user (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT, data_sent_successful BOOL)");
+   		dbConn.executeSimpleSQL("CREATE TABLE user (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT, data_user_email TEXT)");
    		//Create an unique id for the user and set the date to the current one ... so we can send the dump
    		//of the database every 7 days ... if the user agrees
-		var statement = dbConn.createStatement("INSERT INTO user (data_userid, data_last_sent, data_sent_successful) VALUES(:uid, :date, :sent)");
-		var currentTime = new Date().format('db');;
+		var statement = dbConn.createStatement("INSERT INTO user (data_userid, data_last_sent) VALUES(:uid, :date)");
+		var currentTime = new Date().format('db');
 		statement.params.uid = (Number.random(100, 999)+currentTime).toMD5();			
 		statement.params.date = currentTime;
-		statement.params.sent = true;
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 		if (statement.state == 1) { 
 			statement.execute();
@@ -1334,8 +1336,9 @@ function databaseConnect() {
 		} else {
 			printOut("Not a valid SQL statement: INSERT INTO data (data_userid, data_last_sent) VALUES(:uid, :date)");
 		}	
-		//show terms and conditions
-		$("aboutI").removeClass("hidden");
+		//printOutHide();
+		printAboutShow();
+		printOutHide();
    		return dbConn;
    	}
 }
@@ -1383,215 +1386,245 @@ function databaseSetLastTask() {
 }
 
 /***************************************************************************
-Send the dump of the database to the server
+Send the dump of the database to the server if set in preferences 
 The function is called:
 ****************************************************************************/
 function databaseDump() {
-    var dumpText = "";
-    //ideas for the general dump
-    	//"SELECT * FROM sqlite_master WHERE type='table' ORDER BY name";     
-	    //result is all the tables in this format
-	    // type |name |tbl_name|rootpage|sql 
-	    // table|tasks|tasks   |2       |CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)"
-	    // PRAGMA table_info(tasks)
-		// "0","task_id","INTEGER","0",,"1"
-		// "1","task_name","TEXT","0",,"0"
-		// "2","task_due","TEXT","0",,"0"    
-		// PRAGMA table_info(data)
-		// "0","data_userid","TEXT","1",,"1"
-		// "1","data_last_sent","TEXT","0",,"0"
-		// PRAGMA table_info(tasks_collections)
-		// "0","coll_id","INTEGER","0",,"1"
-		// "1","task_id","","0",,"0"
-		// "2","coll_timestamp","TEXT","0",,"0"
-		// "3","coll_items","TEXT","0",,"0"
-		// PRAGMA table_info(tasks_last)
-		// "1","last_task","INTEGER","0",,"0"
-		// "0","last_id","INTEGER","0",,"1"
-	    // run through all tables and create all insert into sentences
-	    // "SELECT * FROM " + table_name
-	    // while (...) { 
-	    //   dumpText += "INSERT INTO " + table_name + " VALUES(";
-	    //   for(var i = 0; i < number of records; i++) {
-	    //       if (iCol > 0) dumpText += ",";
-	    //       switch (types of data in the column]) {
-	    //         case DATETIME:
-	    //           dumpText += "'"+row+"'";
-	    //           break;
-	    //         case TEXT:
-	    //           dumpText += "'"+row+"'";
-	    //           break;
-	    //		   ..........
-	    //         default: //suck us intiger etc ...
-	    //           dumpText += row;
-	    //           break;
-	    //       }
-	    //   }
-	    //   dumpText += ");\n"    
-	    // }
-	//Get the userid and last date the db was dumped and sent over
-	var statement = connection.createStatement("SELECT * FROM user");	
-	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) {
-		var userId = "";
-		var dateLastDumped = "";
-		var dataSentSuccessful = "";
-		/*connection.executeAsync([statement], 1,  {
-			handleResult: function(aResultSet) {
-				var row;
-			    while(row = aResultSet.getNextRow()) {  			  
-			      	taskname = row.getResultByName("task_name");
-			    } 
-			},			
-			handleCompletion: function(aReason) {
-				 if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-				 		printOut("Query canceled or aborted!");
-				 } 
-			    $("msg").innerHTML += "----"+taskname;
-	 	  			return taskname;				
-			},
-			handleError: function(aError) {printOut(aError.message);}
-		});*/
-		while (statement.executeStep()) { 
-			userId = statement.row.data_userid;
-			dateLastDumped = statement.row.data_last_sent;
-			dataSentSuccessful = statement.row.data_sent_successful;
-		}
-		statement.finalize(); 
-	} else {
-		printOut("Not a valid SQL statement: SELECT * FROM user");
-		return false;
-	}
+	//get the preference of shared4research2 value and send data only if it is yes==2
+	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+	                      .getService(Components.interfaces.nsIPrefService);
+	var branch = prefs.getBranch("extensions.tic.");
+	var share4research2 = branch.getIntPref("share4research2");
 
-	if (userId != "" && dateLastDumped != "") {
-		var today = new Date();		
-		var difference = today.diff(dateLastDumped);
-		if ((difference <= 7) || (dataSentSuccessful == false)){
-			var statement = connection.createStatement("SELECT * FROM tasks");	
-			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-			if (statement.state == 1) {
-				dumpText += "DROP TABLE IF EXISTS \"tasks\"";
-				dumpText += "CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)";
-				while (statement.executeStep()) { 
-					dumpText += "INSERT INTO \"tasks\" VALUES("+statement.row.task_id+",'"+statement.row.task_name.replace("'", "''", "g")+"','"+statement.row.task_due+"');\n"; 			
-				}
-				statement.finalize(); 
-			} else {
-				printOut("Not a valid SQL statement: SELECT * FROM tasks");
-				return false;
-			}			
-			var statement = connection.createStatement("SELECT * FROM tasks_collections");	
-			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-			if (statement.state == 1) {
-				dumpText += "DROP TABLE IF EXISTS \"tasks_collections\"";
-				dumpText += "CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id , coll_timestamp TEXT, coll_items TEXT)";
-				while (statement.executeStep()) { 
-					dumpText += "INSERT INTO \"tasks_collections\" VALUES("+statement.row.coll_id+","+statement.row.task_id+",'"+statement.row.coll_timestamp+"','"+statement.row.coll_items.replace("'", "''", "g")+"');\n";					
-				}
-				statement.finalize(); 
-			} else {
-				printOut("Not a valid SQL statement: SELECT * FROM tasks_collections");
-				return false;
+	if (share4research2==2) {		
+	    var dumpText = "";
+		//Get the userid and last date the db was dumped and sent over
+		var statement = connection.createStatement("SELECT * FROM user");	
+		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+		if (statement.state == 1) {
+			var userId = "";
+			var dateLastDumped = "";
+			var dataSentSuccessful = "";
+			while (statement.executeStep()) { 
+				userId = statement.row.data_userid;
+				dateLastDumped = statement.row.data_last_sent;
 			}
-			//DROP TABLE IF EXISTS "tasks_last";
-			//CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER);
-			//DROP TABLE IF EXISTS "data";
-			//CREATE TABLE data (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT);
-			var dataToBeSent = new Object;
-			dataToBeSent.userId = userId;
-			dataToBeSent.dbDump = dumpText;
-			//Converts an object or array to a JSON string.
-			var dataToBeSentJSON = JSON.encode(dataToBeSent);
-    		sendJSON(dataToBeSentJSON);
+			statement.finalize(); 
+		} else {
+			printOut("Not a valid SQL statement: SELECT * FROM user");
+			return false;
 		}
-	} else {
-		//ustvari in postavi to userId != "" && dateLastDumped != ""
-	}
-	/*	//Write to a file for testing purposes
-		Components.utils.import("resource://gre/modules/Services.jsm"); 
-		Components.utils.import("resource://gre/modules/FileUtils.jsm");  
-		//ProfD = profile directory https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO
-	   	file = FileUtils.getFile("ProfD", ["01.sql"]); 
-		//$("msg").innerHTML += "<pre>"+dumpText+"</pre>";
-	    // file is nsIFile, data is a string  
-	    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
-	                             createInstance(Components.interfaces.nsIFileOutputStream);  
-	    // use 0x02 | 0x10 to open file for appending.  
-	    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);   
-	    // write, create, truncate  
-	    // In a c file operation, we have no need to set file mode with or operation,  
-	    // directly using "r" or "w" usually.  
-	    // if you are sure there will never ever be any non-ascii text in data you can   
-	    // also call foStream.writeData directly  
-	    var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].  
-	                             createInstance(Components.interfaces.nsIConverterOutputStream);  
-	    converter.init(foStream, "UTF-8", 0, 0);  
-	    converter.writeString(dumpText);  
-	    converter.close(); // this closes foStream  */
+		if (userId != "" && dateLastDumped != "") {
+			var today = new Date();	
+			var lastDumped = new Date().parse(dateLastDumped);	
+			var difference = today.diff(lastDumped);
+			if (difference <= -6){
+				var statement = connection.createStatement("SELECT * FROM tasks");	
+				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+				if (statement.state == 1) {
+					dumpText += "DROP TABLE IF EXISTS \"tasks\"";
+					dumpText += "CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)";
+					while (statement.executeStep()) { 
+						dumpText += "INSERT INTO \"tasks\" VALUES("+statement.row.task_id+",'"+statement.row.task_name.replace("'", "''", "g")+"','"+statement.row.task_due+"');\n"; 			
+					}
+					statement.finalize(); 
+				} else {
+					printOut("Not a valid SQL statement: SELECT * FROM tasks");
+					return false;
+				}			
+				var statement = connection.createStatement("SELECT * FROM tasks_collections");	
+				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+				if (statement.state == 1) {
+					dumpText += "DROP TABLE IF EXISTS \"tasks_collections\"";
+					dumpText += "CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id , coll_timestamp TEXT, coll_items TEXT)";
+					while (statement.executeStep()) { 
+						dumpText += "INSERT INTO \"tasks_collections\" VALUES("+statement.row.coll_id+","+statement.row.task_id+",'"+statement.row.coll_timestamp+"','"+statement.row.coll_items.replace("'", "''", "g")+"');\n";					
+					}
+					statement.finalize(); 
+				} else {
+					printOut("Not a valid SQL statement: SELECT * FROM tasks_collections");
+					return false;
+				}
+				//DROP TABLE IF EXISTS "tasks_last";
+				//CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER);
+				//DROP TABLE IF EXISTS "data";
+				//CREATE TABLE data (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT);
+
+				//var dataToBeSentJSON = JSON.encode(dataToBeSent);
+	    		sendJSON(userId,dumpText);
+			}
+		} else {
+			//ustvari in postavi to userId != "" && dateLastDumped != ""
+		}
+		/* //Write to a file 01.sql in the rpofile folder for testing purposes
+			Components.utils.import("resource://gre/modules/Services.jsm"); 
+			Components.utils.import("resource://gre/modules/FileUtils.jsm");  
+			//ProfD = profile directory https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO
+		   	file = FileUtils.getFile("ProfD", ["01.sql"]); 
+		    // file is nsIFile, data is a string  
+		    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
+		                             createInstance(Components.interfaces.nsIFileOutputStream);  
+		    // use 0x02 | 0x10 to open file for appending.  
+		    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);   
+		    // write, create, truncate  
+		    // In a c file operation, we have no need to set file mode with or operation,  
+		    // directly using "r" or "w" usually.  
+		    // if you are sure there will never ever be any non-ascii text in data you can   
+		    // also call foStream.writeData directly  
+		    var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].  
+		                             createInstance(Components.interfaces.nsIConverterOutputStream);  
+		    converter.init(foStream, "UTF-8", 0, 0);  
+		    converter.writeString(dumpText);  
+		    converter.close(); // this closes foStream  
+		*/
+	} //do the above only if it is selected in preference to dump the DB and send it over for research
 }
 
-function sendJSON(JSONstring) {
-  	var myRequest = new Request.JSON({
-  		 	url: 'http://pim.famnit.upr.si/tic/receiveit.php',
-          	method: 'post',
-          	//urlEncoded: true,
-          	data: "{'firstName': 'John', 'lastName': 'Doe'}",
-            onComplete: function(response){
-    			$("msg").innerHTML += "1-"+response;
-  			},
-  			onSuccess: function(result) {
-        		$("msg").innerHTML += "2-"+result
-		    }
-  		}).send();
+function sendJSON(userid,dbdump) {
+
+	var compressed_dbdump = dbdump; //lzw_encode(dbdump);
+	var data = {
+		'userId': userid, 
+ 		'db': compressed_dbdump
+	};
+
+ 	var myRequest = new Request.JSON({
+ 		url: 'https://pim.famnit.upr.si/tic/receiveit.php',
+ 		onComplete: function(){ 			
+ 			var statement = connection.createStatement("UPDATE user SET data_last_sent = :date WHERE data_userid = :uid");
+			statement.params.date = new Date().format('db');
+			statement.params.uid = userid
+			//MOZ_STORAGE_STATEMENT_READY 1 The SQL statement is ready to be executed.
+			if (statement.state == 1) { 
+				//statement.executeStep(); //<--- synchronus ... not good
+				connection.executeAsync([statement], 1,  {
+					handleCompletion: function(aReason) {
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+							printOut("Query canceled or aborted!");
+						} else {
+							//printOut(aReason.message);
+						}
+						statement.finalize();
+					},
+					handleError: function(aError) {printOut(aError.message);},
+					handleResult: function(aResultSet) {}
+				}); 
+			} else {
+				printOut("Not a valid SQL statement: UPDATE user SET data_last_sent = :date WHERE data_userid = :uid");
+			}
+ 		}
+ 	}).post(data);
+}
+
+//maybe http://blog.mozilla.org/nfroyd/2012/01/26/compressing-strings-in-js/
+
+//LZW Compression/Decompression for Strings
+//http://rosettacode.org/wiki/LZW_compression#JavaScript
+//http://webdevwonders.com/lzw-compression-and-decompression-with-javascript-and-php/
+var LZW = {
+    compress: function (uncompressed) {
+        "use strict";
+        // Build the dictionary.
+        var i,
+            dictionary = {},
+            c,
+            wc,
+            w = "",
+            result = [],
+            dictSize = 256;
+        for (i = 0; i < 256; i += 1) {
+            dictionary[String.fromCharCode(i)] = i;
+        }
  
-	//myRequest.post('data='+encodeURIComponent(JSONstring));
-	//myRequest.send('data=bla');
-	//myRequest.send('data='+encodeURIComponent(JSONstring));
-
-}
-
-/*function sendJSON(JSONstring) {
-
-  var bla = "bladdddd";
-
-  //maybe use stripslashes() on the server .. if “magic_quotes_gpc” are set to on in php.ini
-  //server side .. check the uid, create a file out of www reach with uid-timestamp.sql name
-  var params = "data=" + encodeURIComponent(JSONstring);
-  //var params = "data=" + encodeURIComponent(bla);
-  var ajax = getHTTPObject();
-  $("msg").innerHTML += "-5";
-
-  ajax.open("POST", "http://pim.famnit.upr.si/tic/receiveit.php", true);
-  ajax.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  ajax.setRequestHeader("Content-length", params.length);
-  ajax.setRequestHeader("Connection", "close");
-  ajax.onreadystatechange = function() {
-  	$("msg").innerHTML += "-6|"+ajax.readyState;
-  	if (ajax.readyState==4 && ajax.status==200) {
-  		//do some checking back on the server and set the value if the sync was sucessul or not
-  		//create another filed in the user DB and check before if the saving was succesfull.
-    	$("msg").innerHTML += ajax.responseText;
-    	$("msg").innerHTML += "-7";
-    }
-  } 
-  ajax.send(params); 
-}
-function getHTTPObject(){
-    try {
-        var oRequester = new XMLHttpRequest();
-        return oRequester
-    }
-    catch (error){
-        try {
-            var oRequester = new ActiveXObject("Microsoft.XMLHTTP");
-            oRequester.onreadystatechange=handler
-            return oRequester
+        for (i = 0; i < uncompressed.length; i += 1) {
+            c = uncompressed.charAt(i);
+            wc = w + c;
+            if (dictionary[wc]) {
+                w = wc;
+            } else {
+                result.push(dictionary[w]);
+                // Add wc to the dictionary.
+                dictionary[wc] = dictSize++;
+                w = String(c);
+            }
         }
-        catch (error) {
-            return false;
+ 
+        // Output the code for w.
+        if (w !== "") {
+            result.push(dictionary[w]);
+        }
+        return result;
+    },
+ 
+ 
+    decompress: function (compressed) {
+        "use strict";
+        // Build the dictionary.
+        var i,
+            dictionary = [],
+            w,
+            result,
+            k,
+            entry = "",
+            dictSize = 256;
+        for (i = 0; i < 256; i += 1) {
+            dictionary[i] = String.fromCharCode(i);
+        }
+ 
+        w = String.fromCharCode(compressed[0]);
+        result = w;
+        for (i = 1; i < compressed.length; i += 1) {
+            k = compressed[i];
+            if (dictionary[k]) {
+                entry = dictionary[k];
+            } else {
+                if (k === dictSize) {
+                    entry = w + w.charAt(0);
+                } else {
+                    return null;
+                }
+            }
+ 
+            result += entry;
+ 
+            // Add w+entry[0] to the dictionary.
+            dictionary[dictSize++] = w + entry.charAt(0);
+ 
+            w = entry;
+        }
+        return result;
+    }
+} // For Test Purposes
+//    comp = LZW.compress("TOBEORNOTTOBEORTOBEORNOT"),
+//    decomp = LZW.decompress(comp);
+//document.write(comp + '<br>' + decomp);
+
+//http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
+function lzw_encode(s) {
+    var dict = {};
+    var data = (s + "").split("");
+    var out = [];
+    var currChar;
+    var phrase = data[0];
+    var code = 256;
+    for (var i=1; i<data.length; i++) {
+        currChar=data[i];
+        if (dict[phrase + currChar] != null) {
+            phrase += currChar;
+        }
+        else {
+            out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+            dict[phrase + currChar] = code;
+            code++;
+            phrase=currChar;
         }
     }
-}*/
+    out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+    for (var i=0; i<out.length; i++) {
+        out[i] = String.fromCharCode(out[i]);
+    }
+    return out.join("");
+}
 
 
 /***************************************************************************
@@ -1624,17 +1657,41 @@ function databaseShowTasks() {
 							//"border-bottom": "1px solid",
 							//"border-color":"rgba(112,138,144,0.8)"
 						}
-					})
+					})				
 				);	
 				$("task"+taskid).adopt( 
+					    new Element("a", {
+							"id" : "taskIdCircle"+taskid,
+							"href" : "#"+taskname,
+							 "text" : taskid,
+							styles : {
+								//position: "absolute",
+								//left: leftStep+"px",
+								//top: "-20px",
+								float: "left",
+								width: "20px",
+								height: "20px",	
+								"font-size": "11px",
+								"line-height": "20px",
+								display: "block",
+								"border-radius": "20px",
+								"background-color": "#C0C0C0",
+								"text-align": "center"
+							},
+							events : {
+								"click": function(){
+									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
+									return false;									
+								}
+							}				    	
+					    }),
 						new Element("a", {
 							"id" : "taskName"+taskid,
 							"href": "#"+taskname,
-							"text" : taskname,
+							"html" : "&nbsp;"+taskname,
 							styles : {
 								float : "left", 
-								width : "140",
-								display : "block"
+								width : "120"							
 							},
 							events : {
 								"click" : function(){
@@ -1650,7 +1707,7 @@ function databaseShowTasks() {
 							"title" : "Edit task name",
 							"width" : "20px",
 							styles : {
-								float : "left"
+								float : "left"								
 							},
 							events : {
 								"click" : function(){
@@ -1666,7 +1723,7 @@ function databaseShowTasks() {
 							"title" : "Remove task",
 							"width" : "20px",							
 							styles : {
-								float : "left"
+								float : "left"								
 							},
 							events : {
 								"click" : function(){
@@ -1680,8 +1737,16 @@ function databaseShowTasks() {
 									
 								}
 							}							
-						})//,
-						//new Element("br")						
+						}),
+						new Element("div", {						
+							styles : {
+								"clear":"both",
+								"border-style":"solid",
+								"border-width":"1px 0px 0px 0px",
+								"border-color": "#98AFC7"
+							}							
+						})
+
 				);
 			})();
 		} 
@@ -1914,8 +1979,6 @@ function databaseDrawTaskCollection(taskid) {
 			emptyObject(data);
 			//draw elements which doeas not do a thing since data is empty
 			drawElements();
-			//print out the message to drag some data over
-			printOut("Drag some data");
 		}
 		statement.finalize(); 
 		//print the task name on the page
@@ -2273,14 +2336,19 @@ Prints messages on the screen
 ****************************************************************************/
 function printOut(message){	
 	$("printText").removeClass("hidden");
-	(function() {$("printText").addClass("hidden")}).delay(3000);
+	(function() {$("printText").addClass("hidden")}).delay(4000);
 	$("printText").innerHTML = message;
+}
+function printOutHide(){	
+	$("printText").addClass("hidden");
 }
 function printAboutShow(){	
 	$("aboutI").removeClass("hidden");
 }
 function printAboutHide(){	
 	$("aboutI").addClass("hidden");
+	//print out the message to drag some data over
+	printOut("Drag files, folders, web pages or pieces of text over to this page.");	
 }
 
 /***************************************************************************
@@ -2501,3 +2569,5 @@ function randomDate(date1, date2) {
    var randomDate = new Date().parse(random+"000").format('db');
    return randomDate;
 }
+
+
