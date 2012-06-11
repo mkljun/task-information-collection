@@ -1321,6 +1321,7 @@ function databaseConnect() {
 		statement.params.date = currentTime;
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 		if (statement.state == 1) { 
+			//synchronus ... we can't do anything before the DB is set up
 			statement.execute();
 			statement.finalize();
 			// connection.executeAsync([statement], 1,  {
@@ -1336,7 +1337,6 @@ function databaseConnect() {
 		} else {
 			printOut("Not a valid SQL statement: INSERT INTO data (data_userid, data_last_sent) VALUES(:uid, :date)");
 		}	
-		//printOutHide();
 		printAboutShow();
 		printOutHide();
    		return dbConn;
@@ -1496,7 +1496,7 @@ function sendJSON(userid,dbdump) {
 			statement.params.uid = userid
 			//MOZ_STORAGE_STATEMENT_READY 1 The SQL statement is ready to be executed.
 			if (statement.state == 1) { 
-				//statement.executeStep(); //<--- synchronus ... not good
+				//statement.executeStep(); //<--- synchronus ... 
 				connection.executeAsync([statement], 1,  {
 					handleCompletion: function(aReason) {
 						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
@@ -1516,11 +1516,7 @@ function sendJSON(userid,dbdump) {
  	}).post(data);
 }
 
-//maybe http://blog.mozilla.org/nfroyd/2012/01/26/compressing-strings-in-js/
 
-//LZW Compression/Decompression for Strings
-//http://rosettacode.org/wiki/LZW_compression#JavaScript
-//http://webdevwonders.com/lzw-compression-and-decompression-with-javascript-and-php/
 var LZW = {
     compress: function (uncompressed) {
         "use strict";
@@ -1594,12 +1590,8 @@ var LZW = {
         }
         return result;
     }
-} // For Test Purposes
-//    comp = LZW.compress("TOBEORNOTTOBEORTOBEORNOT"),
-//    decomp = LZW.decompress(comp);
-//document.write(comp + '<br>' + decomp);
+} 
 
-//http://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
 function lzw_encode(s) {
     var dict = {};
     var data = (s + "").split("");
@@ -1906,81 +1898,134 @@ The function is called:
   call this function whe a task is selected
 ****************************************************************************/
 function databaseDrawTaskCollection(taskid) {
-	//remove the messages panel before drawing the next collection
+	//remove the messages div before drawing the next collection
 	$("printText").addClass("hidden");
 	currentTaskId = taskid;
 	//databaseSetLastTask(); 	  
 	//count the number of results
-	var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");	
+	//var statement = connection.createStatement("SELECT task_id, coll_timestamp, coll_items, COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC");	
+	var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");		
 	statement.params.tid = currentTaskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
 		//need to execute just once to count the # of task states (all collections)
 		statement.executeStep();
-		//if there is something in the database 
-		if (parseInt(statement.row.l) != 0){
-			statement.finalize(); 
-			var count = 1;
-			var pastStatesIds = [];
-			pastStatesIds.length = 0;
-			var pastStatesDates = [];
-			pastStatesDates.length = 0;
-			//GET TASK COLLECTION(s)
+		var numOfCols = parseInt(statement.row.l);
+		statement.finalize();
+
+		/*************** ROWS OF THIS TASK IS 0 not past tasks no data**********/
+		if (numOfCols == 0){
+			//clear the object data if there is smthng in from a previous task
+			emptyObject(data);
+			$("timelineSlideoutInner").empty();
+			$("timelineSlideoutInner").adopt(
+				new Element ("div#timelineInfo", {
+					html: "<a href=\"#current\" onclick=\"+drawElements();return false;\">Current state</a><br />"
+						  +"Past states (0):",
+					styles : {
+						width: "210px",
+						"font-size": "14px"
+					}
+				})
+			);
+		/*************** ROWS MORE THAN 0 **********/
+		} else {
 			var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC");	
 			statement.params.tid = currentTaskId;
 			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 			if (statement.state == 1) {
-				//get the last task and put th old states in pastStatesIds array
-				while (statement.executeStep()) { 
-					//draw the first (last version of it) task
-					if (count === 1) {
-						data = JSON.decode(statement.row.coll_items);
-						//drawElements();
-					} else {
-						//store past states of the task from the table to a slider
-						pastStatesIds.push(statement.row.coll_id);
-						pastStatesDates.push(statement.row.coll_timestamp);					
-					}
-					count++;				
-				} 
-				//After the while executes check if past states is empty
-				if(pastStatesIds.length!=0 && pastStatesDates.length==pastStatesIds.length) {
-					//set slide to null
-					mySlide = null;
-					//recreate the timelineSlideoutInner div strcture
+				//there are mor than 0 records so we can make the executeStep() to fill the variable data
+				statement.executeStep();
+				data = JSON.decode(statement.row.coll_items);
+
+				/*************** ROWS OF THIS TASK IS 1 just data and no past tasks **********/
+				if (numOfCols == 1) {					
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
-						new Element ("div#timelineDate"),
-						new Element ("div#slideArea").adopt(
-							new Element("div#slideKnob")
-						)
+						new Element ("div#timelineInfo", {
+							html: "<a href=\"#current\" onclick=\"+drawElements();return false;\">Current state</a><br />"
+								  +"Past states (0):",
+							styles : {
+								width: "210px",
+								"font-size": "14px"
+							}
+						})
+					);	
+				/*************** ROWS MORE THAN 1 data and past tasks **********/		
+				} else if (numOfCols > 1) {
+					var pastStatesIds = [];
+					pastStatesIds.length = 0;
+					var pastStatesDates = [];
+					pastStatesDates.length = 0;
+					//the first executeStep() was to fill the data, the rest is to fill the past states arrays
+					while (statement.executeStep()) { 
+						//store past states of the task from the table to a slider
+						pastStatesIds.push(statement.row.coll_id);
+						pastStatesDates.push(statement.row.coll_timestamp);								
+					}   	
+					$("timelineSlideoutInner").empty();
+					$("timelineSlideoutInner").adopt(
+						new Element ("div#timelineInfo", {
+							html: "<a href=\"#current\" onclick=\"+drawElements();return false;\">Current state</a><br />"
+								  +"Past states ("+pastStatesDates.length+"):",
+							styles : {
+								width: "210px",
+								"font-size": "14px"
+							}
+						}),					
+						new Element ("div#timelineDate", {
+							styles : {
+								width: "210px",
+								height: "555px",
+								"font-size": "12px",
+								"margin": "3px 0px 1px 0px",
+								padding: "1px 0px 1px 0px",
+								overflow: "auto",
+								"border-style": "solid",
+								"border-color": "#98AFC7",
+								"border-width": "1px 0px 1px 0px"
+							}
+						})
 					);
-					mySlide = new Slider($('slideArea'), $('slideKnob'), {	
-						steps: pastStatesIds.length-1,	
-						mode: 'vertical',
-						wheel: 'true',
-						onChange: function(step){
-							$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawElements();return false;\">Current state</a><br />" 
-														+ "date: " + pastStatesDates[step] + "<br/ >id: " 
-														+ pastStatesIds[step] + "<br />step: " + step;
-							drawElementsPastStates(pastStatesIds[step]);
-						}
-					}).set(0);
-					//mySlide.detach();
+					$('timelineDate').innerHTML += "<ul>";
+					Array.each(pastStatesDates, function(date, index){
+						$('timelineDate').innerHTML += "<li><a href=\"#lasttask\"" 
+						     + "onclick=\"drawElementsPastStates("+pastStatesIds[index]+");return false;\">"
+						     + pastStatesDates[index]
+						     + "</a></li>"; //<br />";				    
+					});
+					$('timelineDate').innerHTML += "</ul>";	
+
+					// //SLIDER ----- very slow ... it prints out the last TIC so it needs to print TICs two times
+					// //set slide to null
+					// mySlide = null;
+					// //recreate the timelineSlideoutInner div strcture
+					// $("timelineSlideoutInner").empty();
+					// $("timelineSlideoutInner").adopt(
+					// 	new Element ("div#timelineDate"),
+					// 	new Element ("div#slideArea").adopt(
+					// 		new Element("div#slideKnob")
+					// 	)
+					// );
+					// mySlide = new Slider($('slideArea'), $('slideKnob'), {	
+					// 	steps: pastStatesIds.length-1,	
+					// 	mode: 'vertical',
+					// 	wheel: 'true',
+					// 	onChange: function(step){
+					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawElements();return false;\">Current state</a><br />" 
+					// 									+ "date: " + pastStatesDates[step] + "<br/ >id: " 
+					// 									+ pastStatesIds[step] + "<br />step: " + step;
+					// 		drawElementsPastStates(pastStatesIds[step]);
+					// 	}
+					// }).set(0);
+					//mySlide.detach();									
 				}
-				//Draw the latest state from the variable data
-				drawElements();
-				statement.finalize(); 
-			} else {
-				printOut("Not a valid SQL statement: SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC");
 			}
-		} else { 
-			//clear the object data if there is smtngh in from the previous task
-			emptyObject(data);
-			//draw elements which doeas not do a thing since data is empty
-			drawElements();
+			statement.finalize();
 		}
-		statement.finalize(); 
+
+		drawElements();
+
 		//print the task name on the page
 		printTaskNameCentre(currentTaskId);
 	} else {

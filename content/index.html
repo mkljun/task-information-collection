@@ -76,7 +76,8 @@
 		background-color:rgba(112,138,144,0.8);
 		width: 215px;
 		padding: 10px;
-		height: 600px;
+		/*height: 600px;*/
+		height: 90%;
 		-moz-transition-duration: 0.3s;
 		text-align: left;
 		-moz-border-radius: 0px 5px 5px 0px;	
@@ -89,7 +90,8 @@
 		left: 0;
 	}	
 	#tasksList{
-		height: 520px; 
+		/*height: 520px; */
+		height: 90%;
 		overflow: auto;
 		font-size: 14px;
 	}
@@ -121,6 +123,8 @@
 		text-align: left;
 		-moz-border-radius: 0px 5px 5px 0px;
 		border-radius: 0px 5px 5px 0px;
+/*		border-style: solid;
+		border-width: 1px;	*/	
 	}
 	#timelineSlideout:hover {
 		left: 235px;
@@ -285,12 +289,12 @@
 				<input type="text" id="createName" title="Name of a new task" class="input"
 				  onblur="if(this.value==''){this.value=this.title;}" 
 				  onfocus="if(this.value==this.title)this.value=''" >
-				<button>Create</button>
+				<button>Create New</button>
 			</form>			
-			<form id="formSearch" action="">
+<!-- 			<form id="formSearch" action="">
 				<input type="text" id="searchName" title="Search" class="input">
 				<button>Search</button>
-			</form>
+			</form> -->
 		</div>
 		<div id="tasksList"></div>	
 	</div>
@@ -349,7 +353,7 @@
 			No information will ever be shared with agents or entities outside the research group or used for any purpose other than tool research and development.	We do not know any information other than one you enter in the tool. The data you enter will be transmitted to, and kept on a professionally managed server by our research team at Lancaster University. While data integrity and security will be maintained on a best effort basis, we take no responsibility for data that is accidentally lost or stolen. However, if you do not wish to participate, please select "No" under the "Participate in research" in the properties settings of the extension.
 		</li>
 		<br />
-<!-- 		<li>
+        <!-- 		<li>
 			<span style="font-weight:bold;">Can I get a backup</span><br />
 			You can always get your latest back up from our server if you register your user id with a username and password (Describe HOW in the comments). If you do not want to disclose this information and you have your user id (see the Comments tab of the extension). If you want to, we can delete your back up.
 		</li> -->
@@ -368,10 +372,8 @@
 	<button type="button" onclick="printAboutHide();">
 		I understand the above and agree to all terms and conditions
 	</button>	
-
 </div>
 </div>
-<!-- <div id="aboutTab" onclick="printAboutShow();"></div> -->
 
 
 </body>
