@@ -173,28 +173,33 @@
 
 	div#printOuter {
         position: absolute;
-        left: 50%;
+        left: 70%;
+        /*margin-right: 10px;*/
+        top: 10px;
         z-index: 7;
         visibility: hidden;
 	}	
 	div#printInner {
-        height: 260px;
+        height: 150px;
         position: absolute;
-        width: 300px;
-        top: 150px;
+        width: 250px;
+        top: 0px;
         visibility: hidden;
+        display: table;
 	}		
 	div#printText {	
 		opacity: 1;
 		visibility: visible;
+		display: table-cell;
+		vertical-align : middle;
+		text-align:center;		
 		-moz-border-radius: 8px;
 		border-radius: 8px;
-        height: 120px;
+        height: 150px;
         position: relative;
-        left: -50%;
+        /*left: -50%;*/
 		background-color:rgba(112,138,144,0.9);
 		padding: 10px;
-		text-align:center;
 		-moz-transition: opacity 0.5s ease-in-out;
 	}
 	div#printText.hidden{

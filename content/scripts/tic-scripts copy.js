@@ -79,21 +79,21 @@ function drawElements() {
 	// draw all elements from the data object
 	Object.each (data, function(value, key){
 		//find item type and icon
-		icon = "images/" + value["extension"];
+		icon = "images/"+value["extension"];
 
 		//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
 		coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
 		coordinatey = (value["coordinatey"]*(window.innerHeight/1000)).toFixed(parseInt(0));	
 
 		if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
-			name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
+			name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33)+"...";
 		} else {
 			name = value["name"].replace(/_/gm, ' ');
 		}
 
 		//### BACKGROUND
 		$("itemsList").adopt(
-			new Element("div#item" + key, {
+			new Element("div#item"+key, {
 				styles : {
 					width : "150",
 					height : "46",
@@ -107,14 +107,14 @@ function drawElements() {
 			})
 		);
 		//Set the background for notes, text and html
-		if (value["type"] == "NOTE" || value["type"] == "TEXT" || value["type"] == "HTML") {
-			$("item" + key).setStyle('height', '140px');
-			$("item" + key).setStyle('background-image', 'url(images/note.png)');
+		if (value["type"]=="NOTE" || value["type"]=="TEXT" || value["type"]=="HTML") {
+			$("item"+key).setStyle('height', '140px');
+			$("item"+key).setStyle('background-image', 'url(images/note.png)');
 		}
 		//### ICON 
-		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {		
-			$("item" + key).adopt( //"div#icon"
-				new Element("div#icon" + key, {
+		if ((value["type"]=="FILE") || (value["type"]=="FOLDER") || (value["type"]=="URL")) {		
+			$("item"+key).adopt( //"div#icon"
+				new Element("div#icon"+key, {
 					styles : {
 						height : "60px",
 					}
@@ -133,11 +133,11 @@ function drawElements() {
 						},
 						events : {
 							"click" : function(){
-								if ($("information" + key).getStyle("display") == "none") {
-									$("information" + key).setStyle('display','block');
+								if ($("information"+key).getStyle("display") == "none") {
+									$("information"+key).setStyle('display','block');
 									//data[key]["display"] = "block";
 								} else {
-									$("information" + key).setStyle('display','none');
+									$("information"+key).setStyle('display','none');
 									//data[key]["display"] = "none";
 								}							
 							}
@@ -145,9 +145,9 @@ function drawElements() {
 					})
 				)
 			);		
-		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			$("item" + key).adopt( //"div#icon"
-				new Element("div#icon" + key, {
+		} else if ((value["type"]=="NOTE") || (value["type"]=="TEXT") || (value["type"]=="HTML")) {
+			$("item"+key).adopt( //"div#icon"
+				new Element("div#icon"+key, {
 					styles : {
 						height : "60px",
 					}
@@ -166,11 +166,11 @@ function drawElements() {
 						},
 						events : {
 							"click" : function(){
-								if ($("information" + key).getStyle("display") == "none") {
-									$("information" + key).setStyle('display','block');
+								if ($("information"+key).getStyle("display") == "none") {
+									$("information"+key).setStyle('display','block');
 									//data[key]["display"] = "block";
 								} else {
-									$("information" + key).setStyle('display','none');
+									$("information"+key).setStyle('display','none');
 									//data[key]["display"] = "none";
 								}							
 							}
@@ -180,18 +180,18 @@ function drawElements() {
 			);	
 		}
 		// get the favicon of an url and place it over the icon
-		if (value["type"] == "URL") {
+		if (value["type"]=="URL") {
 			var url = value["path"].match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/)[2];
-			var iconUrl = "http://getfavicon.appspot.com/http://" + url + "";
+			var iconUrl = "http://getfavicon.appspot.com/http://"+url+"";
 			//http://getfavicon.appspot.com/http://www.edocuments.co.uk'
 			//http://grabicon.com/edocuments.co.uk'
 			//http://www.getfavicon.org/?url=www.edocuments.co.uk' />
 			//http://www.google.com/s2/favicons?domain=www.edocuments.co.uk' />
-			$("item" + key).adopt(
-				new Element("div#favicon" + key, {
+			$("item"+key).adopt(
+				new Element("div#favicon"+key, {
 				})
 			);
-			$("favicon" + key).adopt(
+			$("favicon"+key).adopt(
 					new Element("img", {
 						src : iconUrl,
 						alt : "Icon",
@@ -205,11 +205,11 @@ function drawElements() {
 						},
 						events : {
 							"click" : function(){
-								if ($("information" + key).getStyle("display") == "none") {
-									$("information" + key).setStyle('display','block');
+								if ($("information"+key).getStyle("display") == "none") {
+									$("information"+key).setStyle('display','block');
 									//data[key]["display"] = "block";
 								} else {
-									$("information" + key).setStyle('display','none');
+									$("information"+key).setStyle('display','none');
 									//data[key]["display"] = "none";
 								}							
 							}
@@ -218,9 +218,9 @@ function drawElements() {
 			);		
 		}
 		//### MOVE
-		$("item" + key).adopt( //span#move" + key
-			new Element("span#move" + key).adopt(
-				new Element("img#moveimg" + key, {
+		$("item"+key).adopt( //span#move"+key
+			new Element("span#move"+key).adopt(
+				new Element("img#moveimg"+key, {
 					src : "images/move-icon.png",
 					alt : "Move",
 					title : "Move",
@@ -234,14 +234,14 @@ function drawElements() {
 				})
 			)
 		);
-		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			$("moveimg" + key).setStyle("left","-13px");
-			$("moveimg" + key).setStyle("top","25px");
+		if ((value["type"]=="NOTE") || (value["type"]=="TEXT") || (value["type"]=="HTML")) {
+			$("moveimg"+key).setStyle("left","-13px");
+			$("moveimg"+key).setStyle("top","25px");
 		}		
 		//### TEXT/NAME
-		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
-			$("item" + key).adopt( //"span#name" + key
-				new Element("span#name" + key,  {
+		if ((value["type"]=="FILE") || (value["type"]=="FOLDER") || (value["type"]=="URL")) {
+			$("item"+key).adopt( //"span#name"+key
+				new Element("span#name"+key,  {
 					styles : {
 						position: "absolute",
 						width : "100",
@@ -256,7 +256,7 @@ function drawElements() {
 						title : "Open",
 						events : {
 							"click" : function(){
-								if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+								if ((value["type"]=="FILE") || (value["type"]=="FOLDER")) {
 									if((Browser.Platform.win) || (Browser.Platform.mac) || (Browser.Platform.ios)
 										|| (Browser.Platform.name == 'BeOS')|| (Browser.Platform.name == 'OS/2')) { 
 										//this is for windows, osx. Don't know how to check for beos and os/2
@@ -268,15 +268,15 @@ function drawElements() {
 										//open the file:// links and decide the FF how to deal with it
 										window.open(fileUri);  
 									}
-								} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
-									// if ($("information" + key).getStyle("display") == "none") {
-									// 	$("information" + key).setStyle('display','block');
+								} else if ((value["type"]=="TEXT") || (value["type"]=="HTML")) {
+									// if ($("information"+key).getStyle("display") == "none") {
+									// 	$("information"+key).setStyle('display','block');
 									// 	data[key]["display"] = "block";
 									// } else {
-									// 	$("information" + key).setStyle('display','none');
+									// 	$("information"+key).setStyle('display','none');
 									// 	data[key]["display"] = "none";
 									// }								 		
-								} else if (value["type"] == "URL") {
+								} else if (value["type"]=="URL") {
 									//URL's are opened in a window
 									window.open(value["path"]);
 								}
@@ -286,14 +286,14 @@ function drawElements() {
 					})
 				)
 			);	
-		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			$("item" + key).setStyle("z-index","0");
+		} else if ((value["type"]=="NOTE") || (value["type"]=="TEXT") || (value["type"]=="HTML")) {
+			$("item"+key).setStyle("z-index","0");
 			value["name"] = cleanHtml(value["name"]);
 			data[key]["name"] = value["name"];
-			if (value["type"] == "TEXT" || value["type"] == "NOTE") {
+			if (value["type"]=="TEXT" || value["type"]=="NOTE") {
 				value["name"] = value["name"].replace( /\n/gi, "<br />");	
 			}				
-			$("item" + key).adopt(
+			$("item"+key).adopt(
 				new Element("div", {
 					styles : {
 						top: "2px",
@@ -303,7 +303,7 @@ function drawElements() {
 						overflow: "hidden"
 					}
 				}).adopt(
-					new Element("div#nametext" + key, {
+					new Element("div#nametext"+key, {
 						//text: value["name"].replace(/<[^>]*>?/gm, ''),
 						html: value["name"],
 						styles: {
@@ -335,70 +335,70 @@ function drawElements() {
 		var borderBlue =	[144, 130, 116, 101, 87, 72, 57, 43, 29, 14, 0];
 		var borderOpacity = [0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5];
 		var borderWidth =   [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20];
-		$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
-		$("item" + key).adopt( //span#vote" + key
-			new Element("span#upvote" + key).adopt(
+		$("item"+key).setStyle('border', borderWidth[value["vote"]]+'em solid rgba('+borderRed[value["vote"]]+', '+borderGreen[value["vote"]]+', '+borderBlue[value["vote"]]+', '+borderOpacity[value["vote"]]+')');
+		$("item"+key).adopt( //span#vote"+key
+			new Element("span#upvote"+key).adopt(
 				new Element("img", {
 					src : "images/upvote.png",
 					alt : "Upvote importance",
 					title : "Upvote importance",
 					styles : {
-						cursor : "pointer",						
+						cursor: "pointer",						
 						width : "15",
-						position : "absolute",
-						top : "7px", 
-						left : "143px",
-						"background" : "white"
+						position: "absolute",
+						top: "7px", 
+						left: "143px",
+						"background": "white"
 					},
 					events : {
 						"click" : function(){
-							if (value["vote"] < 10 && value["vote"] >= 0) {
+							if (value["vote"]<10 && value["vote"]>=0) {
 								value["vote"]++;
-								$("vote" + key).innerHTML = value["vote"];
-								data[key]["vote"] = value["vote"];
-								$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
+								$("vote"+key).innerHTML = value["vote"];
+								data[key]["vote"]=value["vote"];
+								$("item"+key).setStyle('border', borderWidth[value["vote"]]+'em solid rgba('+borderRed[value["vote"]]+', '+borderGreen[value["vote"]]+', '+borderBlue[value["vote"]]+', '+borderOpacity[value["vote"]]+')');
 							} 
 							return false;
 						}
 					}					
 				})
 			),
-			new Element("span#vote" + key, { 
-					text : value["vote"],
+			new Element("span#vote"+key, { 
+					text: value["vote"],
 					title : "Importance on the scale 0 to 10",
 					styles : {
 						width : "13",
-						position : "absolute",
-						top : "16px", 
-						"color" : "grey",
+						position: "absolute",
+						top: "16px", 
+						"color": "grey",
 						"font-size" : "12px",
-						left : "144px",
+						left: "144px",
 						"text-align" : "center",
-						"background" : "white"
+						"background": "white"
 					}
 			}),			
-			new Element("span#upvote" + key).adopt(
+			new Element("span#upvote"+key).adopt(
 				new Element("img", {
 					src : "images/upvote.png",
 					alt : "Downvote importance",
 					title : "Downvote importance",
 					styles : {
-						cursor : "pointer",						
+						cursor: "pointer",						
 						width : "15",
-						position : "absolute",
-						top : "30px", 
-						left : "143px",
-						"-moz-transform" : "rotate(-180deg)",
-						"-moz-transform-origin" : "center center",
-						"background" : "white"
+						position: "absolute",
+						top: "30px", 
+						left: "143px",
+						"-moz-transform": "rotate(-180deg)",
+						"-moz-transform-origin": "center center",
+						"background": "white"
 					},
 					events : {
 						"click" : function(){
-							if (value["vote"]>0 && value["vote"] <= 10) {
+							if (value["vote"]>0 && value["vote"]<=10) {
 								value["vote"]--;
-								$("vote" + key).innerHTML = value["vote"];
-								data[key]["vote"] = value["vote"];
-								$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
+								$("vote"+key).innerHTML = value["vote"];
+								data[key]["vote"]=value["vote"];
+								$("item"+key).setStyle('border', borderWidth[value["vote"]]+'em solid rgba('+borderRed[value["vote"]]+', '+borderGreen[value["vote"]]+', '+borderBlue[value["vote"]]+', '+borderOpacity[value["vote"]]+')');
 							} 
 							return false;
 						}
@@ -409,57 +409,57 @@ function drawElements() {
 
 		//ARROW pointing to the CENTRE & write coordinates of the item
 		//Arrows used to define item as Input, Outpur or both to the task
-		var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
+		var angle = getAngle($("item"+key).offsetLeft,$("item"+key).offsetTop); 
 		var imageSrc;
-		if ((value["arrow"] == "no-no")) {
+		if ((value["arrow"]=="no-no")) {
 			imageSrc = 'images/arrow_no-no.png';
-		} else if ((value["arrow"] == "in-no")) {
+		} else if ((value["arrow"]=="in-no")) {
 			imageSrc = 'images/arrow_in-no.png';
-		} else if ((value["arrow"] == "no-out")) {
+		} else if ((value["arrow"]=="no-out")) {
 			imageSrc = 'images/arrow_no-out.png';	
-		} else if ((value["arrow"] == "in-out"))  {
+		} else if ((value["arrow"]=="in-out"))  {
 			imageSrc = 'images/arrow_in-out.png';
 		} 
-		$("item" + key).adopt( //"img#arrow" + key
-			new Element ("a#arrowlink" + key, {
-				href : "#inout",
+		$("item"+key).adopt( //"img#arrow"+key
+			new Element ("a#arrowlink"+key, {
+				href: "#inout",
 				events : {
 					"click" : function(){
-						if ((value["arrow"] == "no-no")) {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_in-no.png');
-							data[key]["arrow"] = "in-no";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];							
-						} else if ((value["arrow"] == "in-no")) {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_no-out.png');
-							data[key]["arrow"] = "no-out";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];
-						} else if ((value["arrow"] == "no-out")) {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_in-out.png');	
-							data[key]["arrow"] = "in-out";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];
-						} else if ((value["arrow"] == "in-out"))  {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_no-no.png');
-							data[key]["arrow"] = "no-no";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];
+						if ((value["arrow"]=="no-no")) {
+							$("arrow"+key).erase('src');
+							$("arrow"+key).set('src','images/arrow_in-no.png');
+							data[key]["arrow"]="in-no";
+							//$("listarrow"+key).innerHTML = "<strong>arrow</strong>: "+data[key]["arrow"];							
+						} else if ((value["arrow"]=="in-no")) {
+							$("arrow"+key).erase('src');
+							$("arrow"+key).set('src','images/arrow_no-out.png');
+							data[key]["arrow"]="no-out";
+							//$("listarrow"+key).innerHTML = "<strong>arrow</strong>: "+data[key]["arrow"];
+						} else if ((value["arrow"]=="no-out")) {
+							$("arrow"+key).erase('src');
+							$("arrow"+key).set('src','images/arrow_in-out.png');	
+							data[key]["arrow"]="in-out";
+							//$("listarrow"+key).innerHTML = "<strong>arrow</strong>: "+data[key]["arrow"];
+						} else if ((value["arrow"]=="in-out"))  {
+							$("arrow"+key).erase('src');
+							$("arrow"+key).set('src','images/arrow_no-no.png');
+							data[key]["arrow"]="no-no";
+							//$("listarrow"+key).innerHTML = "<strong>arrow</strong>: "+data[key]["arrow"];
 						} 
 						return false;
 					}
 				}		
 			}).adopt( 
-				new Element("img#arrow" + key, {
-					src : imageSrc,
-					title : "Click to define if information is 'input' or 'output' to the task or both",
-					styles : {
-						position : "absolute",
-						width : "20px",
-					 	top : "46px",
-					 	left : "-20px",
-					 	"-moz-transform" : "rotate(" + angle[0] + "deg)",
-					 	"-moz-transform-origin" : "center center"
+				new Element("img#arrow"+key, {
+					src: imageSrc,
+					title: "Click to define if information is 'input' or 'output' to the task or both",
+					styles: {
+						position: "absolute",
+						width: "20px",
+					 	top: "46px",
+					 	left: "-20px",
+					 	"-moz-transform": "rotate("+angle[0]+"deg)",
+					 	"-moz-transform-origin": "center center"
 					}
 				})
 			)
@@ -467,28 +467,28 @@ function drawElements() {
 
 
 		//set the display to none if it is undefined 
-		//value["display"] is used to display or not to display $("information" + key) element
-		$("item" + key).adopt( //"div#information" + key
-			new Element("div#information" + key,  {
+		//value["display"] is used to display or not to display $("information"+key) element
+		$("item"+key).adopt( //"div#information"+key
+			new Element("div#information"+key,  {
 				styles : {
-					position : "absolute",
-					display : "none", //value["display"],
+					position: "absolute",
+					display: "none", //value["display"],
 					width : "144",
-					top : "55px",
-					visibility : "visible",
-					"font-size" : "12px",
+					top: "55px",
+					visibility: "visible",
+					"font-size": "12px",
 					"z-index" : "3",
 					"padding" : "3px",
 					"background-color" : "white",
 					border : "0.5px solid",
-					"border-radius" : 5,
-					"border-color" : "rgba(112,138,144,0.2)"						
+					"border-radius": 5,
+					"border-color": "rgba(112,138,144,0.2)"						
 				}
 			})							
 		);
-		$("information" + key).adopt ( //"a#date" + key
-			new Element("a#date" + key, {
-				href : "#date"
+		$("information"+key).adopt ( //"a#date"+key
+			new Element("a#date"+key, {
+				href: "#date"
 			}).adopt(
 				new Element("img", {
 					src : "images/icons_general/Calendar.png",
@@ -497,7 +497,7 @@ function drawElements() {
 					styles : {					
 						width : "23",
 						height : "23",						
-						opacity : "0.8"
+						opacity: "0.8"
 					},
 					events : {
 						"click" : function(){
@@ -511,19 +511,19 @@ function drawElements() {
 							var duedate = prompt("Please enter the due date for this information",datetmp);
 							var regDate = new RegExp("^(19|20)[0-9][0-9]-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$");
 							var valid = new Date(duedate).isValid();
-							if ((duedate.test(regDate) == true) && (valid == true)) {
+							if ((duedate.test(regDate)==true) && (valid==true)) {
   								addElementValue(key,"date",duedate);
 							} else {
-								alert("Date format is wrong: " + duedate + "!");
+								alert("Date format is wrong: "+duedate+"!");
 							}
 						}
 					}					
 				})
 			)	
 		);
-		$("information" + key).adopt ( //"a#user" + key
-			new Element("a#user" + key, {
-				href : "#user"
+		$("information"+key).adopt ( //"a#user"+key
+			new Element("a#user"+key, {
+				href: "#user"
 			}).adopt(
 				new Element("img", {
 					src : "images/icons_general/User.png",
@@ -532,7 +532,7 @@ function drawElements() {
 					styles : {						
 						width : "23",
 						height : "23",						
-						opacity : "0.8"
+						opacity: "0.8"
 					},
 					events : {
 						"click" : function(){		
@@ -543,8 +543,8 @@ function drawElements() {
 								persontmp = "Add a person's name or other information to the item";
 							}										
 							//call function that saves the changed text
-							var person = prompt("Please enter the details of a person associated with this information",persontmp);
-							if (person != null) {
+							var person=prompt("Please enter the details of a person associated with this information",persontmp);
+							if (person!=null) {
   								addElementValue(key,"person",person);
 							} 
 						}
@@ -552,9 +552,9 @@ function drawElements() {
 				})
 			)	
 		);
-		$("information" + key).adopt ( //"a#email" + key
-			new Element("a#email" + key, {
-				href : "#email"
+		$("information"+key).adopt ( //"a#email"+key
+			new Element("a#email"+key, {
+				href: "#email"
 			}).adopt(
 				new Element("img", {
 					src : "images/icons_general/Address_Book.png",
@@ -563,7 +563,7 @@ function drawElements() {
 					styles : {						
 						width : "23",
 						height : "23",		 				
-						opacity : "0.8"
+						opacity: "0.8"
 					},
 					events : {
 						"click" : function(){
@@ -574,8 +574,8 @@ function drawElements() {
 								emailtmp = "Add an email address";
 							}								
 							//call function that saves the changed text
-							var email = prompt("Please enter the email address of a person associated with this information",emailtmp);
-							if (email != null) {
+							var email=prompt("Please enter the email address of a person associated with this information",emailtmp);
+							if (email!=null) {
   								addElementValue(key,"email",email);
 							}
 						}
@@ -583,9 +583,9 @@ function drawElements() {
 				})
 			)	
 		);	
-		$("information" + key).adopt ( //"a#url" + key
-			new Element("a#url" + key, {
-				href : "#url"
+		$("information"+key).adopt ( //"a#url"+key
+			new Element("a#url"+key, {
+				href: "#url"
 			}).adopt(
 				new Element("img", {
 					src : "images/icons_general/Internet.png",
@@ -594,7 +594,7 @@ function drawElements() {
 					styles : {						
 						width : "23",
 						height : "23",		 				
-						opacity : "0.8"
+						opacity: "0.8"
 					},
 					events : {
 						"click" : function(){
@@ -602,11 +602,11 @@ function drawElements() {
 							if (value["url"]) {
 								urltmp = value["url"];
 							} else {
-								urltmp = "http ://";
+								urltmp = "http://";
 							}								
 							//call function that saves the changed text
-							var url = prompt("Please enter the URL address associated with this information",urltmp);
-							if (url != null) {
+							var url=prompt("Please enter the URL address associated with this information",urltmp);
+							if (url!=null) {
   								addElementValue(key,"url",url);
 							} 
 						}
@@ -614,9 +614,9 @@ function drawElements() {
 				})
 			)	
 		);
-		$("information" + key).adopt ( //"a#note" + key
-			new Element("a#note" + key, {
-				href : "#note"
+		$("information"+key).adopt ( //"a#note"+key
+			new Element("a#note"+key, {
+				href: "#note"
 			}).adopt(
 				new Element("img", {
 					src : "images/icons_general/Notepad2.png",
@@ -625,7 +625,7 @@ function drawElements() {
 					styles : {						
 						width : "23",
 						height : "23",		 				
-						opacity : "0.8"
+						opacity: "0.8"
 					},
 					events : {
 						"click" : function(){
@@ -636,8 +636,8 @@ function drawElements() {
 								notetmp = "Add an note";
 							}								
 							//call function that saves the changed text
-							var note = prompt("Please enter a note about this information",notetmp);
-							if (note != null) {
+							var note=prompt("Please enter a note about this information",notetmp);
+							if (note!=null) {
   								addElementValue(key,"note",note);
 							} 
 						}
@@ -645,9 +645,9 @@ function drawElements() {
 				})
 			)	
 		);						
-		$("information" + key).adopt ( //"a#delete" + key
-			new Element("a#delete" + key, {
-				href : "#delete"
+		$("information"+key).adopt ( //"a#delete"+key
+			new Element("a#delete"+key, {
+				href: "#delete"
 			}).adopt(
 				new Element("img", {
 					src : "images/icons_general/RecycleBin_Empty.png",
@@ -656,12 +656,12 @@ function drawElements() {
 					styles : {					
 						width : "23",
 						height : "23",
-						opacity : "0.8"
+						opacity: "0.8"
 					},
 					events : {
 						"click" : function(){
 							//fire up the confirmation box
-							var question = confirm("Really remove the item '" + value["name"] + "'? This will NOT delete the source item - e.g. the file or folder on the hard drive!");
+							var question = confirm("Really remove the item '"+value["name"]+"'? This will NOT delete the source item - e.g. the file or folder on the hard drive!");
 							if (question == true){
 								deleteElement(key,name);
 							} else {
@@ -681,29 +681,29 @@ function drawElements() {
 				&& (index != "vote") && (index != "timestamp")) {
 
 				//get current size and make it human readable
-				if (index == "size"  && value["type"] == "FILE") {
+				if (index == "size"  && value["type"]=="FILE") {
 					var updatedSize = fileSizes(data[key]["path"]);
 					data[key]["size"] = updatedSize;
 					item = bytesToSize(updatedSize);					
-				} else if (index == "size"  && value["type"] != "FILE") {
+				} else if (index == "size"  && value["type"]!="FILE") {
 					delete data[key]["size"];
 				}
 				//make paths and links clickable
-				if (index == "path" && value["type"] == "FILE") {
+				if (index == "path" && value["type"]=="FILE") {
 					if (Browser.Platform.name != 'linux') {
-						var folder = item.substring(0 , item.lastIndexOf("/") + 1);
-						var file = item.substring(item.lastIndexOf("/") + 1);
-						item = "<a onclick=\"folderOpen('" + item + "');return false;\" href=\"#openfolder\">"
-								 + folder + "</a>" + file;
+						var folder = item.substring(0,item.lastIndexOf("/")+1);
+						var file = item.substring(item.lastIndexOf("/")+1);
+						item = "<a onclick=\"folderOpen('"+item+"');return false;\" href=\"#openfolder\">"
+								+folder+"</a>"+file;
 					}
-				} else if (index == "path" && value["type"] == "FOLDER") {
+				} else if (index == "path" && value["type"]=="FOLDER") {
 					if (Browser.Platform.name != 'linux') {
-						item = "<a onclick=\"fileOpen('" + item + "');return false;\" href=\"#openfile\">"
-							 + item + "</a>";		
+						item = "<a onclick=\"fileOpen('"+item+"');return false;\" href=\"#openfile\">"
+							+item+"</a>";		
 					}
-				} else if (index == "path" && value["type"] == "URL") {
-					item = "<a href=\"" + item + "\">"
-							 + item + "</a>";
+				} else if (index == "path" && value["type"]=="URL") {
+					item = "<a href=\""+item+"\">"
+							+item+"</a>";
 				} 
 				//get surrent modficaion time and make it human readable
 				if (index == "modified"){
@@ -720,9 +720,9 @@ function drawElements() {
     				checkDateElement(item,key);
 				}				
 
-				$("information" + key).adopt ( //"span#content_" + key
-					new Element("div#list" + index + key, {
-						html : "<strong>" + index + "</strong>: " + item
+				$("information"+key).adopt ( //"span#content_"+key
+					new Element("div#list"+index+key, {
+						html : "<strong>"+index+"</strong>: "+item
 					})
 				);	
 			} 
@@ -730,30 +730,30 @@ function drawElements() {
 
 		//check for overlaping tasks for the informatuon item - 
 		//   if they share information items get array of tasks IDs
-		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
+		if ((value["type"]=="FILE") || (value["type"]=="FOLDER") || (value["type"]=="URL")) {
 			//get the table and erease the id of the selected task
 		 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
 		 	var leftStep = -13;
 		 	if (overlapingTasks.length != 0) { 	
 				Array.each(overlapingTasks, function(id, index){
 					leftStep = leftStep + 21;
-					$("item" + key).adopt( //"span#icon"
+					$("item"+key).adopt( //"span#icon"
 						new Element("a", {
-							href : "#jumpToTask",
+							href: "#jumpToTask",
 							text : id,
-							title : "Jump to task '" + databaseGetTaskName(id) + "'",
+							title: "Jump to task '"+databaseGetTaskName(id)+"'",
 							styles : {
-								position : "absolute",
-								left : leftStep + "px",
-								top : "-20px",
-								width : "20px",
-								height : "20px",	
-								"font-size" : "11px",
-								"line-height" : "20px",
-								display : "inline-block",
-								"border-radius" : "20px",
-								"background-color" : "rgba(112,138,144,0.6)",
-								"text-align" : "center"
+								position: "absolute",
+								left: leftStep+"px",
+								top: "-20px",
+								width: "20px",
+								height: "20px",	
+								"font-size": "11px",
+								"line-height": "20px",
+								display: "inline-block",
+								"border-radius": "20px",
+								"background-color": "rgba(112,138,144,0.6)",
+								"text-align": "center"
 							},
 							events : {
 								"click" : function(){
@@ -767,23 +767,23 @@ function drawElements() {
 		} 
 		
 		//make elements movable
-		new Drag.Move($("item" + key), {
-			handle : $("move" + key),
+		new Drag.Move($("item"+key), {
+			handle : $("move"+key),
 			onDrop: function(){
 				//change the X coordinates of the new element to the default width 1000px
 				//we need this to position the elements right if the window is resized			
-				data[key].coordinatex = ($("item" + key).offsetLeft/(window.innerWidth/1000)).toFixed(parseInt(0));
-				data[key].coordinatey = ($("item" + key).offsetTop/(window.innerHeight/1000)).toFixed(parseInt(0));
+				data[key].coordinatex = ($("item"+key).offsetLeft/(window.innerWidth/1000)).toFixed(parseInt(0));
+				data[key].coordinatey = ($("item"+key).offsetTop/(window.innerHeight/1000)).toFixed(parseInt(0));
 				//ARROW pointing to the CENTRE
-				var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
-				$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");
+				var angle = getAngle($("item"+key).offsetLeft,$("item"+key).offsetTop); 
+				$("arrow"+key).setStyle("-moz-transform", "rotate("+angle[0]+"deg)");
 			}
 		}); 
 	});
 }
 function drawElementsPastStates(pastStatesId) {
 
-	//$("msg").innerHTML += "-s" + pastStatesId + "-";
+	//$("msg").innerHTML += "-s"+pastStatesId+"-";
 	var coordinatexPastStates = "";
 	var iconPastStates = "";
 	var namePastStates = "";
@@ -796,49 +796,49 @@ function drawElementsPastStates(pastStatesId) {
 		statement.executeStep();
 		var dataPastStates = JSON.decode(statement.row.coll_items);
 		var timestamp = statement.row.coll_timestamp;
-		$("tasknametext").innerHTML = currentTaskName + "<br/>" + timestamp;
+		$("tasknametext").innerHTML = currentTaskName+"<br/>"+timestamp;
 
 		// draw all elements from the data object
 		Object.each (dataPastStates, function(value, key){
 
 
 			//find item type and icon
-			icon = "images/" + value["extension"];
+			icon = "images/"+value["extension"];
 
 			//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
 			coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
 			coordinatey = (value["coordinatey"]*(window.innerHeight/1000)).toFixed(parseInt(0));	
 
 			if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
-				name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
+				name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33)+"...";
 			} else {
 				name = value["name"].replace(/_/gm, ' ');
 			}
 
 			//### BACKGROUND
 			$("itemsList").adopt(
-				new Element("div#item" + key, {
+				new Element("div#item"+key, {
 					styles : {
-						width : "150",
+						width: "150",
 						height : "46",
-						position : "absolute",
+						position: "absolute",
 						left : coordinatex,
 						top : coordinatey,
 						border : "0.1em solid",
-						"border-radius" : 5,
-						"border-color" : "rgba(112,138,144,0.2)",
+						"border-radius": 5,
+						"border-color": "rgba(112,138,144,0.2)",
 					}
 				})
 			);
 			//Set the background for notes, text and html
-			if (value["type"] == "NOTE" || value["type"] == "TEXT" || value["type"] == "HTML") {
-				$("item" + key).setStyle('height', '140px');
-				$("item" + key).setStyle('background-image', 'url(images/note.png)');
+			if (value["type"]=="NOTE" || value["type"]=="TEXT" || value["type"]=="HTML") {
+				$("item"+key).setStyle('height', '140px');
+				$("item"+key).setStyle('background-image', 'url(images/note.png)');
 			}
 			//### ICON 
-			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {		
-				$("item" + key).adopt( //"div#icon"
-					new Element("div#icon" + key, {
+			if ((value["type"]=="FILE") || (value["type"]=="FOLDER") || (value["type"]=="URL")) {		
+				$("item"+key).adopt( //"div#icon"
+					new Element("div#icon"+key, {
 						styles : {
 							height : "60px",
 						}
@@ -848,28 +848,28 @@ function drawElementsPastStates(pastStatesId) {
 							alt : "Icon",
 							title : "Expand information",				
 							styles : {
-								cursor : "pointer",
+								cursor: "pointer",
 								width : "42px",
-								position : "relative",
-								top : "2px", 
-								left : "0px",
-								float : "left"
+								position: "relative",
+								top: "2px", 
+								left: "0px",
+								float: "left"
 							},
 							events : {
 								"click" : function(){
-									if ($("information" + key).getStyle("display") == "none") {
-										$("information" + key).setStyle('display','block');
+									if ($("information"+key).getStyle("display") == "none") {
+										$("information"+key).setStyle('display','block');
 									} else {
-										$("information" + key).setStyle('display','none');
+										$("information"+key).setStyle('display','none');
 									}							
 								}
 							}					
 						})
 					)
 				);		
-			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-				$("item" + key).adopt( //"div#icon"
-					new Element("div#icon" + key, {
+			} else if ((value["type"]=="NOTE") || (value["type"]=="TEXT") || (value["type"]=="HTML")) {
+				$("item"+key).adopt( //"div#icon"
+					new Element("div#icon"+key, {
 						styles : {
 							height : "60px",
 						}
@@ -879,19 +879,19 @@ function drawElementsPastStates(pastStatesId) {
 							alt : "Icon",
 							title : "Expand information",				
 							styles : {
-								cursor : "pointer",
+								cursor: "pointer",
 								width : "20px",
-								position : "absolute",
-								top : "36px", 
-								left : "140px",
-								float : "left"
+								position: "absolute",
+								top: "36px", 
+								left: "140px",
+								float: "left"
 							},
 							events : {
 								"click" : function(){
-									if ($("information" + key).getStyle("display") == "none") {
-										$("information" + key).setStyle('display','block');
+									if ($("information"+key).getStyle("display") == "none") {
+										$("information"+key).setStyle('display','block');
 									} else {
-										$("information" + key).setStyle('display','none');
+										$("information"+key).setStyle('display','none');
 									}							
 								}
 							}					
@@ -900,35 +900,35 @@ function drawElementsPastStates(pastStatesId) {
 				);	
 			}
 			// get the favicon of an url and place it over the icon
-			if (value["type"] == "URL") {
+			if (value["type"]=="URL") {
 				var url = value["path"].match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/)[2];
-				var iconUrl = "http://getfavicon.appspot.com/http://" + url + "";
+				var iconUrl = "http://getfavicon.appspot.com/http://"+url+"";
 				//http://getfavicon.appspot.com/http://www.edocuments.co.uk'
 				//http://grabicon.com/edocuments.co.uk'
 				//http://www.getfavicon.org/?url=www.edocuments.co.uk' />
 				//http://www.google.com/s2/favicons?domain=www.edocuments.co.uk' />
-				$("item" + key).adopt(
-					new Element("div#favicon" + key, {
+				$("item"+key).adopt(
+					new Element("div#favicon"+key, {
 					})
 				);
-				$("favicon" + key).adopt(
+				$("favicon"+key).adopt(
 						new Element("img", {
 							src : iconUrl,
 							alt : "Icon",
 							title : "Expand information",
 							styles : {
-								cursor : "pointer",
+								cursor: "pointer",
 								width : "18px",
-								position : "absolute",
-								top : "13px", 
-								left : "13px",
+								position: "absolute",
+								top: "13px", 
+								left: "13px",
 							},
 							events : {
 								"click" : function(){
-									if ($("information" + key).getStyle("display") == "none") {
-										$("information" + key).setStyle('display','block');
+									if ($("information"+key).getStyle("display") == "none") {
+										$("information"+key).setStyle('display','block');
 									} else {
-										$("information" + key).setStyle('display','none');
+										$("information"+key).setStyle('display','none');
 									}							
 								}
 							}
@@ -937,15 +937,15 @@ function drawElementsPastStates(pastStatesId) {
 			}
 
 			//### TEXT/NAME
-			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
-				$("item" + key).adopt( //"span#name" + key
-					new Element("span#name" + key,  {
+			if ((value["type"]=="FILE") || (value["type"]=="FOLDER") || (value["type"]=="URL")) {
+				$("item"+key).adopt( //"span#name"+key
+					new Element("span#name"+key,  {
 						styles : {
-							position : "absolute",
+							position: "absolute",
 							width : "100",
-							top : "2px",
+							top: "2px",
 							left : "45",
-							"font-size" : "12px"
+							"font-size": "12px"
 						}
 					}).adopt(
 						new Element("a", {
@@ -954,7 +954,7 @@ function drawElementsPastStates(pastStatesId) {
 							title : "Open",
 							events : {
 								"click" : function(){
-									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+									if ((value["type"]=="FILE") || (value["type"]=="FOLDER")) {
 										if((Browser.Platform.win) || (Browser.Platform.mac) || (Browser.Platform.ios)
 											|| (Browser.Platform.name == 'BeOS')|| (Browser.Platform.name == 'OS/2')) { 
 											//this is for windows, osx. Don't know how to check for beos and os/2
@@ -966,9 +966,9 @@ function drawElementsPastStates(pastStatesId) {
 											//open the file:// links and decide the FF how to deal with it
 											window.open(fileUri);  
 										}
-									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
+									} else if ((value["type"]=="TEXT") || (value["type"]=="HTML")) {
 																			 		
-									} else if (value["type"] == "URL") {
+									} else if (value["type"]=="URL") {
 										//URL's are opened in a window
 										window.open(value["path"]);
 									}
@@ -978,35 +978,35 @@ function drawElementsPastStates(pastStatesId) {
 						})
 					)
 				);	
-			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-				$("item" + key).setStyle("z-index","0");
+			} else if ((value["type"]=="NOTE") || (value["type"]=="TEXT") || (value["type"]=="HTML")) {
+				$("item"+key).setStyle("z-index","0");
 							value["name"] = cleanHtml(value["name"]);
 							dataPastStates[key]["name"] = value["name"];
-				$("item" + key).adopt(
+				$("item"+key).adopt(
 					new Element("div", {
 						styles : {
-							top : "2px",
-							width : "135px",
-							height : "130px",
+							top: "2px",
+							width: "135px",
+							height: "130px",
 							position : "absolute",
-							overflow : "hidden"
+							overflow: "hidden"
 						}
 					}).adopt(
-						new Element("div#nametext" + key, {
-							//text : value["name"].replace(/<[^>]*>?/gm, ''),
-							html : value["name"],
-							styles : {
+						new Element("div#nametext"+key, {
+							//text: value["name"].replace(/<[^>]*>?/gm, ''),
+							html: value["name"],
+							styles: {
 								position : "absolute",
-								top : "2px",
-								"font-size" : "11px",
-								"color" : "#666666",
+								top: "2px",
+								"font-size": "11px",
+								"color": "#666666",
 								padding : "5px 10px 10px 10px",
-								"background" : "rgba(0, 0, 0, 0)", /* transparent background */
-								width : "135px",
-								height : "130px",
-								"text-overflow" : "ellipsis",
-								"font-family" : "arial, sans-serif",
-								"border-style" : "none"//"1px solid"						
+								"background": "rgba(0, 0, 0, 0)", /* transparent background */
+								width: "135px",
+								height: "130px",
+								"text-overflow": "ellipsis",
+								"font-family": "arial, sans-serif",
+								"border-style": "none"//"1px solid"						
 							}
 						})
 					)
@@ -1020,49 +1020,49 @@ function drawElementsPastStates(pastStatesId) {
 			var borderBlue =	[144, 130, 116, 101, 87, 72, 57, 43, 29, 14, 0];
 			var borderOpacity = [0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5];
 			var borderWidth =   [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20];
-			$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
-			$("item" + key).adopt( //span#vote" + key
-				new Element("span#upvote" + key).adopt(
+			$("item"+key).setStyle('border', borderWidth[value["vote"]]+'em solid rgba('+borderRed[value["vote"]]+', '+borderGreen[value["vote"]]+', '+borderBlue[value["vote"]]+', '+borderOpacity[value["vote"]]+')');
+			$("item"+key).adopt( //span#vote"+key
+				new Element("span#upvote"+key).adopt(
 					new Element("img", {
 						src : "images/upvote.png",
 						alt : "Upvote importance",
 						title : "Upvote importance",
 						styles : {
 							width : "15",
-							position : "absolute",
-							top : "7px", 
-							left : "143px",
-							"background" : "white"
+							position: "absolute",
+							top: "7px", 
+							left: "143px",
+							"background": "white"
 						}				
 					})
 				),
-				new Element("span#vote" + key, { 
-						text : value["vote"],
+				new Element("span#vote"+key, { 
+						text: value["vote"],
 						title : "Importance on the scale 0 to 10",
 						styles : {
 							width : "13",
-							position : "absolute",
-							top : "16px", 
-							"color" : "grey",
+							position: "absolute",
+							top: "16px", 
+							"color": "grey",
 							"font-size" : "12px",
-							left : "144px",
+							left: "144px",
 							"text-align" : "center",
-							"background" : "white"
+							"background": "white"
 						}
 				}),			
-				new Element("span#upvote" + key).adopt(
+				new Element("span#upvote"+key).adopt(
 					new Element("img", {
 						src : "images/upvote.png",
 						alt : "Downvote importance",
 						title : "Downvote importance",
 						styles : {
 							width : "15",
-							position : "absolute",
-							top : "30px", 
-							left : "143px",
-							"-moz-transform" : "rotate(-180deg)",
-							"-moz-transform-origin" : "center center",
-							"background" : "white"
+							position: "absolute",
+							top: "30px", 
+							left: "143px",
+							"-moz-transform": "rotate(-180deg)",
+							"-moz-transform-origin": "center center",
+							"background": "white"
 						}
 					})
 				)					
@@ -1070,29 +1070,29 @@ function drawElementsPastStates(pastStatesId) {
 
 			//ARROW pointing to the CENTRE & write coordinates of the item
 			//Arrows used to define item as Input, Outpur or both to the task
-			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
+			var angle = getAngle($("item"+key).offsetLeft,$("item"+key).offsetTop); 
 			var imageSrc;
-			if ((value["arrow"] == "no-no")) {
+			if ((value["arrow"]=="no-no")) {
 				imageSrc = 'images/arrow_no-no.png';
-			} else if ((value["arrow"] == "in-no")) {
+			} else if ((value["arrow"]=="in-no")) {
 				imageSrc = 'images/arrow_in-no.png';
-			} else if ((value["arrow"] == "no-out")) {
+			} else if ((value["arrow"]=="no-out")) {
 				imageSrc = 'images/arrow_no-out.png';	
-			} else if ((value["arrow"] == "in-out"))  {
+			} else if ((value["arrow"]=="in-out"))  {
 				imageSrc = 'images/arrow_in-out.png';
 			} 
-			$("item" + key).adopt( //"img#arrow" + key
-				new Element ("a#arrowlink" + key).adopt( 
-					new Element("img#arrow" + key, {
-						src : imageSrc,
-						title : "Click to define if information is 'input' or 'output' to the task or both",
-						styles : {
-							position : "absolute",
-							width : "20px",
-						 	top : "46px",
-						 	left : "-20px",
-						 	"-moz-transform" : "rotate(" + angle[0] + "deg)",
-						 	"-moz-transform-origin" : "center center"
+			$("item"+key).adopt( //"img#arrow"+key
+				new Element ("a#arrowlink"+key).adopt( 
+					new Element("img#arrow"+key, {
+						src: imageSrc,
+						title: "Click to define if information is 'input' or 'output' to the task or both",
+						styles: {
+							position: "absolute",
+							width: "20px",
+						 	top: "46px",
+						 	left: "-20px",
+						 	"-moz-transform": "rotate("+angle[0]+"deg)",
+						 	"-moz-transform-origin": "center center"
 						}
 					})
 				)
@@ -1100,27 +1100,27 @@ function drawElementsPastStates(pastStatesId) {
 
 
 			//set the display to none if it is undefined 
-			//value["display"] is used to display or not to display $("information" + key) element
-			$("item" + key).adopt( //"div#information" + key
-				new Element("div#information" + key,  {
+			//value["display"] is used to display or not to display $("information"+key) element
+			$("item"+key).adopt( //"div#information"+key
+				new Element("div#information"+key,  {
 					styles : {
-						position : "absolute",
-						display : "none", //value["display"],
+						position: "absolute",
+						display: "none", //value["display"],
 						width : "144",
-						top : "55px",
-						visibility : "visible",
-						"font-size" : "12px",
+						top: "55px",
+						visibility: "visible",
+						"font-size": "12px",
 						"z-index" : "3",
 						"padding" : "3px",
 						"background-color" : "white",
 						border : "0.5px solid",
-						"border-radius" : 5,
-						"border-color" : "rgba(112,138,144,0.2)"						
+						"border-radius": 5,
+						"border-color": "rgba(112,138,144,0.2)"						
 					}
 				})							
 			);
-			$("information" + key).adopt ( //"a#date" + key
-				new Element("a#date" + key).adopt(
+			$("information"+key).adopt ( //"a#date"+key
+				new Element("a#date"+key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Calendar.png",
 						alt : "Add a due date",
@@ -1128,13 +1128,13 @@ function drawElementsPastStates(pastStatesId) {
 						styles : {					
 							width : "23",
 							height : "23",						
-							opacity : "0.8"
+							opacity: "0.8"
 						}					
 					})
 				)	
 			);
-			$("information" + key).adopt ( //"a#user" + key
-				new Element("a#user" + key).adopt(
+			$("information"+key).adopt ( //"a#user"+key
+				new Element("a#user"+key).adopt(
 					new Element("img", {
 						src : "images/icons_general/User.png",
 						alt : "Add a person's name to the item",
@@ -1142,13 +1142,13 @@ function drawElementsPastStates(pastStatesId) {
 						styles : {						
 							width : "23",
 							height : "23",						
-							opacity : "0.8"
+							opacity: "0.8"
 						}					
 					})
 				)	
 			);
-			$("information" + key).adopt ( //"a#email" + key
-				new Element("a#email" + key).adopt(
+			$("information"+key).adopt ( //"a#email"+key
+				new Element("a#email"+key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Address_Book.png",
 						alt : "Add an email address",
@@ -1156,13 +1156,13 @@ function drawElementsPastStates(pastStatesId) {
 						styles : {						
 							width : "23",
 							height : "23",		 				
-							opacity : "0.8"
+							opacity: "0.8"
 						}					
 					})
 				)	
 			);	
-			$("information" + key).adopt ( //"a#url" + key
-				new Element("a#url" + key).adopt(
+			$("information"+key).adopt ( //"a#url"+key
+				new Element("a#url"+key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Internet.png",
 						alt : "Add an URL",
@@ -1170,13 +1170,13 @@ function drawElementsPastStates(pastStatesId) {
 						styles : {						
 							width : "23",
 							height : "23",		 				
-							opacity : "0.8"
+							opacity: "0.8"
 						}					
 					})
 				)	
 			);
-			$("information" + key).adopt ( //"a#note" + key
-				new Element("a#note" + key).adopt(
+			$("information"+key).adopt ( //"a#note"+key
+				new Element("a#note"+key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Notepad2.png",
 						alt : "Add a note",
@@ -1184,13 +1184,13 @@ function drawElementsPastStates(pastStatesId) {
 						styles : {						
 							width : "23",
 							height : "23",		 				
-							opacity : "0.8"
+							opacity: "0.8"
 						}					
 					})
 				)	
 			);						
-			$("information" + key).adopt ( //"a#delete" + key
-				new Element("a#delete" + key).adopt(
+			$("information"+key).adopt ( //"a#delete"+key
+				new Element("a#delete"+key).adopt(
 					new Element("img", {
 						src : "images/icons_general/RecycleBin_Empty.png",
 						alt : "Remove item",
@@ -1198,7 +1198,7 @@ function drawElementsPastStates(pastStatesId) {
 						styles : {					
 							width : "23",
 							height : "23",
-							opacity : "0.8"
+							opacity: "0.8"
 						}					
 					})
 				)
@@ -1211,29 +1211,29 @@ function drawElementsPastStates(pastStatesId) {
 					&& (index != "vote") && (index != "timestamp")) {
 
 					//get current size and make it human readable
-					if (index == "size"  && value["type"] == "FILE") {
+					if (index == "size"  && value["type"]=="FILE") {
 						var updatedSize = fileSizes(dataPastStates[key]["path"]);
 						dataPastStates[key]["size"] = updatedSize;
 						item = bytesToSize(updatedSize);					
-					} else if (index == "size"  && value["type"] != "FILE") {
+					} else if (index == "size"  && value["type"]!="FILE") {
 						delete dataPastStates[key]["size"];
 					}
 					//make paths and links clickable
-					if (index == "path" && value["type"] == "FILE") {
+					if (index == "path" && value["type"]=="FILE") {
 						if (Browser.Platform.name != 'linux') {
-							var folder = item.substring(0,item.lastIndexOf("/") + 1);
-							var file = item.substring(item.lastIndexOf("/") + 1);
-							item = "<a onclick=\"folderOpen('" + item + "');return false;\" href=\"#openfolder\">"
-									 + folder + "</a>" + file;
+							var folder = item.substring(0,item.lastIndexOf("/")+1);
+							var file = item.substring(item.lastIndexOf("/")+1);
+							item = "<a onclick=\"folderOpen('"+item+"');return false;\" href=\"#openfolder\">"
+									+folder+"</a>"+file;
 						}
-					} else if (index == "path" && value["type"] == "FOLDER") {
+					} else if (index == "path" && value["type"]=="FOLDER") {
 						if (Browser.Platform.name != 'linux') {
-							item = "<a onclick=\"fileOpen('" + item + "');return false;\" href=\"#openfile\">"
-								 + item + "</a>";		
+							item = "<a onclick=\"fileOpen('"+item+"');return false;\" href=\"#openfile\">"
+								+item+"</a>";		
 						}
-					} else if (index == "path" && value["type"] == "URL") {
-						item = "<a href=\"" + item + "\">"
-								 + item + "</a>";
+					} else if (index == "path" && value["type"]=="URL") {
+						item = "<a href=\""+item+"\">"
+								+item+"</a>";
 					} 
 					//get surrent modficaion time and make it human readable
 					if (index == "modified"){
@@ -1250,9 +1250,9 @@ function drawElementsPastStates(pastStatesId) {
 	    				checkDateElement(item,key);
 					}				
 
-					$("information" + key).adopt ( //"span#content_" + key
-						new Element("div#list" + index + key, {
-							html : "<strong>" + index + "</strong>: " + item
+					$("information"+key).adopt ( //"span#content_"+key
+						new Element("div#list"+index+key, {
+							html : "<strong>"+index+"</strong>: "+item
 						})
 					);	
 				} 
@@ -1260,30 +1260,30 @@ function drawElementsPastStates(pastStatesId) {
 
 			//check for overlaping tasks for the informatuon item - 
 			//   if they share information items get array of tasks IDs
-			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
+			if ((value["type"]=="FILE") || (value["type"]=="FOLDER") || (value["type"]=="URL")) {
 				//get the table and erease the id of the selected task
 			 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
 			 	var leftStep = -13;
 			 	if (overlapingTasks.length != 0) { 	
 					Array.each(overlapingTasks, function(id, index){
 						leftStep = leftStep + 21;
-						$("item" + key).adopt( //"span#icon"
+						$("item"+key).adopt( //"span#icon"
 							new Element("a", {
-								href : "#jumpToTask",
+								href: "#jumpToTask",
 								text : id,
-								title : "Jump to task '" + databaseGetTaskName(id) + "'",
+								title: "Jump to task '"+databaseGetTaskName(id)+"'",
 								styles : {
-									position : "absolute",
-									left : leftStep + "px",
-									top : "-20px",
-									width : "20px",
-									height : "20px",	
-									"font-size" : "11px",
-									"line-height" : "20px",
-									display : "inline-block",
-									"border-radius" : "20px",
-									"background-color" : "rgba(112,138,144,0.6)",
-									"text-align" : "center"
+									position: "absolute",
+									left: leftStep+"px",
+									top: "-20px",
+									width: "20px",
+									height: "20px",	
+									"font-size": "11px",
+									"line-height": "20px",
+									display: "inline-block",
+									"border-radius": "20px",
+									"background-color": "rgba(112,138,144,0.6)",
+									"text-align": "center"
 								},
 								events : {
 									"click" : function(){
@@ -1313,17 +1313,17 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	//we can't just draw because we don't save the new value in DB so the nev value is lost
 	//databaseDrawTaskCollection(currentTaskId);
 
-	if ($("information" + key).contains($("list" + tag + key))) {
-		$("list" + tag + key).dispose();
+	if ($("information"+key).contains($("list"+tag+key))) {
+		$("list"+tag+key).dispose();
 	}
-	$("information" + key).adopt ( //"span#content_" + key
-		new Element("div#list" + tag + key, {
-			html : "<strong>" + tag + "</strong>: " + value
+	$("information"+key).adopt ( //"span#content_"+key
+		new Element("div#list"+tag+key, {
+			html : "<strong>"+tag+"</strong>: "+value
 		})
 	);	
 
 	//if the date has been changed ... emphasize the border
-    if (tag == "date") {
+    if (tag =="date") {
     	checkDateElement(value,key);
     }
 }
@@ -1332,82 +1332,82 @@ function deleteElementValue(key,tag,value) { //deleting a value/tag of the infor
 }
 function editElementName(key) {
 	var name = data[key]["name"];
-	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+	if (data[key]["type"]=="TEXT" || data[key]["type"]=="NOTE") {
 		name = name.replace( /<br \/>/gi, "\n");	
 	}	
-	var copy = $("nametext" + key).clone(true,true);
-	copy.cloneEvents($("nametext" + key));
-	var textarea = new Element("textarea#namearea" + key, {
-					value : name, //.replace(/<[^>]*>?/gm, ''),
-					styles : {
+	var copy = $("nametext"+key).clone(true,true);
+	copy.cloneEvents($("nametext"+key));
+	var textarea = new Element("textarea#namearea"+key, {
+					value: name, //.replace(/<[^>]*>?/gm, ''),
+					styles: {
 						position : "absolute",
-						top : "2px",
-						"font-size" : "11px",
-						"color" : "#666666",
+						top: "2px",
+						"font-size": "11px",
+						"color": "#666666",
 						padding : "5px 10px 10px 10px",
-						"background" : "rgba(0, 0, 0, 0)", /* transparent background */
-						"resize" : "none",
-						width : "145px",
-						height : "130px",
-						//"overflow-y" : "scroll",
-						"font-family" : "arial, sans-serif",
-						"border-style" : "none"
+						"background": "rgba(0, 0, 0, 0)", /* transparent background */
+						"resize": "none",
+						width: "145px",
+						height: "130px",
+						//"overflow-y": "scroll",
+						"font-family": "arial, sans-serif",
+						"border-style": "none"
 					},
-					events : {
+					events: {
 						"click" : function(){
 							this.focus();
 						},
 						"blur" : function() {
 							str = this.get("value"); //.replace(/\n/g, '<br />');
-							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+							if (data[key]["type"]=="TEXT" || data[key]["type"]=="NOTE") {
 								str = str.replace( /\n/gi, "<br />");	
 							}								
 							data[key]["name"] = str; //this.get("value");
 							copy.setProperty("html", str); //this.get("value"));
-							$("listname" + key).setProperty("html", str); //this.get("value"));
+							$("listname"+key).setProperty("html", str); //this.get("value"));
 							copy.replaces(this);
 						}					
 					}
-				}).replaces($("nametext" + key));	
-	$("namearea" + key).focus();
+				}).replaces($("nametext"+key));	
+	$("namearea"+key).focus();
 }
 function deleteElement(key, name) { //deleting the information item
 	//delete the element from data with the key
 	delete data[key];
 	//save the task collection
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId);
-	printOut("Information item " + name + " was successfully deleted.");
+	printOut("Information item "+name+" was successfully deleted.");
 }
 function checkDateElement(date,key) { //check if the due date is approaching and emphasize the value
 	var today = new Date();
-	if ((today.diff(date) > -3) && (today.diff(date) < 7)) {
-		$("item" + key).setStyle('border','0.2em solid rgba(204, 0, 0, 0.5)');
-		//$("msg").innerHTML += "-|" + parseInt(today.diff(date)) + "|-";
+	if ((today.diff(date)>-3) && (today.diff(date)<7)) {
+		$("item"+key).setStyle('border','0.2em solid rgba(204, 0, 0, 0.5)');
+		//$("msg").innerHTML += "-|"+parseInt(today.diff(date))+"|-";
 		//remove the old date from DOM if it exist
-		if ($("item" + key).contains($("emphasizedate" + key))) {
-			$("emphasizedate" + key).dispose();
+		if ($("item"+key).contains($("emphasizedate"+key))) {
+			$("emphasizedate"+key).dispose();
 		}		
-		$("item" + key).adopt(
-			new Element("span#emphasizedate" + key, {
-				text : date,
-				styles : {
-					position : "absolute",
-				 	top : "47px",
+		$("item"+key).adopt(
+			new Element("span#emphasizedate"+key, {
+				text: date,
+				styles: {
+					position: "absolute",
+				 	top: "47px",
 				 	"font-size" : "11px",
 				 	"z-index" : "3",
-				 	left : "50px",
-				 	color : "rgba(204, 0, 0, 1)"
+				 	left: "50px",
+				 	color: "rgba(204, 0, 0, 1)"
 				}
 			})
 		);
-		if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
-			$("emphasizedate" + key).setStyle('top','141px');
+		if (data[key]["type"]=="NOTE" || data[key]["type"]=="TEXT" || data[key]["type"]=="HTML") {
+			$("emphasizedate"+key).setStyle('top','141px');
 		}
 		
 	} else {
-		$("item" + key).setStyle('border','0.1em solid rgba(112,138,144,0.2)');
-		if ($("item" + key).contains($("emphasizedate" + key))) {
-			$("emphasizedate" + key).dispose();
+		$("item"+key).setStyle('border','0.1em solid rgba(112,138,144,0.2)');
+		if ($("item"+key).contains($("emphasizedate"+key))) {
+			$("emphasizedate"+key).dispose();
 		}							
 	}
 }
@@ -1422,37 +1422,37 @@ function printTaskNameCentre(taskId) {
 	currentTaskName = databaseGetTaskName(currentTaskId);
 	$("taskName").empty();
 	$("taskName").setStyles({
-		position : "fixed",
-		top : "50%",
-		left : "50%",
-		"margin-top" : "-60px",
-		"margin-left" : "-60px",
-		"width" : "120px",
-		"height" : "120px",		
-		"display" : "table",
-		"border-radius" : "120px",
-		"background-color" : "rgba(112,138,144,0.6)",
-		"z-index" : "-2",
-		"text-align" : "center"
+		position: "fixed",
+		top: "50%",
+		left: "50%",
+		"margin-top": "-60px",
+		"margin-left": "-60px",
+		"width": "120px",
+		"height": "120px",		
+		"display": "table",
+		"border-radius": "120px",
+		"background-color": "rgba(112,138,144,0.6)",
+		"z-index": "-2",
+		"text-align": "center"
 	});
 	$("taskName").adopt(
 			new Element("p#tasknametext", {
-				text : currentTaskName,
-				styles : {
-					position : "relative",
-					"font-size" : "14px",
-					//margin : "-38px 0px 0 -43px",
-					//top : "50%",
-					//left : "50%",
-					//width : "70%",
-					//"text-align" : "center"
-					"display" : "table-cell",
-  					"vertical-align" : "middle",
-  					"text-align" : "center"
+				text: currentTaskName,
+				styles: {
+					position: "relative",
+					"font-size": "14px",
+					//margin: "-38px 0px 0 -43px",
+					//top: "50%",
+					//left: "50%",
+					//width: "70%",
+					//"text-align": "center"
+					"display": "table-cell",
+  					"vertical-align": "middle",
+  					"text-align": "center"
 				}
 			})
 		);
-	document.title = "TIC - " + currentTaskName;
+	document.title = "TIC - "+currentTaskName;
 	drawImportanceCircles();	
 }
 
@@ -1465,41 +1465,41 @@ function drawImportanceCircles(){
 	var topPadding = 10;
 	var step = 10;
 	$("importanceCircles").empty();
-	for(var i = 10; i>5; i--) {
+	for(var i=10; i>5; i--) {
 		var marginHalf = circleInnitialSize/2;
 		$("importanceCircles").adopt(
 			new Element ("div", {
-				styles : {				
-					position : "fixed",
-					"z-index" : "-2",					
-					top : topMargin,
-					left : "50%",
-					margin : "-" + marginHalf + " 0px 0px -" + marginHalf,
-					width : circleInnitialSize,
-					height : circleInnitialSize,
-					border : "1px solid",
-					"border-radius" : circleInnitialSize,
-					display : "inline",
-					"border-color" : "rgba(112,138,144,0.2)"
+				styles: {				
+					position: "fixed",
+					"z-index": "-2",					
+					top: topMargin,
+					left: "50%",
+					margin: "-"+marginHalf+" 0px 0px -"+marginHalf,
+					width: circleInnitialSize,
+					height: circleInnitialSize,
+					border: "1px solid",
+					"border-radius": circleInnitialSize,
+					display: "inline",
+					"border-color": "rgba(112,138,144,0.2)"
 				}
 			})//.adopt(
 			//  	new Element ("span", {
-			// 		text : "Importance level " + step,			
-			//  		styles : {
-			//  			"text-align" : "center",
-			//  			"float" : "left",
-			// 			"font-size" : "11px",					
-			// 			"-moz-transform" : "rotate(-44deg)",
-			// 			margin : "0 0 0 0",
-			// 			padding : topPadding + " 0px 0px " + topPadding,
-			// 			"-moz-transform-origin" : "right bottom",
-			// 			"color" : "rgba(112,138,144,0.3)"
+			// 		text: "Importance level "+step,			
+			//  		styles: {
+			//  			"text-align": "center",
+			//  			"float": "left",
+			// 			"font-size": "11px",					
+			// 			"-moz-transform": "rotate(-44deg)",
+			// 			margin: "0 0 0 0",
+			// 			padding: topPadding+" 0px 0px "+topPadding,
+			// 			"-moz-transform-origin": "right bottom",
+			// 			"color": "rgba(112,138,144,0.3)"
 			//  		}
 			//  	})
 			// )
 		);
-		circleInnitialSize = circleInnitialSize + parseInt(135*(window.innerWidth/1000));
-		topPadding = topPadding + 17.5;
+		circleInnitialSize = circleInnitialSize+parseInt(135*(window.innerWidth/1000));
+		topPadding = topPadding+17.5;
 		step = step-2;
 	}
 }
@@ -1509,14 +1509,14 @@ function drawCentreDot(){
 	$("body").adopt(
 		new Element("div#dot", {
 			styles : {
-				position : "absolute",
-				left : window.innerWidth/2,
-				top : window.innerHeight/2,
-				width : "5px",
-				height : "5px",		
-				"border-radius" : "5px",
-				"background-color" : "red",
-				"z-index" : "10"
+				position: "absolute",
+				left: window.innerWidth/2,
+				top: window.innerHeight/2,
+				width: "5px",
+				height: "5px",		
+				"border-radius": "5px",
+				"background-color": "red",
+				"z-index": "10"
 			}
 		})
 	);
@@ -1527,31 +1527,31 @@ Draw home, desktop and sticky note in the left top corner
 ****************************************************************************/
 function drawGeneralIcons(){
 	$("generalIcons").setStyles({
-		position : 'absolute',
-		top : '0px',
-		left : '30px'
+		position: 'absolute',
+		top: '0px',
+		left: '30px'
 	})
 	$("generalIcons").adopt(
 		new Element("div", {
-			styles :{
-				"float" : "left",
-				"width" : "35px",
-				"padding-bottom" : "3px",
-				"background-color" : "rgba(112,138,144,0.8)",
-				"text-align" : "center",
-				"-moz-border-radius" : "0px 5px 5px 0px",
-				"border-radius" : "0px 0px 5px 5px"		
+			styles:{
+				"float": "left",
+				"width": "35px",
+				"padding-bottom": "3px",
+				"background-color":"rgba(112,138,144,0.8)",
+				"text-align": "center",
+				"-moz-border-radius": "0px 5px 5px 0px",
+				"border-radius": "0px 0px 5px 5px"		
 			}
 		}).adopt( 
 			new Element("img", {
 				title : "Home folder",				
-				src : 'images/icons_general/Home.png',
-				styles : {
-					width : '30px',
-					cursor : 'pointer',
+				src: 'images/icons_general/Home.png',
+				styles: {
+					width: '30px',
+					cursor: 'pointer',
 				},
-				events : {
-					"click" : function(){
+				events: {
+					"click": function(){
 						var file = Components.classes["@mozilla.org/file/directory_service;1"].  
 								   getService(Components.interfaces.nsIProperties).  
 								   get("Home", Components.interfaces.nsIFile);   
@@ -1561,25 +1561,25 @@ function drawGeneralIcons(){
 			})
 		),
 		new Element("div", {
-			styles :{				
-				"float" : "left",
-				"width" : "35px",
-				"padding-bottom" : "3px",
-				"background-color" : "rgba(112,138,144,0.8)",
-				"text-align" : "center",
-				"-moz-border-radius" : "0px 5px 5px 0px",
-				"border-radius" : "0px 0px 5px 5px"	
+			styles:{				
+				"float": "left",
+				"width": "35px",
+				"padding-bottom": "3px",
+				"background-color":"rgba(112,138,144,0.8)",
+				"text-align": "center",
+				"-moz-border-radius": "0px 5px 5px 0px",
+				"border-radius": "0px 0px 5px 5px"	
 			}
 		}).adopt(		
 			new Element("img", {
 				title : "Desktop folder",
-				src : 'images/icons_general/Desktop.png',
-				styles : {
-					width : '30px',
-					cursor : 'pointer',
+				src: 'images/icons_general/Desktop.png',
+				styles: {
+					width: '30px',
+					cursor: 'pointer',
 				},			
-				events : {
-					"click" : function(){
+				events: {
+					"click": function(){
 						var file = Components.classes["@mozilla.org/file/directory_service;1"].  
 								   getService(Components.interfaces.nsIProperties).  
 								   get("Desk", Components.interfaces.nsIFile);   
@@ -1589,27 +1589,27 @@ function drawGeneralIcons(){
 			})
 		),
 		new Element("div", {
-			styles :{				
-				"float" : "left",
-				"width" : "35px",
-				"padding-bottom" : "4px",
-				"margin-left" : "20px",
-				"background-color" : "rgba(112,138,144,0.8)",
-				"text-align" : "center",
-				"-moz-border-radius" : "0px 5px 5px 0px",
-				"border-radius" : "0px 0px 5px 5px"	
+			styles:{				
+				"float": "left",
+				"width": "35px",
+				"padding-bottom": "4px",
+				"margin-left": "20px",
+				"background-color":"rgba(112,138,144,0.8)",
+				"text-align": "center",
+				"-moz-border-radius": "0px 5px 5px 0px",
+				"border-radius": "0px 0px 5px 5px"	
 			}
 		}).adopt(		
 			new Element("img", {
 				title : "New note",
-				src : 'images/note_icon.png',
-				styles : {
-					width : '30px',
-					cursor : 'pointer',
-					"margin-top" : "2px"
+				src: 'images/note_icon.png',
+				styles: {
+					width: '30px',
+					cursor: 'pointer',
+					"margin-top": "2px"
 				},			
-				events : {
-					"click" : function(){
+				events: {
+					"click": function(){
 						addNewNote();
 					}
 				}
@@ -1645,7 +1645,6 @@ function databaseConnect() {
    		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id INTEGER, coll_timestamp TEXT, coll_items TEXT)");
-   		dbConn.executeSimpleSQL("CREATE INDEX collections_task_id ON tasks_collections (coll_id DESC, task_id DESC)");
    		dbConn.executeSimpleSQL("INSERT INTO tasks (task_id, task_name) VALUES('1', 'My first task')");
    		dbConn.executeSimpleSQL("INSERT INTO tasks_last (last_id, last_task) VALUES('1','1')");
    		dbConn.executeSimpleSQL("CREATE TABLE user (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT, data_user_email TEXT)");
@@ -1653,7 +1652,7 @@ function databaseConnect() {
    		//of the database every 7 days ... if the user agrees
 		var statement = dbConn.createStatement("INSERT INTO user (data_userid, data_last_sent) VALUES(:uid, :date)");
 		var currentTime = new Date().format('db');
-		statement.params.uid = (Number.random(100, 999) + currentTime).toMD5();			
+		statement.params.uid = (Number.random(100, 999)+currentTime).toMD5();			
 		statement.params.date = currentTime;
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 		if (statement.state == 1) { 
@@ -1661,14 +1660,14 @@ function databaseConnect() {
 			statement.execute();
 			statement.finalize();
 			// connection.executeAsync([statement], 1,  {
-			// 	handleCompletion : function(aReason) {
+			// 	handleCompletion: function(aReason) {
 			// 		if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 			// 				printOut("Query canceled or aborted!");
 			// 		}
 			// 		statement.finalize();
 			// 	},
-			// 	handleError : function(aError) {printOut(aError.message);},
-			// 	handleResult : function(aResultSet) {}
+			// 	handleError: function(aError) {printOut(aError.message);},
+			// 	handleResult: function(aResultSet) {}
 			// }); 
 		} else {
 			printOut("Not a valid SQL statement: INSERT INTO data (data_userid, data_last_sent) VALUES(:uid, :date)");
@@ -1687,25 +1686,25 @@ The function is called:
 ****************************************************************************/
 function databaseGetLastTask() {
 	//select from DB
-	var statement = connection.createStatement("SELECT * FROM tasks_last WHERE last_id = 1"); 
+	var statement = connection.createStatement("SELECT * FROM tasks_last WHERE last_id=1"); 
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {	
 		statement.executeStep();
 		curtask = statement.row.last_task;
 		statement.finalize();
 	} else {
-		printOut("Not a valid SQL statement: SELECT * FROM tasks_last WHERE last_id = 1");
+		printOut("Not a valid SQL statement: SELECT * FROM tasks_last WHERE last_id=1");
 	}	
 	return curtask;
 }
 function databaseSetLastTask() {
-	var statement = connection.createStatement("UPDATE tasks_last SET last_task = :lata WHERE last_id = 1");
+	var statement = connection.createStatement("UPDATE tasks_last SET last_task = :lata WHERE last_id=1");
 	statement.params.lata = currentTaskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) { 
 		//statement.executeStep();
 		connection.executeAsync([statement], 1,  {
-			handleCompletion : function(aReason) {
+			handleCompletion: function(aReason) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
@@ -1713,11 +1712,11 @@ function databaseSetLastTask() {
 				}
 				statement.finalize();
 			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function(aResultSet) {}
+			handleError: function(aError) {printOut(aError.message);},
+			handleResult: function(aResultSet) {}
 		}); 
 	} else {
-		printOut("Not a valid SQL statement: UPDATE tasks_last SET last_task = :lt WHERE last_id = '1'");
+		printOut("Not a valid SQL statement: UPDATE tasks_last SET last_task = :lt WHERE last_id='1'");
 	}		
 }
 
@@ -1726,13 +1725,13 @@ Send the dump of the database to the server if set in preferences
 The function is called:
 ****************************************************************************/
 function databaseDump() {
-	//get the preference of shared4research2 value and send data only if it is yes == 2
+	//get the preference of shared4research2 value and send data only if it is yes==2
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
 	                      .getService(Components.interfaces.nsIPrefService);
 	var branch = prefs.getBranch("extensions.tic.");
 	var share4research2 = branch.getIntPref("share4research2");
 
-	if (share4research2 == 2) {		
+	if (share4research2==2) {		
 	    var dumpText = "";
 		//Get the userid and last date the db was dumped and sent over
 		var statement = connection.createStatement("SELECT * FROM user");	
@@ -1761,7 +1760,7 @@ function databaseDump() {
 					dumpText += "DROP TABLE IF EXISTS \"tasks\"";
 					dumpText += "CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)";
 					while (statement.executeStep()) { 
-						dumpText += "INSERT INTO \"tasks\" VALUES(" + statement.row.task_id + ",'" + statement.row.task_name.replace("'", "''", "g") + "','" + statement.row.task_due + "');\n"; 			
+						dumpText += "INSERT INTO \"tasks\" VALUES("+statement.row.task_id+",'"+statement.row.task_name.replace("'", "''", "g")+"','"+statement.row.task_due+"');\n"; 			
 					}
 					statement.finalize(); 
 				} else {
@@ -1774,7 +1773,7 @@ function databaseDump() {
 					dumpText += "DROP TABLE IF EXISTS \"tasks_collections\"";
 					dumpText += "CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id , coll_timestamp TEXT, coll_items TEXT)";
 					while (statement.executeStep()) { 
-						dumpText += "INSERT INTO \"tasks_collections\" VALUES(" + statement.row.coll_id + "," + statement.row.task_id + ",'" + statement.row.coll_timestamp + "','" + statement.row.coll_items.replace("'", "''", "g") + "');\n";					
+						dumpText += "INSERT INTO \"tasks_collections\" VALUES("+statement.row.coll_id+","+statement.row.task_id+",'"+statement.row.coll_timestamp+"','"+statement.row.coll_items.replace("'", "''", "g")+"');\n";					
 					}
 					statement.finalize(); 
 				} else {
@@ -1825,8 +1824,8 @@ function sendJSON(userid,dbdump) {
 	};
 
  	var myRequest = new Request.JSON({
- 		url : 'https://pim.famnit.upr.si/tic/receiveit.php',
- 		onComplete : function(){ 			
+ 		url: 'https://pim.famnit.upr.si/tic/receiveit.php',
+ 		onComplete: function(){ 			
  			var statement = connection.createStatement("UPDATE user SET data_last_sent = :date WHERE data_userid = :uid");
 			statement.params.date = new Date().format('db');
 			statement.params.uid = userid
@@ -1834,7 +1833,7 @@ function sendJSON(userid,dbdump) {
 			if (statement.state == 1) { 
 				//statement.executeStep(); //<--- synchronus ... 
 				connection.executeAsync([statement], 1,  {
-					handleCompletion : function(aReason) {
+					handleCompletion: function(aReason) {
 						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 							printOut("Query canceled or aborted!");
 						} else {
@@ -1842,8 +1841,8 @@ function sendJSON(userid,dbdump) {
 						}
 						statement.finalize();
 					},
-					handleError : function(aError) {printOut(aError.message);},
-					handleResult : function(aResultSet) {}
+					handleError: function(aError) {printOut(aError.message);},
+					handleResult: function(aResultSet) {}
 				}); 
 			} else {
 				printOut("Not a valid SQL statement: UPDATE user SET data_last_sent = :date WHERE data_userid = :uid");
@@ -1854,7 +1853,7 @@ function sendJSON(userid,dbdump) {
 
 
 var LZW = {
-    compress : function (uncompressed) {
+    compress: function (uncompressed) {
         "use strict";
         // Build the dictionary.
         var i,
@@ -1889,7 +1888,7 @@ var LZW = {
     },
  
  
-    decompress : function (compressed) {
+    decompress: function (compressed) {
         "use strict";
         // Build the dictionary.
         var i,
@@ -1919,7 +1918,7 @@ var LZW = {
  
             result += entry;
  
-            // Add w + entry[0] to the dictionary.
+            // Add w+entry[0] to the dictionary.
             dictionary[dictSize++] = w + entry.charAt(0);
  
             w = entry;
@@ -1935,8 +1934,8 @@ function lzw_encode(s) {
     var currChar;
     var phrase = data[0];
     var code = 256;
-    for (var i = 1; i < data.length; i++) {
-        currChar = data[i];
+    for (var i=1; i<data.length; i++) {
+        currChar=data[i];
         if (dict[phrase + currChar] != null) {
             phrase += currChar;
         }
@@ -1944,62 +1943,15 @@ function lzw_encode(s) {
             out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
             dict[phrase + currChar] = code;
             code++;
-            phrase = currChar;
+            phrase=currChar;
         }
     }
     out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-    for (var i = 0; i < out.length; i++) {
+    for (var i=0; i<out.length; i++) {
         out[i] = String.fromCharCode(out[i]);
     }
     return out.join("");
 }
-
-function databaseMaintenance() {
-	//reindex the indexes
-	var statement = connection.createStatement("REINDEX collections_task_id");	
-	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) {
-		connection.executeAsync([statement], 1,  {
-			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-						printOut("Query canceled or aborted!");
-				} else {
-					//printOut(aReason.message);
-				}	
-				$("msg").innerHTML += "v0-";
-				statement.finalize();
-			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {}
-		}); 
-	} else {
-		printOut("Not a valid SQL statement: REINDEX collections_task_id");
-		return false;
-	}
-
-	//Compact & cleanup
-	var statement = connection.createStatement("VACUUM");	
-	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) {
-		connection.executeAsync([statement], 1,  {
-			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-						printOut("Query canceled or aborted!");
-				} else {
-					//printOut(aReason.message);
-				}	
-				$("msg").innerHTML += "v0-";
-				statement.finalize();
-			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {}
-		}); 
-	} else {
-		printOut("Not a valid SQL statement: VACUUM");
-		return false;
-	}	
-}
-
 
 
 /***************************************************************************
@@ -2023,38 +1975,38 @@ function databaseShowTasks() {
 				var taskname = statement.row.task_name;
 				var taskid = statement.row.task_id;
 				$("tasksList").adopt(
-					new Element ("div#task" + taskid, {
-						styles : {
-							width : "90%",
-							display : "block"//,
+					new Element ("div#task"+taskid, {
+						styles: {
+							width: "90%",
+							display: "block"//,
 							//"padding-bottom" : "2px",
-							//"font-size" : "14px",
-							//"border-bottom" : "1px solid",
-							//"border-color" : "rgba(112,138,144,0.8)"
+							//"font-size": "14px",
+							//"border-bottom": "1px solid",
+							//"border-color":"rgba(112,138,144,0.8)"
 						}
 					})				
 				);	
-				$("task" + taskid).adopt( 
+				$("task"+taskid).adopt( 
 					    new Element("a", {
-							"id" : "taskIdCircle" + taskid,
-							"href" : "#" + taskname,
+							"id" : "taskIdCircle"+taskid,
+							"href" : "#"+taskname,
 							 "text" : taskid,
 							styles : {
-								//position : "absolute",
-								//left : leftStep + "px",
-								//top : "-20px",
-								float : "left",
-								width : "20px",
-								height : "20px",	
-								"font-size" : "11px",
-								"line-height" : "20px",
-								display : "block",
-								"border-radius" : "20px",
-								"background-color" : "#C0C0C0",
-								"text-align" : "center"
+								//position: "absolute",
+								//left: leftStep+"px",
+								//top: "-20px",
+								float: "left",
+								width: "20px",
+								height: "20px",	
+								"font-size": "11px",
+								"line-height": "20px",
+								display: "block",
+								"border-radius": "20px",
+								"background-color": "#C0C0C0",
+								"text-align": "center"
 							},
 							events : {
-								"click" : function(){
+								"click": function(){
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;									
 								}
@@ -2063,13 +2015,13 @@ function databaseShowTasks() {
 						new Element("span", {
 							"html" : "&nbsp;",
 							styles : {
-								float : "left",
-								width : "3px"
+								float: "left",
+								width: "3px"
 							}							
 						}),					    
 						new Element("a", {
-							"id" : "taskName" + taskid,
-							"href" : "#" + taskname,
+							"id" : "taskName"+taskid,
+							"href": "#"+taskname,
 							"html" : taskname,
 							styles : {
 								float : "left", 
@@ -2084,7 +2036,7 @@ function databaseShowTasks() {
 						}),
 						new Element("img", {
 							"src" : "images/icons_general/Prorgrams.png",
-							"id" : "taskEdit" + taskid,
+							"id" : "taskEdit"+taskid,
 							"alt" : "Edit",
 							"title" : "Edit task name",
 							"width" : "20px",
@@ -2100,7 +2052,7 @@ function databaseShowTasks() {
 						}),
 						new Element("img", {
 							"src" : "images/icons_general/RecycleBin_Empty.png",
-							"id" : "taskDelete" + taskid,
+							"id" : "taskDelete"+taskid,
 							"alt" : "Delete",
 							"title" : "Remove task",
 							"width" : "20px",							
@@ -2110,7 +2062,7 @@ function databaseShowTasks() {
 							events : {
 								"click" : function(){
 									//fire up the confirmation box
-									var question = confirm("PERMANENTLY delete the task " + taskname + "?")
+									var question = confirm("PERMANENTLY delete the task "+taskname+"?")
 									if (question == true){
 										databaseDeleteTask(taskid,taskname);
 									} else {
@@ -2122,10 +2074,10 @@ function databaseShowTasks() {
 						}),
 						new Element("div", {						
 							styles : {
-								"clear" : "both",
-								"border-style" : "solid",
-								"border-width" : "1px 0px 0px 0px",
-								"border-color" : "#98AFC7"
+								"clear":"both",
+								"border-style":"solid",
+								"border-width":"1px 0px 0px 0px",
+								"border-color": "#98AFC7"
 							}							
 						})
 
@@ -2149,20 +2101,20 @@ function databaseGetTaskName(taskId) {
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
 		/*connection.executeAsync([statement], 1,  {
-			handleResult : function(aResultSet) {
+			handleResult: function(aResultSet) {
 				var row;
 			    while(row = aResultSet.getNextRow()) {  			  
 			      	taskname = row.getResultByName("task_name");
 			    } 
 			},			
-			handleCompletion : function(aReason) {
+			handleCompletion: function(aReason) {
 				 if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 				 		printOut("Query canceled or aborted!");
 				 } 
-			    $("msg").innerHTML += "----" + taskname;
+			    $("msg").innerHTML += "----"+taskname;
 	   			return taskname;				
 			},
-			handleError : function(aError) {printOut(aError.message);}
+			handleError: function(aError) {printOut(aError.message);}
 
 		}); */
 		var taskname; 
@@ -2180,28 +2132,28 @@ function databaseGetTaskName(taskId) {
 /***************************************************************************
 Changes and saves the task name text. Changing creates a form field around
 the task name and creates a save button 
-The function is called :
+The function is called:
 - CHANGE databaseShowTasks(): on button click
 - SAVE changeEditTaskName(taskid): when the name is edited
 ****************************************************************************/
 function changeEditTaskName(taskid){
-	var taskText = $("taskName" + taskid).get('text');
+	var taskText = $("taskName"+taskid).get('text');
 	//printOut(text);
 	var input = new Element("input", {
-			"id" : "taskInput" + taskid,
+			"id" : "taskInput"+taskid,
 			"type": "text",
 			"value" : taskText
-		}).replaces($("taskName" + taskid));
+		}).replaces($("taskName"+taskid));
 	var button = new Element("button", {
-			"id" : "taskSave" + taskid,
+			"id" : "taskSave"+taskid,
 			"text" : "Save",
 			events : {
 				"click" : function(){
 					//call function that saves the changed text
-					databaseSaveEditTaskName($("taskInput" + taskid).get('value'), taskid);
+					databaseSaveEditTaskName($("taskInput"+taskid).get('value'), taskid);
 				}
 			}							
-		}).replaces($("taskEdit" + taskid))
+		}).replaces($("taskEdit"+taskid))
 }
 function databaseSaveEditTaskName(newName, taskid) {
 	var statement = connection.createStatement("UPDATE tasks SET task_name = :tn WHERE task_id= :tid");
@@ -2210,7 +2162,7 @@ function databaseSaveEditTaskName(newName, taskid) {
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) { 
 		connection.executeAsync([statement], 1,  {
-			handleCompletion : function(aReason) {
+			handleCompletion: function(aReason) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
@@ -2218,13 +2170,13 @@ function databaseSaveEditTaskName(newName, taskid) {
 				}	
 				statement.finalize();
 				databaseShowTasks();
-				if (taskid == currentTaskId) { 
+				if (taskid==currentTaskId) { 
 					printTaskNameCentre(taskid);
 					drawElements();
 				}
 			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {}
+			handleError: function(aError) {printOut(aError.message);},
+			handleResult: function() {}
 		}); 
 	} else {
 		printOut("Not a valid SQL statement: UPDATE tasks SET task_name = :tn WHERE task_id= :tid");
@@ -2244,20 +2196,20 @@ function databaseDeleteTask(taskid,name){
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement1.state == 1 && statement2.state == 1) { 
 		connection.executeAsync([statement1, statement2], 2,  {
-			handleCompletion : function(aReason) {
+			handleCompletion: function(aReason) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
 					//printOut(aReason.message);
 				}	
 			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {}
+			handleError: function(aError) {printOut(aError.message);},
+			handleResult: function() {}
 		}); 
 		statement1.finalize();
 		statement2.finalize();
 		databaseShowTasks();
-		printOut("Task \"" + name + "\" was successfully deleted!");
+		printOut("Task "+name+" was successfully deleted!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -2313,11 +2265,11 @@ function databaseDrawTaskCollection(taskid) {
 			$("timelineSlideoutInner").empty();
 			$("timelineSlideoutInner").adopt(
 				new Element ("div#timelineInfo", {
-					html : "<a href=\"#current\" onclick=\"drawElements();return false;\">Current state</a><br />"
+					html: "<a href=\"#current\" onclick=\"+drawElements();return false;\">Current state</a><br />"
 						  +"Past states (0):",
 					styles : {
-						width : "210px",
-						"font-size" : "14px"
+						width: "210px",
+						"font-size": "14px"
 					}
 				})
 			);
@@ -2336,11 +2288,11 @@ function databaseDrawTaskCollection(taskid) {
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
-							html : "<a href=\"#current\" onclick=\"drawElements();return false;\">Current state</a><br />"
+							html: "<a href=\"#current\" onclick=\"+drawElements();return false;\">Current state</a><br />"
 								  +"Past states (0):",
 							styles : {
-								width : "210px",
-								"font-size" : "14px"
+								width: "210px",
+								"font-size": "14px"
 							}
 						})
 					);	
@@ -2359,31 +2311,31 @@ function databaseDrawTaskCollection(taskid) {
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
-							html : "<a href=\"#current\" onclick=\"drawElements();return false;\">Current state</a><br />"
-								  +"Past states (" + pastStatesDates.length + "):",
+							html: "<a href=\"#current\" onclick=\"+drawElements();return false;\">Current state</a><br />"
+								  +"Past states ("+pastStatesDates.length+"):",
 							styles : {
-								width : "210px",
-								"font-size" : "14px"
+								width: "210px",
+								"font-size": "14px"
 							}
 						}),					
 						new Element ("div#timelineDate", {
 							styles : {
-								width : "210px",
-								height : "555px",
-								"font-size" : "12px",
-								"margin" : "3px 0px 1px 0px",
-								padding : "1px 0px 1px 0px",
-								overflow : "auto",
-								"border-style" : "solid",
-								"border-color" : "#98AFC7",
-								"border-width" : "1px 0px 1px 0px"
+								width: "210px",
+								height: "555px",
+								"font-size": "12px",
+								"margin": "3px 0px 1px 0px",
+								padding: "1px 0px 1px 0px",
+								overflow: "auto",
+								"border-style": "solid",
+								"border-color": "#98AFC7",
+								"border-width": "1px 0px 1px 0px"
 							}
 						})
 					);
 					$('timelineDate').innerHTML += "<ul>";
 					Array.each(pastStatesDates, function(date, index){
 						$('timelineDate').innerHTML += "<li><a href=\"#lasttask\"" 
-						     + "onclick=\"drawElementsPastStates(" + pastStatesIds[index] + ");return false;\">"
+						     + "onclick=\"drawElementsPastStates("+pastStatesIds[index]+");return false;\">"
 						     + pastStatesDates[index]
 						     + "</a></li>"; //<br />";				    
 					});
@@ -2401,10 +2353,10 @@ function databaseDrawTaskCollection(taskid) {
 					// 	)
 					// );
 					// mySlide = new Slider($('slideArea'), $('slideKnob'), {	
-					// 	steps : pastStatesIds.length - 1,	
-					// 	mode : 'vertical',
-					// 	wheel : 'true',
-					// 	onChange : function(step){
+					// 	steps: pastStatesIds.length-1,	
+					// 	mode: 'vertical',
+					// 	wheel: 'true',
+					// 	onChange: function(step){
 					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawElements();return false;\">Current state</a><br />" 
 					// 									+ "date: " + pastStatesDates[step] + "<br/ >id: " 
 					// 									+ pastStatesIds[step] + "<br />step: " + step;
@@ -2482,16 +2434,16 @@ function databaseSaveTaskCollection (callback, param) {
 				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 				if (statement.state == 1) {
 					connection.executeAsync([statement], 1, {
-						handleCompletion : function(aReason) {
+						handleCompletion: function(aReason) {
 							if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-			  					printOut("Query canceled or aborted!" + aReason);
+			  					printOut("Query canceled or aborted!"+aReason);
 			  				} else {
 			  					callback(param);
 			  				}   
 			  				statement.finalize();   				
 			  			},
-						handleError : function(aError) {printOut(aError.message);},
-						handleResult : function() {}
+						handleError: function(aError) {printOut(aError.message);},
+						handleResult: function() {}
 					});
 	  			} else {
 					printOut("Not a valid SQL statement: INSERT INTO tasks_collections (task_id, coll_timestamp, coll_items) VALUES(:tid, :ts, :items)");
@@ -2517,17 +2469,17 @@ function databaseEnterNewTask() {
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
 		connection.executeAsync([statement], 1, {
-			handleCompletion : function(aReason) { 
+			handleCompletion: function(aReason) { 
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 					printOut("Query canceled or aborted!");
 				} else {
-					printOut("New task \"" + $("createName").value + "\" was successfully created!");
+					printOut("New task "+$("createName").value+" was successfully created!");
 					databaseShowTasks();
 				} 
 	  			statement.finalize();   				
 			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {
+			handleError: function(aError) {printOut(aError.message);},
+			handleResult: function() {
 		}
 		});		
 
@@ -2544,8 +2496,8 @@ function databaseOverlapingTasks(informationPath) {
 	var tasksIdsArray = [];
 	
 	var statement = connection.createStatement("SELECT task_id FROM tasks_collections WHERE coll_items LIKE :pt ");  
-	statement.params.pt = "%\"" + informationPath + "\"%"; 
-	//statement.params.pt = statement.escapeStringForLIKE("%'" + informationPath + "'%", "'");  
+	statement.params.pt = "%\""+informationPath+"\"%"; 
+	//statement.params.pt = statement.escapeStringForLIKE("%'"+informationPath+"'%", "'");  
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) { 
 		while (statement.executeStep()) { 
@@ -2601,8 +2553,8 @@ function doDrop(event) { //add new information items to the page and variable da
 	//var coorX = ((event.screenX-127)/(window.innerWidth/1000)).toFixed(parseInt(0)); //not sure why coordinates are off	
 	//var coorY = ((event.screenY-127)/(window.innerHeight/1000)).toFixed(parseInt(0)); //not sure why coordinates are off
 	//coordinates without treestyletab are of by 
-	var coorX = ((event.screenX - 227)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-	var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));
+	var coorX = ((event.screenX-227)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+	var coorY = ((event.screenY-167)/(window.innerHeight/1000)).toFixed(parseInt(0));
 
 
 	//count how many items were dragged over to the window
@@ -2611,7 +2563,7 @@ function doDrop(event) { //add new information items to the page and variable da
 	for (var i = 0; i < count; i++) {
 		var types = event.dataTransfer.mozTypesAt(i);
 		//if file or directory (folder) is dragged over
-		if (types[0] == "application/x-moz-file") {	   
+		if (types[0]=="application/x-moz-file") {	   
 			var fileDragged = event.dataTransfer.mozGetDataAt("application/x-moz-file", i);
 			if (fileDragged instanceof Components.interfaces.nsIFile){
 				var fullPath = fileDragged.path;
@@ -2638,7 +2590,7 @@ function doDrop(event) { //add new information items to the page and variable da
 										"xls", "xlsx", "xml", "xsl", "yml", "zip"];
 					var tmp = extension.toLowerCase();									
 		  			if (extAvailable.contains(tmp)) {		   						
-						var ext = "icons_files/" + tmp + ".png";
+						var ext = "icons_files/"+tmp+".png";
 					} else {
 						var ext = "icons_content/GEN.png";
 					}
@@ -2646,73 +2598,73 @@ function doDrop(event) { //add new information items to the page and variable da
 				//set the global nexKey variable to the next highest index
 				var nextKey = findNextKey(data);
 				data[nextKey] = {
-						type : fileType,
-						path : fullPath,
-						name : fileDragged.leafName,
-						extension : ext,
-						coordinatex : coorX,
-						coordinatey : coorY,
-						size : fileDragged.fileSize,
-						modified : fileDragged.lastModifiedTime,
-						timestamp : getTimestamp(),
-						vote : "0",
-						arrow : "no-no"
+						type: fileType,
+						path: fullPath,
+						name: fileDragged.leafName,
+						extension: ext,
+						coordinatex: coorX,
+						coordinatey: coorY,
+						size: fileDragged.fileSize,
+						modified: fileDragged.lastModifiedTime,
+						timestamp: getTimestamp(),
+						vote: "0",
+						arrow: "no-no"
 				};		
 			}
 		//if URL is dragged over
-		} else if (types[0] == "text/x-moz-url") {
+		} else if (types[0]=="text/x-moz-url") {
 			var urlDragged = event.dataTransfer.mozGetDataAt(types[0], i).trim();
 			var url = event.dataTransfer.mozGetDataAt(types[1], i).trim();
 			//split data into URL and title
 			var title = urlDragged.split("\n");	 
 			if (!title[1]) {
-				title[1] = url;
+				title[1]=url;
 			}	
 			//set the global nexKey variable to the next highest index
 			var nextKey = findNextKey(data);			
 			data[nextKey] = {
-					type : "URL",
-					path : url,
-					name : title[1],
-					extension : "icons_content/URL.png",					
-					coordinatex : coorX,
-					coordinatey : coorY,
-					timestamp : getTimestamp(),
-					vote : "0",
-					arrow : "no-no"
+					type: "URL",
+					path: url,
+					name: title[1],
+					extension: "icons_content/URL.png",					
+					coordinatex: coorX,
+					coordinatey: coorY,
+					timestamp: getTimestamp(),
+					vote: "0",
+					arrow: "no-no"
 			};		 
 		//Text from editors - non HTML
-		} else if (types[0] == "text/html") {
+		} else if (types[0]=="text/html") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[1], i).trim();	
 			//set the global nexKey variable to the next highest index
 			var nextKey = findNextKey(data);					 	
 			data[nextKey] = {
-					type : "TEXT",
-					path : "",
-					name : textDragged,
-					extension : "icons_content/TEXT.png",
-					coordinatex : coorX,
-					coordinatey : coorY,
-					timestamp : getTimestamp(),
-					vote : "0",
-					arrow : "no-no"
+					type: "TEXT",
+					path: "",
+					name: textDragged,
+					extension: "icons_content/TEXT.png",
+					coordinatex: coorX,
+					coordinatey: coorY,
+					timestamp: getTimestamp(),
+					vote: "0",
+					arrow: "no-no"
 			};					 	
 		//Text from WEB - HTML 
-		} else if (types[0] == "text/_moz_htmlcontext") {
+		} else if (types[0]=="text/_moz_htmlcontext") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[2], i);
 			textDragged = cleanHtml(textDragged);
 			//set the global nexKey variable to the next highest index
 			var nextKey = findNextKey(data);		
 			data[nextKey] = {
-					type : "HTML",
-					path : "",
-					name : textDragged,
-					extension : "icons_content/TEXT.png",					
-					coordinatex : coorX,
-					coordinatey : coorY,
-					timestamp : getTimestamp(),
-					vote : "0",
-					arrow : "no-no"
+					type: "HTML",
+					path: "",
+					name: textDragged,
+					extension: "icons_content/TEXT.png",					
+					coordinatex: coorX,
+					coordinatey: coorY,
+					timestamp: getTimestamp(),
+					vote: "0",
+					arrow: "no-no"
 			};		
 		}
 	}
@@ -2725,17 +2677,17 @@ Function that finds next key which is one more than the last inserted.
 The function is called:
 - 
 ****************************************************************************/
-function addNewNote() {
+var addNewNote = function () {
 	var nextKey = findNextKey(data);			
 	data[nextKey] = {
-			type : "NOTE",
-			name : "Double click on the text to edit it.\nClick elsewhere to save it.\n\nPossible to use HTML tags",
-			coordinatex : "75",
-			coordinatey : "60",
-			timestamp : getTimestamp(),
-			vote : "0",
-			arrow : "no-no",
-			extension : "icons_content/TEXT.png"
+			type: "NOTE",
+			name: "Double click on the text to edit it.\nClick elsewhere to save it.\n\nPossible to use HTML tags",
+			coordinatex: "75",
+			coordinatey: "60",
+			timestamp: getTimestamp(),
+			vote: "0",
+			arrow: "no-no",
+			extension: "icons_content/TEXT.png"
 	};
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId);		
 }
@@ -2745,13 +2697,13 @@ Function that finds next key which is one more than the last inserted.
 The function is called:
 - 
 ****************************************************************************/
-function findNextKey(datatmp) {
+var findNextKey = function (datatmp) {
 	var tmplenght = Object.getLength(datatmp);
 	if (tmplenght == 0) {
 		nextKey = 0;
 	} else {
 		var keys = Object.keys(datatmp);		
-		nextKey = keys.max() + 1;
+		nextKey = keys.max()+1;
 	}
 	return nextKey;
 }
@@ -2762,7 +2714,7 @@ The function is called:
 - databaseDrawTaskCollection(taskid): when new task is selected and no TICs
 - ... past states?
 ****************************************************************************/
-function emptyObject(datatmp) {
+var emptyObject = function (datatmp) {
 	Object.each (datatmp, function(value, key){
 		delete data[key];
 	});
@@ -2910,7 +2862,7 @@ function unixToTime(unixTime){
 	// 	min = "0" + min;
 	// }	  
 	// var sec = a.getUTCSeconds();
-	// var time = year + "-" + month + "-" + day + " " + hour + ':' + min;
+	// var time = year+"-"+month+"-"+day+" "+hour+':'+min;
 	// return time;
 
 	var time = new Date(unixTime).format('db');
@@ -2949,8 +2901,8 @@ Return array angle & quadrant
 function getAngle(coorX,coorY) {
 	//transform the coordinates so the centre of a page is (0,0)
 	//(0,0) is originaly in the top left corner 
-	var newX = coorX - (window.innerWidth/2) + 5.5;
-	var newY = -coorY + (window.innerHeight/2) - 39;	
+	var newX = coorX-(window.innerWidth/2)+5.5;
+	var newY = -coorY+(window.innerHeight/2)-39;	
 
 	var quadrant;
 	//var tangentA = Math.abs(newY)/Math.abs(newX); //deltaY/deltaX;
@@ -2959,16 +2911,16 @@ function getAngle(coorX,coorY) {
 	var radians2 = Math.atan2(newY,newX);
 	var angle2 = radians2*(180/Math.PI);;
 	//check in which quadrant the point x,y is 
-	if ((newX >= 0) && (newY >= 0)) {
+	if ((newX>=0) && (newY>=0)) {
 		quadrant = 1;
-	} else if ((newX < 0)&& (newY >= 0)) {
+	} else if ((newX<0)&& (newY>=0)) {
 		quadrant = 2;
-	} else if ((newX < 0) && (newY < 0)) {
+	} else if ((newX<0) && (newY<0)) {
 		quadrant = 3;
-	} else if ((newX >= 0) && (newY < 0)) {
+	} else if ((newX>=0) && (newY<0)) {
 		quadrant = 4;
 	}
-	//$("msg").innerHTML += Math.round(angle1*100)/100 + ":" + Math.round(angle2*100)/100 + "-";
+	//$("msg").innerHTML += Math.round(angle1*100)/100+":"+Math.round(angle2*100)/100+"-";
 	angle2 = -angle2;
 	var array = [angle2, quadrant];
  	return array;
@@ -3003,7 +2955,7 @@ function randomDate(date1, date2) {
    var minD = new Date().parse(date1).format('%s');
    var maxD = new Date().parse(date2).format('%s');
    var random = Number.random(parseInt(minD), parseInt(maxD));
-   var randomDate = new Date().parse(random + "000").format('db');
+   var randomDate = new Date().parse(random+"000").format('db');
    return randomDate;
 }
 
