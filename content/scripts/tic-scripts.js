@@ -35,8 +35,6 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	//draw home, desktop and note icons
 	drawGeneralIcons();
 		//$("msg").innerHTML += "v5-";
-	//for test purposes only - dump the database on reload 
-	//databaseDump();	
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
@@ -58,6 +56,8 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 (function() { databaseSetLastTask() }).periodical(180000);
 //try to send the dump of the database every hour ... acctualy it sends it every 7 days
 (function() { databaseDump() }).periodical(3600000);
+//run maintenance like Reindex and Vacuum once a month
+(function() { databaseMaintenance() }).periodical(3600000);
 
 /***************************************************************************
 Function draws elements of a selected task on the page
@@ -1565,6 +1565,7 @@ function drawGeneralIcons(){
 				"float" : "left",
 				"width" : "35px",
 				"padding-bottom" : "3px",
+				"margin-left" : "2px",
 				"background-color" : "rgba(112,138,144,0.8)",
 				"text-align" : "center",
 				"-moz-border-radius" : "0px 5px 5px 0px",
@@ -1648,13 +1649,14 @@ function databaseConnect() {
    		dbConn.executeSimpleSQL("CREATE INDEX collections_task_id ON tasks_collections (coll_id DESC, task_id DESC)");
    		dbConn.executeSimpleSQL("INSERT INTO tasks (task_id, task_name) VALUES('1', 'My first task')");
    		dbConn.executeSimpleSQL("INSERT INTO tasks_last (last_id, last_task) VALUES('1','1')");
-   		dbConn.executeSimpleSQL("CREATE TABLE user (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT, data_user_email TEXT)");
+   		dbConn.executeSimpleSQL("CREATE TABLE user (data_id INTEGER PRIMARY KEY, data_userid TEXT, data_last_sent TEXT, data_last_mantained TEXT, data_user_email TEXT, data_user_password TEXT)");
    		//Create an unique id for the user and set the date to the current one ... so we can send the dump
    		//of the database every 7 days ... if the user agrees
-		var statement = dbConn.createStatement("INSERT INTO user (data_userid, data_last_sent) VALUES(:uid, :date)");
+		var statement = dbConn.createStatement("INSERT INTO user (data_id, data_userid, data_last_sent, data_last_mantained) VALUES(1, :uid, :date1, :date2)");
 		var currentTime = new Date().format('db');
 		statement.params.uid = (Number.random(100, 999) + currentTime).toMD5();			
-		statement.params.date = currentTime;
+		statement.params.date1 = currentTime;
+		statement.params.date2 = currentTime;
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 		if (statement.state == 1) { 
 			//synchronus ... we can't do anything before the DB is set up
@@ -1750,6 +1752,7 @@ function databaseDump() {
 			printOut("Not a valid SQL statement: SELECT * FROM user");
 			return false;
 		}
+		//dump the db if userId and datelastdumped are not empty
 		if (userId != "" && dateLastDumped != "") {
 			var today = new Date();	
 			var lastDumped = new Date().parse(dateLastDumped);	
@@ -1790,9 +1793,28 @@ function databaseDump() {
 	    		sendJSON(userId,dumpText);
 			}
 		} else {
-			//ustvari in postavi to userId != "" && dateLastDumped != ""
+			//create userId != "" && dateLastDumped != ""
+			var statement = connection.createStatement("INSERT INTO user (data_id, data_userid, data_last_sent) VALUES(1, :tid, :tdate)");
+			var currentTime = new Date().format('db');
+			statement.params.tdate = new Date().decrement('day', 7).format('db');
+			statement.params.tid = (Number.random(100, 999) + currentTime).toMD5();
+			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+			if (statement.state == 1) { 
+				connection.executeAsync([statement], 1,  {
+					handleCompletion : function(aReason) {
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+								printOut("Query canceled or aborted!");
+						}	
+						statement.finalize();
+					},
+					handleError : function(aError) {printOut(aError.message);},
+					handleResult : function() {}
+				}); 
+			} else {
+				printOut("Not a valid SQL statement: INSERT INTO user (data_id, data_userid, data_last_sent) VALUES(1,:uid, :date)");
+			}
 		}
-		/* //Write to a file 01.sql in the rpofile folder for testing purposes
+		/* //Write dump to a file 01.sql in the profile folder for testing purposes
 			Components.utils.import("resource://gre/modules/Services.jsm"); 
 			Components.utils.import("resource://gre/modules/FileUtils.jsm");  
 			//ProfD = profile directory https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO
@@ -1852,82 +1874,6 @@ function sendJSON(userid,dbdump) {
  	}).post(data);
 }
 
-
-var LZW = {
-    compress : function (uncompressed) {
-        "use strict";
-        // Build the dictionary.
-        var i,
-            dictionary = {},
-            c,
-            wc,
-            w = "",
-            result = [],
-            dictSize = 256;
-        for (i = 0; i < 256; i += 1) {
-            dictionary[String.fromCharCode(i)] = i;
-        }
- 
-        for (i = 0; i < uncompressed.length; i += 1) {
-            c = uncompressed.charAt(i);
-            wc = w + c;
-            if (dictionary[wc]) {
-                w = wc;
-            } else {
-                result.push(dictionary[w]);
-                // Add wc to the dictionary.
-                dictionary[wc] = dictSize++;
-                w = String(c);
-            }
-        }
- 
-        // Output the code for w.
-        if (w !== "") {
-            result.push(dictionary[w]);
-        }
-        return result;
-    },
- 
- 
-    decompress : function (compressed) {
-        "use strict";
-        // Build the dictionary.
-        var i,
-            dictionary = [],
-            w,
-            result,
-            k,
-            entry = "",
-            dictSize = 256;
-        for (i = 0; i < 256; i += 1) {
-            dictionary[i] = String.fromCharCode(i);
-        }
- 
-        w = String.fromCharCode(compressed[0]);
-        result = w;
-        for (i = 1; i < compressed.length; i += 1) {
-            k = compressed[i];
-            if (dictionary[k]) {
-                entry = dictionary[k];
-            } else {
-                if (k === dictSize) {
-                    entry = w + w.charAt(0);
-                } else {
-                    return null;
-                }
-            }
- 
-            result += entry;
- 
-            // Add w + entry[0] to the dictionary.
-            dictionary[dictSize++] = w + entry.charAt(0);
- 
-            w = entry;
-        }
-        return result;
-    }
-} 
-
 function lzw_encode(s) {
     var dict = {};
     var data = (s + "").split("");
@@ -1955,49 +1901,94 @@ function lzw_encode(s) {
 }
 
 function databaseMaintenance() {
-	//reindex the indexes
-	var statement = connection.createStatement("REINDEX collections_task_id");	
+	//do maintenance once a month ... based on the date of the last dump
+	//Get the userid and last date the db was dumped and sent over
+	var statement = connection.createStatement("SELECT * FROM user");	
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
-		connection.executeAsync([statement], 1,  {
-			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-						printOut("Query canceled or aborted!");
-				} else {
-					//printOut(aReason.message);
-				}	
-				$("msg").innerHTML += "v0-";
-				statement.finalize();
-			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {}
-		}); 
+		var dateLastMaintained = "";
+		statement.executeStep();
+		dateLastMaintained = statement.row.data_last_mantained;
+		statement.finalize(); 
+
+		if (dateLastMaintained == "") {
+			dateLastMaintained == new Date().decrement('day', -31).format('db');
+		}	
+
+		var today = new Date();	
+		var lastMaintained = new Date().parse(dateLastMaintained);	
+		var difference = today.diff(lastMaintained);
+		if (difference <= -30){
+
+			//reindex the indexes
+			var statement = connection.createStatement("REINDEX collections_task_id");	
+			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+			if (statement.state == 1) {
+				connection.executeAsync([statement], 1,  {
+					handleCompletion : function(aReason) {
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+								printOut("Query canceled or aborted!");
+						} else {
+							//printOut(aReason.message);
+						}	
+						statement.finalize();
+					},
+					handleError : function(aError) {printOut(aError.message);},
+					handleResult : function() {}
+				}); 
+			} else {
+				printOut("Not a valid SQL statement: REINDEX collections_task_id");
+				return false;
+			}
+
+			//Compact & cleanup
+			var statement = connection.createStatement("VACUUM");	
+			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+			if (statement.state == 1) {
+				connection.executeAsync([statement], 1,  {
+					handleCompletion : function(aReason) {
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+								printOut("Query canceled or aborted!");
+						} else {
+							//printOut(aReason.message);
+						}	
+						statement.finalize();
+					},
+					handleError : function(aError) {printOut(aError.message);},
+					handleResult : function() {}
+				}); 
+			} else {
+				printOut("Not a valid SQL statement: VACUUM");
+				return false;
+			}			
+
+			//update date in the user table
+ 			var statement = connection.createStatement("UPDATE user SET data_last_mantained = :date WHERE data_id = 1");
+			statement.params.date = new Date().format('db');	
+			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+			if (statement.state == 1) {
+				connection.executeAsync([statement], 1,  {
+					handleCompletion : function(aReason) {
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+								printOut("Query canceled or aborted!");
+						} else {
+							//printOut(aReason.message);
+						}	
+						statement.finalize();
+					},
+					handleError : function(aError) {printOut(aError.message);},
+					handleResult : function() {}
+				}); 
+			} else {
+				printOut("Not a valid SQL statement: UPDATE user SET data_last_mantained = :date WHERE data_id = 1");
+				return false;
+			}					
+
+		}
 	} else {
-		printOut("Not a valid SQL statement: REINDEX collections_task_id");
+		printOut("Not a valid SQL statement: SELECT * FROM user");
 		return false;
 	}
-
-	//Compact & cleanup
-	var statement = connection.createStatement("VACUUM");	
-	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) {
-		connection.executeAsync([statement], 1,  {
-			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-						printOut("Query canceled or aborted!");
-				} else {
-					//printOut(aReason.message);
-				}	
-				$("msg").innerHTML += "v0-";
-				statement.finalize();
-			},
-			handleError : function(aError) {printOut(aError.message);},
-			handleResult : function() {}
-		}); 
-	} else {
-		printOut("Not a valid SQL statement: VACUUM");
-		return false;
-	}	
 }
 
 
@@ -2729,7 +2720,7 @@ function addNewNote() {
 	var nextKey = findNextKey(data);			
 	data[nextKey] = {
 			type : "NOTE",
-			name : "Double click on the text to edit it.\nClick elsewhere to save it.\n\nPossible to use HTML tags",
+			name : "Double click on the text to edit note.\nClick elsewhere to save.\n\nPossible to use HTML tags",
 			coordinatex : "75",
 			coordinatey : "60",
 			timestamp : getTimestamp(),
