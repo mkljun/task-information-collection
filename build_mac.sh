@@ -42,6 +42,8 @@ AFTER_BUILD=       # ...and this after the build    (bash command)
 HAVE_CPIO=0
 which cpio 2>&1 > /dev/null && HAVE_CPIO=1
 echo "have cpio: $HAVE_CPIO"
+$(find ./locale  -iname ".*"  -type f -delete)
+$(find ./content  -iname ".*"  -type f -delete)
 
 function cp_parents {
   if [ $HAVE_CPIO = 1 ]; then

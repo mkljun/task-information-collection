@@ -44,9 +44,9 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	}
 
 	//if the windowresizes, re-position all the elements relative to the window size
-	window.onresize = function (e) {
-		drawElements();
-		drawImportanceCircles();
+	window.onresize = function(e) {
+		drawTICElements();
+		drawPICCircles();
 	}
 });
 
@@ -67,7 +67,7 @@ The function is called
 - doDrop(event): when new items are dropped, saved in global data variable
   and drawn back on the page
 ****************************************************************************/
-function drawElements() {
+function drawTICElements() {
 	var coordinatex = "";
 	var icon = "";
 	var name = "";
@@ -75,7 +75,7 @@ function drawElements() {
 	$("itemsList").empty();
 	//print a task name in the centre (see also printTaskNameCentre and databaseGetTaskName)
 	//needed in case someone comes from old states where the name includes date.
-	$("tasknametext").innerHTML = currentTaskName;
+	$("tasknametext").set('html', currentTaskName);
 	// draw all elements from the data object
 	Object.each (data, function(value, key){
 		//find item type and icon
@@ -354,7 +354,7 @@ function drawElements() {
 						"click" : function(){
 							if (value["vote"] < 10 && value["vote"] >= 0) {
 								value["vote"]++;
-								$("vote" + key).innerHTML = value["vote"];
+								$("vote" + key).set('html' , value["vote"]);
 								data[key]["vote"] = value["vote"];
 								$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
 							} 
@@ -396,7 +396,7 @@ function drawElements() {
 						"click" : function(){
 							if (value["vote"]>0 && value["vote"] <= 10) {
 								value["vote"]--;
-								$("vote" + key).innerHTML = value["vote"];
+								$("vote" + key).set('html' , value["vote"]);
 								data[key]["vote"] = value["vote"];
 								$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
 							} 
@@ -796,7 +796,7 @@ function drawElementsPastStates(pastStatesId) {
 		statement.executeStep();
 		var dataPastStates = JSON.decode(statement.row.coll_items);
 		var timestamp = statement.row.coll_timestamp;
-		$("tasknametext").innerHTML = currentTaskName + "<br/>" + timestamp;
+		$("tasknametext").set('html' , currentTaskName + "<br/>" + timestamp);
 
 		// draw all elements from the data object
 		Object.each (dataPastStates, function(value, key){
@@ -1453,13 +1453,13 @@ function printTaskNameCentre(taskId) {
 			})
 		);
 	document.title = "TIC - " + currentTaskName;
-	drawImportanceCircles();	
+	drawPICCircles();	
 }
 
 /***************************************************************************
 Draw importance circles on the page
 ****************************************************************************/
-function drawImportanceCircles(){
+function drawPICCircles(){
 	var circleInnitialSize = parseInt(270*(window.innerWidth/1000));
 	var topMargin = "50%";
 	var topPadding = 10;
@@ -2211,7 +2211,7 @@ function databaseSaveEditTaskName(newName, taskid) {
 				databaseShowTasks();
 				if (taskid == currentTaskId) { 
 					printTaskNameCentre(taskid);
-					drawElements();
+					drawTICElements();
 				}
 			},
 			handleError : function(aError) {printOut(aError.message);},
@@ -2304,7 +2304,7 @@ function databaseDrawTaskCollection(taskid) {
 			$("timelineSlideoutInner").empty();
 			$("timelineSlideoutInner").adopt(
 				new Element ("div#timelineInfo", {
-					html : "<a href=\"#current\" onclick=\"drawElements();return false;\">Current state</a><br />"
+					html : "<a href=\"#current\" onclick=\"drawTICElements();return false;\">Current state</a><br />"
 						  +"Past states (0):",
 					styles : {
 						width : "210px",
@@ -2327,7 +2327,7 @@ function databaseDrawTaskCollection(taskid) {
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
-							html : "<a href=\"#current\" onclick=\"drawElements();return false;\">Current state</a><br />"
+							html : "<a href=\"#current\" onclick=\"drawTICElements();return false;\">Current state</a><br />"
 								  +"Past states (0):",
 							styles : {
 								width : "210px",
@@ -2350,7 +2350,7 @@ function databaseDrawTaskCollection(taskid) {
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
-							html : "<a href=\"#current\" onclick=\"drawElements();return false;\">Current state</a><br />"
+							html : "<a href=\"#current\" onclick=\"drawTICElements();return false;\">Current state</a><br />"
 								  +"Past states (" + pastStatesDates.length + "):",
 							styles : {
 								width : "210px",
@@ -2371,14 +2371,14 @@ function databaseDrawTaskCollection(taskid) {
 							}
 						})
 					);
-					$('timelineDate').innerHTML += "<ul>";
+					$('timelineDate').set('html', $('timelineDate').get('html') + "<ul>");
 					Array.each(pastStatesDates, function(date, index){
-						$('timelineDate').innerHTML += "<li><a href=\"#lasttask\"" 
+						$('timelineDate').set('html', $('timelineDate').get('html') + "<li><a href=\"#lasttask\"" 
 						     + "onclick=\"drawElementsPastStates(" + pastStatesIds[index] + ");return false;\">"
 						     + pastStatesDates[index]
-						     + "</a></li>"; //<br />";				    
+						     + "</a></li>");			    
 					});
-					$('timelineDate').innerHTML += "</ul>";	
+					$('timelineDate').set('html', $('timelineDate').get('html') + "</ul>");	
 
 					// //SLIDER ----- very slow ... it prints out the last TIC so it needs to print TICs two times
 					// //set slide to null
@@ -2396,7 +2396,7 @@ function databaseDrawTaskCollection(taskid) {
 					// 	mode : 'vertical',
 					// 	wheel : 'true',
 					// 	onChange : function(step){
-					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawElements();return false;\">Current state</a><br />" 
+					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawTICElements();return false;\">Current state</a><br />" 
 					// 									+ "date: " + pastStatesDates[step] + "<br/ >id: " 
 					// 									+ pastStatesIds[step] + "<br />step: " + step;
 					// 		drawElementsPastStates(pastStatesIds[step]);
@@ -2410,7 +2410,7 @@ function databaseDrawTaskCollection(taskid) {
 		//print the task name on the page
 		printTaskNameCentre(currentTaskId);
 		//print out all the information items
-		drawElements();
+		drawTICElements();
 	} else {
 		printOut("Not a valid SQL statement: SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");
 	}		
@@ -2420,7 +2420,7 @@ function databaseDrawTaskCollection(taskid) {
 Function saves all information items of the currently selected task (global
 variable currentTaskId) to the database
 The function is called:
-- drawElements(): when items are moved around
+- drawTICElements(): when items are moved around
 - doDrop(event): when new items are dropped on the page
 ****************************************************************************/
 function databaseSaveTaskCollection (callback, param) {
@@ -2474,11 +2474,12 @@ function databaseSaveTaskCollection (callback, param) {
 				if (statement.state == 1) {
 					connection.executeAsync([statement], 1, {
 						handleCompletion : function(aReason) {
-							if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-			  					printOut("Query canceled or aborted!" + aReason);
-			  				} else {
-			  					callback(param);
-			  				}   
+							// if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+			  				// 	printOut("Query canceled or aborted!" + aReason);
+					  		// } else {
+					  		// 	callback(param);
+					  		// }   
+			  				callback(param);
 			  				statement.finalize();   				
 			  			},
 						handleError : function(aError) {printOut(aError.message);},
@@ -2592,8 +2593,16 @@ function doDrop(event) { //add new information items to the page and variable da
 	//var coorX = ((event.screenX-127)/(window.innerWidth/1000)).toFixed(parseInt(0)); //not sure why coordinates are off	
 	//var coorY = ((event.screenY-127)/(window.innerHeight/1000)).toFixed(parseInt(0)); //not sure why coordinates are off
 	//coordinates without treestyletab are of by 
-	var coorX = ((event.screenX - 227)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-	var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));
+    if (Browser.Platform.mac){
+		var coorX = ((event.screenX - 167)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+		var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));	
+	} else if(Browser.Platform.win) {
+		var coorX = ((event.screenX - 35)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+		var coorY = ((event.screenY - 165)/(window.innerHeight/1000)).toFixed(parseInt(0));
+	} else if(Browser.Platform.linux) {
+		var coorX = ((event.screenX - 227)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+		var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));
+	}
 
 
 	//count how many items were dragged over to the window
@@ -2672,7 +2681,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					vote : "0",
 					arrow : "no-no"
 			};		 
-		//Text from editors - non HTML
+		//Text from editors - HTML
 		} else if (types[0] == "text/html") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[1], i).trim();	
 			//set the global nexKey variable to the next highest index
@@ -2687,7 +2696,23 @@ function doDrop(event) { //add new information items to the page and variable da
 					timestamp : getTimestamp(),
 					vote : "0",
 					arrow : "no-no"
-			};					 	
+			};
+		//Text from editors - plain
+		} else if (types[0] == "text/plain") {
+			var textDragged = event.dataTransfer.getData("text/plain");	
+			//set the global nexKey variable to the next highest index
+			var nextKey = findNextKey(data);					 	
+			data[nextKey] = {
+					type : "TEXT",
+					path : "",
+					name : textDragged,
+					extension : "icons_content/TEXT.png",
+					coordinatex : coorX,
+					coordinatey : coorY,
+					timestamp : getTimestamp(),
+					vote : "0",
+					arrow : "no-no"
+			};						 									 	
 		//Text from WEB - HTML 
 		} else if (types[0] == "text/_moz_htmlcontext") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[2], i);
@@ -2765,7 +2790,7 @@ Prints messages on the screen
 function printOut(message){	
 	$("printText").removeClass("hidden");
 	(function() {$("printText").addClass("hidden")}).delay(4000);
-	$("printText").innerHTML = message;
+	$("printText").set('html', message);
 }
 function printOutHide(){	
 	$("printText").addClass("hidden");

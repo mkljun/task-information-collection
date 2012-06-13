@@ -69,7 +69,7 @@ window.addEventListener("load", function appendToToolbar() {
       //set the preference to true after the first visit
       branch.setBoolPref("firstRunButtons", true);
       firstRunButtons = branch.getBoolPref("firstRunButtons");
-      Components.utils.reportError(firstRunButtons+"-::-");
+      //Components.utils.reportError(firstRunButtons+"-::-");
       try {
         var startButtonId = "tic-button";
         var navBarId = "nav-bar";
