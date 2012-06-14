@@ -2534,7 +2534,9 @@ of coresponding IDs
 ****************************************************************************/
 function databaseOverlapingTasks(informationPath) {
 	var tasksIdsArray = [];
-	
+	//change \ in windows paths in \\ as this is how  backslashes are stored in db
+	informationPath = informationPath.replace( /\\/gi, '\\\\');
+    //$("msg").innerHTML += informationPath+"<br />";
 	var statement = connection.createStatement("SELECT task_id FROM tasks_collections WHERE coll_items LIKE :pt ");  
 	statement.params.pt = "%\"" + informationPath + "\"%"; 
 	//statement.params.pt = statement.escapeStringForLIKE("%'" + informationPath + "'%", "'");  
