@@ -264,7 +264,8 @@ function drawTICElements() {
 									} else { 
 										//this is for linux, unix, bsd .. on 
 										//get the file:// in front of a path
-										var fileUri = fileGetURI(value["path"]);
+										//var fileUri = fileGetURI(value["path"]);
+										var fileUri = "file://"+value["path"];
 										//open the file:// links and decide the FF how to deal with it
 										window.open(fileUri);  
 									}
@@ -962,7 +963,8 @@ function drawElementsPastStates(pastStatesId) {
 										} else { 
 											//this is for linux, unix, bsd .. on 
 											//get the file:// in front of a path
-											var fileUri = fileGetURI(value["path"]);
+											//var fileUri = fileGetURI(value["path"]);
+											var fileUri = "file://"+value["path"];
 											//open the file:// links and decide the FF how to deal with it
 											window.open(fileUri);  
 										}
@@ -2599,11 +2601,11 @@ function doDrop(event) { //add new information items to the page and variable da
 		var coorX = ((event.screenX - 167)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
 		var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));	
 	} else if(Browser.Platform.win) {
-		var coorX = ((event.screenX - 35)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-		var coorY = ((event.screenY - 165)/(window.innerHeight/1000)).toFixed(parseInt(0));
+		var coorX = ((event.screenX - 165)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+		var coorY = ((event.screenY - 150)/(window.innerHeight/1000)).toFixed(parseInt(0));
 	} else if(Browser.Platform.linux) {
-		var coorX = ((event.screenX - 227)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-		var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));
+		var coorX = ((event.screenX - 67)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+		var coorY = ((event.screenY - 177)/(window.innerHeight/1000)).toFixed(parseInt(0));
 	}
 
 
