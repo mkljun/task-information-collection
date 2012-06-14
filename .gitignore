@@ -1,3 +1,5 @@
 *.[oa]
 *~
 .*
+git-remove-history.sh
+.gitignore
