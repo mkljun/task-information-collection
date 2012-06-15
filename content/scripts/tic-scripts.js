@@ -769,12 +769,18 @@ function drawTICElements() {
 		
 		//make elements movable
 		new Drag.Move($("item" + key), {
-			handle : $("move" + key),
+			handle : $("move" + key), //make the move arrows the handle to move elements
+			container : $("body"), //limit the moves within the window
 			onDrop: function(){
 				//change the X coordinates of the new element to the default width 1000px
 				//we need this to position the elements right if the window is resized			
 				data[key].coordinatex = ($("item" + key).offsetLeft/(window.innerWidth/1000)).toFixed(parseInt(0));
 				data[key].coordinatey = ($("item" + key).offsetTop/(window.innerHeight/1000)).toFixed(parseInt(0));
+				//if x goes under tabs (projects & timeline), move it to the right
+				if (data[key].coordinatex < 40) {
+					data[key].coordinatex = 40;
+					$("item" + key).setStyle('left' , data[key].coordinatex);
+				}
 				//ARROW pointing to the CENTRE
 				var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
 				$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");
@@ -782,7 +788,7 @@ function drawTICElements() {
 		}); 
 	});
 }
-function drawElementsPastStates(pastStatesId) {
+function drawTICElementsPastStates(pastStatesId) {
 
 	//$("msg").innerHTML += "-s" + pastStatesId + "-";
 	var coordinatexPastStates = "";
@@ -2376,7 +2382,7 @@ function databaseDrawTaskCollection(taskid) {
 					$('timelineDate').set('html', $('timelineDate').get('html') + "<ul>");
 					Array.each(pastStatesDates, function(date, index){
 						$('timelineDate').set('html', $('timelineDate').get('html') + "<li><a href=\"#lasttask\"" 
-						     + "onclick=\"drawElementsPastStates(" + pastStatesIds[index] + ");return false;\">"
+						     + "onclick=\"drawTICElementsPastStates(" + pastStatesIds[index] + ");return false;\">"
 						     + pastStatesDates[index]
 						     + "</a></li>");			    
 					});
@@ -2401,7 +2407,7 @@ function databaseDrawTaskCollection(taskid) {
 					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawTICElements();return false;\">Current state</a><br />" 
 					// 									+ "date: " + pastStatesDates[step] + "<br/ >id: " 
 					// 									+ pastStatesIds[step] + "<br />step: " + step;
-					// 		drawElementsPastStates(pastStatesIds[step]);
+					// 		drawTICElementsPastStates(pastStatesIds[step]);
 					// 	}
 					// }).set(0);
 					//mySlide.detach();									
@@ -2590,23 +2596,33 @@ function doDrop(event) { //add new information items to the page and variable da
 	//do not propagate default actions when dragging over
 	event.stopPropagation();
 	event.preventDefault();
-	//grab coordinates
-	//change the X coordinates of the new element to the default width 1000px
+	//grab coordinates - if coordinates are on the edge of a screen change them appropriately
+	//screenX - coordinates of the computer screen
+	//clientX - coordinates of the browser window relative to the top left corner
+	//pageX - absolute coordinates of the page including the scrooling
+	var tempX = 0;
+	if (event.clientX > window.innerWidth - 160) {
+	 	tempX = window.innerWidth - 160;
+	} else if (event.clientX < 40) {
+	 	tempX = 40;
+	} else {
+		tempX = event.clientX;
+	}	
+	//$("msg").innerHTML +="-"+event.clientX+"-"+tempX;
+	var tempY = 0;
+	if (event.clientY > window.innerHeight - 60) {
+	 	tempY = window.innerHeight - 37;
+	} else if (event.clientY < 50) {
+	 	tempY = 50;
+	} else {
+		tempY = event.clientY;
+	}	
+	//$("msg").innerHTML +="-"+event.clientY+"-"+tempY;
+	//change the coordinates of the new element to the default width 1000px
 	//we need this to position the elements right if the window is resized
-	// coordinates with treestyletab are off by 127
-	//var coorX = ((event.screenX-127)/(window.innerWidth/1000)).toFixed(parseInt(0)); //not sure why coordinates are off	
-	//var coorY = ((event.screenY-127)/(window.innerHeight/1000)).toFixed(parseInt(0)); //not sure why coordinates are off
-	//coordinates without treestyletab are of by 
-    if (Browser.Platform.mac){
-		var coorX = ((event.screenX - 167)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-		var coorY = ((event.screenY - 167)/(window.innerHeight/1000)).toFixed(parseInt(0));	
-	} else if(Browser.Platform.win) {
-		var coorX = ((event.screenX - 165)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-		var coorY = ((event.screenY - 150)/(window.innerHeight/1000)).toFixed(parseInt(0));
-	} else if(Browser.Platform.linux) {
-		var coorX = ((event.screenX - 67)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
-		var coorY = ((event.screenY - 177)/(window.innerHeight/1000)).toFixed(parseInt(0));
-	}
+	//Lower the Y coordinate by 40 so the moving arrows come under the moise pointer	
+	var coorX = ((tempX)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+	var coorY = ((tempY-40)/(window.innerHeight/1000)).toFixed(parseInt(0));	
 
 
 	//count how many items were dragged over to the window
