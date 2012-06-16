@@ -14,6 +14,7 @@
     <preferences>
       <preference id="pref-openMode"        name="extensions.tic.openMode" type="int"/>
       <preference id="pref-share4research2" name="extensions.tic.share4research2" type="int"/>   
+      <preference id="pref-fileManager"     name="extensions.tic.fileManager" type="string"/>
     </preferences>
     <groupbox>
       <caption label="&pref-openMode.label;"/>
@@ -35,6 +36,15 @@
         <radio label="&pref-share4research2.checkboxN;" value="1" accesskey="&pref-share4research2.n.ak;"/>
         <radio label="&pref-share4research2.checkboxY;" value="2" accesskey="&pref-share4research2.y.ak;"  selected="true"/>
       </radiogroup>
-    </groupbox>    
+    </groupbox> 
+    <groupbox>
+      <hbox><caption label="&pref-fileManagerCaption1.label;"/></hbox>
+      <hbox><caption label="&pref-fileManagerCaption2.label;"/></hbox>
+      <hbox>  
+        <label value="&pref-fileManager.label;" style="padding-top:5px" accesskey="&pref-fileManager.ak;" control="tb-fileManager"/>
+            <spacer flex="1"/>
+        <textbox id="tb-fileManager" flex="1" preference="pref-fileManager"/>
+      </hbox>  
+    </groupbox>     
   </prefpane>
 </prefwindow>

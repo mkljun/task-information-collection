@@ -33,8 +33,10 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	databaseDrawTaskCollection(currentTaskId);
 		//$("msg").innerHTML += "v4-";
 	//draw home, desktop and note icons
-	drawGeneralIcons();
+	//drawGeneralIcons();
 		//$("msg").innerHTML += "v5-";
+	//getPreferences();
+
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
@@ -259,15 +261,11 @@ function drawTICElements() {
 								if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 									if((Browser.Platform.win) || (Browser.Platform.mac) || (Browser.Platform.ios)
 										|| (Browser.Platform.name == 'BeOS')|| (Browser.Platform.name == 'OS/2')) { 
-										//this is for windows, osx. Don't know how to check for beos and os/2
+										//this is for windows, osx. Can't check for beos and os/2 :) but docs says it should work
 										fileOpen(value["path"]);
-									} else { 
-										//this is for linux, unix, bsd .. on 
-										//get the file:// in front of a path
-										//var fileUri = fileGetURI(value["path"]);
-										var fileUri = "file://"+value["path"];
-										//open the file:// links and decide the FF how to deal with it
-										window.open(fileUri);  
+									} else { //if (Browser.Platform.linux) { 
+										//not limited to linux. would include also bsd, solaric and alike
+										fileOpenLinux(value["path"]);
 									}
 								} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
 									// if ($("information" + key).getStyle("display") == "none") {
@@ -691,16 +689,22 @@ function drawTICElements() {
 				}
 				//make paths and links clickable
 				if (index == "path" && value["type"] == "FILE") {
+					var folder = item.substring(0 , item.lastIndexOf("/") + 1);
+					var file = item.substring(item.lastIndexOf("/") + 1);					
 					if (Browser.Platform.name != 'linux') {
-						var folder = item.substring(0 , item.lastIndexOf("/") + 1);
-						var file = item.substring(item.lastIndexOf("/") + 1);
 						item = "<a onclick=\"folderOpen('" + item + "');return false;\" href=\"#openfolder\">"
+								 + folder + "</a>" + file;
+					} else {
+						item = "<a onclick=\"fileOpenLinux('" + folder + "');return false;\" href=\"#openfolder\">"
 								 + folder + "</a>" + file;
 					}
 				} else if (index == "path" && value["type"] == "FOLDER") {
 					if (Browser.Platform.name != 'linux') {
 						item = "<a onclick=\"fileOpen('" + item + "');return false;\" href=\"#openfile\">"
 							 + item + "</a>";		
+					} else {
+						item = "<a onclick=\"fileOpenLinux('" + item + "');return false;\" href=\"#openfile\">"
+							 + item + "</a>";						
 					}
 				} else if (index == "path" && value["type"] == "URL") {
 					item = "<a href=\"" + item + "\">"
@@ -968,11 +972,7 @@ function drawTICElementsPastStates(pastStatesId) {
 											fileOpen(value["path"]);
 										} else { 
 											//this is for linux, unix, bsd .. on 
-											//get the file:// in front of a path
-											//var fileUri = fileGetURI(value["path"]);
-											var fileUri = "file://"+value["path"];
-											//open the file:// links and decide the FF how to deal with it
-											window.open(fileUri);  
+											fileOpenLinux(value["path"]);  
 										}
 									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
 																			 		
@@ -2858,6 +2858,63 @@ function fileOpen(filetmp){
 	}
 }
 
+function fileOpenLinux(filetmp) {
+	//get the preference of fileManager value and try to see if it exists
+	//otherwise try other popular file managers
+	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+	                      .getService(Components.interfaces.nsIPrefService);
+	var branch = prefs.getBranch("extensions.tic.");
+	var fileManager = branch.getCharPref("fileManager");
+	// create an nsILocalFile to check which file manager exists
+	var file = Components.classes["@mozilla.org/file/local;1"]  
+	                      .createInstance(Components.interfaces.nsILocalFile); 										
+	//an array of most common file managers
+	var fileManagers = ["/usr/bin/nautilus", "/usr/local/bin/nautilus", 
+						  "/usr/bin/dolphin", "/usr/local/bin/dolphin",
+						  "/usr/bin/konqueror", "/usr/local/bin/konqueror",
+						  "/usr/bin/thunar", "/usr/local/bin/thunar",
+						  "/usr/local/bin/krusader", "/usr/bin/krusader",
+						  "/usr/bin/xfe", "/usr/local/bin/xfe",
+						  "/usr/bin/pcman", "/usr/local/bin/pcman"];
+	//check if fileManager is a unix file path and if it is append it at the beginning of the array				  
+	//$("msg").innerHTML = "-0-"+fileManager;
+	var reg = /^\/[^\/]+(\/[^\/]+)*$/;
+	if (reg.test(fileManager) == true) {
+		fileManagers.unshift(fileManager); 
+	//	$("msg").innerHTML += "-1-";
+	}
+	//$("msg").innerHTML += "-2-"+fileManagers.toSource();
+	//loop the array and find the first file manager that exists
+	var findFileManager = false;
+	fileManagers.each(function(item, index){
+	    if (!findFileManager){
+	        file.initWithPath(item);
+	        if (file.exists()) {  
+	            findFileManager = item;
+	 			//$("msg").innerHTML += "-3-"+item; 
+	        }
+
+	    }
+	});
+
+	if (findFileManager) { 
+		// create an nsIProcess  
+		var process = Components.classes["@mozilla.org/process/util;1"]  
+		                        .createInstance(Components.interfaces.nsIProcess);  
+		file.initWithPath(findFileManager);											                        
+		process.init(file); 
+		// Run the process.  
+		// If first param is true, calling thread will be blocked until called process terminates.  
+		// Second and third params are used to pass command-line arguments to the process.  
+		var args = [filetmp];  
+		process.run(false, args, args.length);  
+	} else { 
+		//2nd solution - open files & folder in a FF tab in no file manager is found
+		var fileUri = "file://"+value["path"];
+		window.open(fileUri);  
+	}
+}
+
 /***************************************************************************
 Create a URI (file:// ... ) out of a file
 ****************************************************************************/
@@ -3041,6 +3098,20 @@ function randomDate(date1, date2) {
    var random = Number.random(parseInt(minD), parseInt(maxD));
    var randomDate = new Date().parse(random + "000").format('db');
    return randomDate;
+}
+/***************************************************************************
+See preferences. Testing only 
+****************************************************************************/
+function getPreferences(){
+	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+	                      .getService(Components.interfaces.nsIPrefService);
+	var branch = prefs.getBranch("extensions.tic.");
+	var children = branch.getChildList("", {});
+	//$("msg").innerHTML = children;	
+	var share4research2 = branch.getIntPref("share4research2");
+	//$("msg").innerHTML += "-"+share4research2;
+	var fileManager = branch.getCharPref("fileManager");
+	//$("msg").innerHTML += "-"+fileManager;	
 }
 
 

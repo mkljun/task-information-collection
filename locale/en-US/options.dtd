@@ -13,3 +13,7 @@
 <!ENTITY  pref-share4research2.checkboxY	"Yes">
 <!ENTITY  pref-share4research2.y.ak	"y">
 <!ENTITY  pref-share4research2.n.ak	"n">
+<!ENTITY  pref-fileManagerCaption1.label 	"Enter the path to your preferred File Manager. The predefined">
+<!ENTITY  pref-fileManagerCaption2.label 	"managers are already included so try opening files and folders first.">
+<!ENTITY  pref-fileManager.label "Linux (and alike) only: "> 
+<!ENTITY  pref-fileManager.ak	"f">
