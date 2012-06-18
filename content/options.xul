@@ -37,14 +37,14 @@
         <radio label="&pref-share4research2.checkboxY;" value="2" accesskey="&pref-share4research2.y.ak;"  selected="true"/>
       </radiogroup>
     </groupbox> 
-    <groupbox>
-      <hbox><caption label="&pref-fileManagerCaption1.label;"/></hbox>
-      <hbox><caption label="&pref-fileManagerCaption2.label;"/></hbox>
-      <hbox>  
-        <label value="&pref-fileManager.label;" style="padding-top:5px" accesskey="&pref-fileManager.ak;" control="tb-fileManager"/>
-            <spacer flex="1"/>
-        <textbox id="tb-fileManager" flex="1" preference="pref-fileManager"/>
-      </hbox>  
-    </groupbox>     
+    <!-- groupbox -->
+      <!-- hbox --><!-- caption label="&pref-fileManagerCaption1.label;"/ --><!-- /hbox -->
+      <!-- hbox --><!-- caption label="&pref-fileManagerCaption2.label;"/ --><!-- /hbox -->
+      <!-- hbox -->  
+        <!-- label value="&pref-fileManager.label;" style="padding-top:5px" accesskey="&pref-fileManager.ak;" control="tb-fileManager"/ -->
+            <!-- spacer flex="1"/ -->
+        <!-- textbox id="tb-fileManager" flex="1" preference="pref-fileManager"/ -->
+      <!-- /hbox -->  
+    <!-- /groupbox -->     
   </prefpane>
 </prefwindow>

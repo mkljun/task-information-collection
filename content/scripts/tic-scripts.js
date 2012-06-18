@@ -33,10 +33,8 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	databaseDrawTaskCollection(currentTaskId);
 		//$("msg").innerHTML += "v4-";
 	//draw home, desktop and note icons
-	//drawGeneralIcons();
+	drawGeneralIcons();
 		//$("msg").innerHTML += "v5-";
-	//getPreferences();
-
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
@@ -134,7 +132,7 @@ function drawTICElements() {
 							float: "left"
 						},
 						events : {
-							"click" : function(){
+							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
 									//data[key]["display"] = "block";
@@ -167,7 +165,7 @@ function drawTICElements() {
 							float: "left"
 						},
 						events : {
-							"click" : function(){
+							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
 									//data[key]["display"] = "block";
@@ -206,7 +204,7 @@ function drawTICElements() {
 							left: "13px",
 						},
 						events : {
-							"click" : function(){
+							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
 									//data[key]["display"] = "block";
@@ -257,24 +255,13 @@ function drawTICElements() {
 						html : name,
 						title : "Open",
 						events : {
-							"click" : function(){
+							click : function(){
 								if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-									if((Browser.Platform.win) || (Browser.Platform.mac) || (Browser.Platform.ios)
-										|| (Browser.Platform.name == 'BeOS')|| (Browser.Platform.name == 'OS/2')) { 
-										//this is for windows, osx. Can't check for beos and os/2 :) but docs says it should work
-										fileOpen(value["path"]);
-									} else { //if (Browser.Platform.linux) { 
-										//not limited to linux. would include also bsd, solaric and alike
-										fileOpenLinux(value["path"]);
-									}
+									//THE file.launch() AND file.reveal() WORK ON ALL PLATFORMS NOW!!!!
+									//NO NEED FOR SPECIAL LINUX FILE MANAGER PROCESS RUN 
+									fileOpen(value["path"]);
 								} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
-									// if ($("information" + key).getStyle("display") == "none") {
-									// 	$("information" + key).setStyle('display','block');
-									// 	data[key]["display"] = "block";
-									// } else {
-									// 	$("information" + key).setStyle('display','none');
-									// 	data[key]["display"] = "none";
-									// }								 		
+									//do nothing								 		
 								} else if (value["type"] == "URL") {
 									//URL's are opened in a window
 									window.open(value["path"]);
@@ -319,7 +306,7 @@ function drawTICElements() {
 							"border-style": "none"//"1px solid"						
 						},
 						events: {
-							"dblclick" : function(){
+							dblclick : function(){
 								editElementName(key);
 							}				
 						}
@@ -350,7 +337,7 @@ function drawTICElements() {
 						"background" : "white"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							if (value["vote"] < 10 && value["vote"] >= 0) {
 								value["vote"]++;
 								$("vote" + key).set('html' , value["vote"]);
@@ -392,7 +379,7 @@ function drawTICElements() {
 						"background" : "white"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							if (value["vote"]>0 && value["vote"] <= 10) {
 								value["vote"]--;
 								$("vote" + key).set('html' , value["vote"]);
@@ -423,7 +410,7 @@ function drawTICElements() {
 			new Element ("a#arrowlink" + key, {
 				href : "#inout",
 				events : {
-					"click" : function(){
+					click : function(){
 						if ((value["arrow"] == "no-no")) {
 							$("arrow" + key).erase('src');
 							$("arrow" + key).set('src','images/arrow_in-no.png');
@@ -499,7 +486,7 @@ function drawTICElements() {
 						opacity : "0.8"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							var datetmp;
 							if (value["date"]) {
 								datetmp = value["date"];
@@ -534,7 +521,7 @@ function drawTICElements() {
 						opacity : "0.8"
 					},
 					events : {
-						"click" : function(){		
+						click : function(){		
 							var persontmp;
 							if (value["person"]) {
 								persontmp = value["person"];
@@ -565,7 +552,7 @@ function drawTICElements() {
 						opacity : "0.8"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							var emailtmp;
 							if (value["email"]) {
 								emailtmp = value["email"];
@@ -596,7 +583,7 @@ function drawTICElements() {
 						opacity : "0.8"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							var urltmp;
 							if (value["url"]) {
 								urltmp = value["url"];
@@ -627,7 +614,7 @@ function drawTICElements() {
 						opacity : "0.8"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							var notetmp;
 							if (value["note"]) {
 								notetmp = value["note"];
@@ -658,7 +645,7 @@ function drawTICElements() {
 						opacity : "0.8"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							//fire up the confirmation box
 							var question = confirm("Really remove the item '" + value["name"] + "'? This will NOT delete the source item - e.g. the file or folder on the hard drive!");
 							if (question == true){
@@ -679,57 +666,55 @@ function drawTICElements() {
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
 				&& (index != "vote") && (index != "timestamp")) {
 
+				var indivElement  = new Element("div#list" + index + key);
+
 				//get current size and make it human readable
 				if (index == "size"  && value["type"] == "FILE") {
 					var updatedSize = fileSizes(data[key]["path"]);
 					data[key]["size"] = updatedSize;
-					item = bytesToSize(updatedSize);					
+					item = bytesToSize(updatedSize);	
 				} else if (index == "size"  && value["type"] != "FILE") {
 					delete data[key]["size"];
 				}
 				//make paths and links clickable
-				if (index == "path" && value["type"] == "FILE") {
-					var folder = item.substring(0 , item.lastIndexOf("/") + 1);
-					var file = item.substring(item.lastIndexOf("/") + 1);					
-					if (Browser.Platform.name != 'linux') {
-						item = "<a onclick=\"folderOpen('" + item + "');return false;\" href=\"#openfolder\">"
-								 + folder + "</a>" + file;
-					} else {
-						item = "<a onclick=\"fileOpenLinux('" + folder + "');return false;\" href=\"#openfolder\">"
-								 + folder + "</a>" + file;
-					}
-				} else if (index == "path" && value["type"] == "FOLDER") {
-					if (Browser.Platform.name != 'linux') {
-						item = "<a onclick=\"fileOpen('" + item + "');return false;\" href=\"#openfile\">"
-							 + item + "</a>";		
-					} else {
-						item = "<a onclick=\"fileOpenLinux('" + item + "');return false;\" href=\"#openfile\">"
-							 + item + "</a>";						
-					}
-				} else if (index == "path" && value["type"] == "URL") {
-					item = "<a href=\"" + item + "\">"
-							 + item + "</a>";
+				if (index == "path" && (value["type"] == "FILE" || value["type"] == "FOLDER")) {
+					indivElement.set({
+						html: "<a href=\"#openfolder\">" + item + "</a>",
+					    events: {
+					        click: function(){ folderOpen(value["path"]) }
+					    }
+					});								
+				} else if (index == "email") {
+					indivElement.set({
+					    html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
+					});							 
+				} else if (index == "url") {
+					indivElement.set({
+					    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
+					});							 
 				} 
-				//get surrent modficaion time and make it human readable
+				//get current modificaion time and make it human readable
 				if (index == "modified"){
 					var updatedModified = fileModified(data[key]["path"]);
 					data[key]["modified"] = updatedModified;
 					if (updatedModified == "not available") {
-						item = updatedModified;
+						item = updatedModified;					
 					} else {
 						item = unixToTime(updatedModified);						
-					}
+					}						
 				}
 				//emphasize the item if the due date is approaching and is in less than 7 days
 				if (index == "date"){
     				checkDateElement(item,key);
 				}				
 
-				$("information" + key).adopt ( //"span#content_" + key
-					new Element("div#list" + index + key, {
+				if (indivElement.get('html') == ""){
+					indivElement.set({
 						html : "<strong>" + index + "</strong>: " + item
-					})
-				);	
+					});					
+				}
+
+				$("information" + key).adopt (indivElement);	
 			} 
 		});	
 
@@ -761,7 +746,7 @@ function drawTICElements() {
 								"text-align" : "center"
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									databaseSaveTaskCollection(databaseDrawTaskCollection, id);
 								}
 							}		
@@ -867,7 +852,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								float : "left"
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
 									} else {
@@ -898,7 +883,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								float : "left"
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
 									} else {
@@ -935,7 +920,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								left : "13px",
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
 									} else {
@@ -964,18 +949,13 @@ function drawTICElementsPastStates(pastStatesId) {
 							html : name,
 							title : "Open",
 							events : {
-								"click" : function(){
+								click : function(){
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-										if((Browser.Platform.win) || (Browser.Platform.mac) || (Browser.Platform.ios)
-											|| (Browser.Platform.name == 'BeOS')|| (Browser.Platform.name == 'OS/2')) { 
-											//this is for windows, osx. Don't know how to check for beos and os/2
-											fileOpen(value["path"]);
-										} else { 
-											//this is for linux, unix, bsd .. on 
-											fileOpenLinux(value["path"]);  
-										}
+										//THE file.launch() AND file.reveal() WORK ON ALL PLATFORMS NOW!!!!
+										//NO NEED FOR SPECIAL LINUX FILE MANAGER PROCESS RUN 
+										fileOpen(value["path"]);
 									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
-																			 		
+										//do nothing								 		
 									} else if (value["type"] == "URL") {
 										//URL's are opened in a window
 										window.open(value["path"]);
@@ -1106,7 +1086,6 @@ function drawTICElementsPastStates(pastStatesId) {
 				)
 			);
 
-
 			//set the display to none if it is undefined 
 			//value["display"] is used to display or not to display $("information" + key) element
 			$("item" + key).adopt( //"div#information" + key
@@ -1218,51 +1197,55 @@ function drawTICElementsPastStates(pastStatesId) {
 					&& (index != "extension") && (index != "type")  && (index != "arrow")
 					&& (index != "vote") && (index != "timestamp")) {
 
+					var indivElement  = new Element("div#list" + index + key);
+
 					//get current size and make it human readable
 					if (index == "size"  && value["type"] == "FILE") {
-						var updatedSize = fileSizes(dataPastStates[key]["path"]);
-						dataPastStates[key]["size"] = updatedSize;
-						item = bytesToSize(updatedSize);					
+						var updatedSize = fileSizes(data[key]["path"]);
+						data[key]["size"] = updatedSize;
+						item = bytesToSize(updatedSize);	
 					} else if (index == "size"  && value["type"] != "FILE") {
-						delete dataPastStates[key]["size"];
+						delete data[key]["size"];
 					}
 					//make paths and links clickable
-					if (index == "path" && value["type"] == "FILE") {
-						if (Browser.Platform.name != 'linux') {
-							var folder = item.substring(0,item.lastIndexOf("/") + 1);
-							var file = item.substring(item.lastIndexOf("/") + 1);
-							item = "<a onclick=\"folderOpen('" + item + "');return false;\" href=\"#openfolder\">"
-									 + folder + "</a>" + file;
-						}
-					} else if (index == "path" && value["type"] == "FOLDER") {
-						if (Browser.Platform.name != 'linux') {
-							item = "<a onclick=\"fileOpen('" + item + "');return false;\" href=\"#openfile\">"
-								 + item + "</a>";		
-						}
-					} else if (index == "path" && value["type"] == "URL") {
-						item = "<a href=\"" + item + "\">"
-								 + item + "</a>";
+					if (index == "path" && (value["type"] == "FILE" || value["type"] == "FOLDER")) {
+						indivElement.set({
+							html: "<a href=\"#openfolder\">" + item + "</a>",
+						    events: {
+						        click: function(){ folderOpen(value["path"]) }
+						    }
+						});								
+					} else if (index == "email") {
+						indivElement.set({
+						    html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
+						});							 
+					} else if (index == "url") {
+						indivElement.set({
+						    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
+						});							 
 					} 
-					//get surrent modficaion time and make it human readable
+					//get current modificaion time and make it human readable
 					if (index == "modified"){
-						var updatedModified = fileModified(dataPastStates[key]["path"]);
-						dataPastStates[key]["modified"] = updatedModified;
+						var updatedModified = fileModified(data[key]["path"]);
+						data[key]["modified"] = updatedModified;
 						if (updatedModified == "not available") {
-							item = updatedModified;
+							item = updatedModified;					
 						} else {
 							item = unixToTime(updatedModified);						
-						}
+						}						
 					}
 					//emphasize the item if the due date is approaching and is in less than 7 days
 					if (index == "date"){
 	    				checkDateElement(item,key);
 					}				
 
-					$("information" + key).adopt ( //"span#content_" + key
-						new Element("div#list" + index + key, {
+					if (indivElement.get('html') == ""){
+						indivElement.set({
 							html : "<strong>" + index + "</strong>: " + item
-						})
-					);	
+						});					
+					}
+
+					$("information" + key).adopt (indivElement);
 				} 
 			});	
 
@@ -1294,7 +1277,7 @@ function drawTICElementsPastStates(pastStatesId) {
 									"text-align" : "center"
 								},
 								events : {
-									"click" : function(){
+									click : function(){
 										databaseSaveTaskCollection(databaseDrawTaskCollection, id);
 									}
 								}		
@@ -1362,10 +1345,10 @@ function editElementName(key) {
 						"border-style" : "none"
 					},
 					events : {
-						"click" : function(){
+						click : function(){
 							this.focus();
 						},
-						"blur" : function() {
+						blur : function() {
 							str = this.get("value"); //.replace(/\n/g, '<br />');
 							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 								str = str.replace( /\n/gi, "<br />");	
@@ -1559,7 +1542,7 @@ function drawGeneralIcons(){
 					cursor : 'pointer',
 				},
 				events : {
-					"click" : function(){
+					click : function(){
 						var file = Components.classes["@mozilla.org/file/directory_service;1"].  
 								   getService(Components.interfaces.nsIProperties).  
 								   get("Home", Components.interfaces.nsIFile);   
@@ -1588,7 +1571,7 @@ function drawGeneralIcons(){
 					cursor : 'pointer',
 				},			
 				events : {
-					"click" : function(){
+					click : function(){
 						var file = Components.classes["@mozilla.org/file/directory_service;1"].  
 								   getService(Components.interfaces.nsIProperties).  
 								   get("Desk", Components.interfaces.nsIFile);   
@@ -1618,7 +1601,7 @@ function drawGeneralIcons(){
 					"margin-top" : "2px"
 				},			
 				events : {
-					"click" : function(){
+					click : function(){
 						addNewNote();
 					}
 				}
@@ -2053,7 +2036,7 @@ function databaseShowTasks() {
 								"text-align" : "center"
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;									
 								}
@@ -2075,7 +2058,7 @@ function databaseShowTasks() {
 								width : "115"							
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;
 								}
@@ -2091,7 +2074,7 @@ function databaseShowTasks() {
 								float : "left"								
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									//call function that replaces the above a with input
 									changeEditTaskName(taskid);
 								}
@@ -2107,7 +2090,7 @@ function databaseShowTasks() {
 								float : "left"								
 							},
 							events : {
-								"click" : function(){
+								click : function(){
 									//fire up the confirmation box
 									var question = confirm("PERMANENTLY delete the task " + taskname + "?")
 									if (question == true){
@@ -2195,7 +2178,7 @@ function changeEditTaskName(taskid){
 			"id" : "taskSave" + taskid,
 			"text" : "Save",
 			events : {
-				"click" : function(){
+				click : function(){
 					//call function that saves the changed text
 					databaseSaveEditTaskName($("taskInput" + taskid).get('value'), taskid);
 				}
@@ -2845,10 +2828,11 @@ function bytesToSize(bytes) {
 }
 
 /***************************************************************************
-Open files with local applications
+fileOpen(filetmp) Open files with local applications
+folderOpen(filetmp) and folderOpenLinux(filetmp) Open folder of a selected 
+	file or folder
 ****************************************************************************/
 function fileOpen(filetmp){
-	//filetmp = filetmp.replace("file://", "");
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
 	file.initWithPath(filetmp); 
 	if ( file.exists() ) { 
@@ -2858,7 +2842,19 @@ function fileOpen(filetmp){
 	}
 }
 
-function fileOpenLinux(filetmp) {
+function folderOpen(filetmp){
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
+	file.initWithPath(filetmp); 
+	if ( file.exists() ) { 
+		file.reveal();  
+		//could also use this to get the parent folder of a file
+		// folder = file.parent;		
+	} else {
+		printOut("The folder you selected does not exists on your local hard drive!");
+	}
+}
+
+function folderOpenLinux(filetmp) {
 	//get the preference of fileManager value and try to see if it exists
 	//otherwise try other popular file managers
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
@@ -2876,7 +2872,8 @@ function fileOpenLinux(filetmp) {
 						  "/usr/local/bin/krusader", "/usr/bin/krusader",
 						  "/usr/bin/xfe", "/usr/local/bin/xfe",
 						  "/usr/bin/pcman", "/usr/local/bin/pcman"];
-	//check if fileManager is a unix file path and if it is append it at the beginning of the array				  
+	//check if fileManager is a unix file path and if it is append it at the beginning of the array	
+	//note: file,initWithPath("/") or ("//") fails			  
 	//$("msg").innerHTML = "-0-"+fileManager;
 	var reg = /^\/[^\/]+(\/[^\/]+)*$/;
 	if (reg.test(fileManager) == true) {
@@ -2915,40 +2912,6 @@ function fileOpenLinux(filetmp) {
 	}
 }
 
-/***************************************************************************
-Create a URI (file:// ... ) out of a file
-****************************************************************************/
-function fileGetURI(filetmp){
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	filetmp = filetmp.replace("file://", "");
-	file.initWithPath(filetmp); 
-	//file is nsIFile  
-	if ( file.exists() ) {
-		var ios = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService); 
-		//URL is a nsIURI; to get the string, "file://...", see URL.spec											   
-		var URL = ios.newFileURI(file); 
-		return URL; 
-	} else {
-		printOut("The file or the folder you selected does not exists on your local hard drive!");
-		return false;
-	}		
-}
-
-/***************************************************************************
-Open folder of a selected file
-****************************************************************************/
-function folderOpen(filetmp){
-	//filetmp = filetmp.replace("file://", "");
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	file.initWithPath(filetmp); 
-	if ( file.exists() ) { 
-		file.reveal();  
-		//could also use this to get the parent folder of a file
-		// folder = file.parent;		
-	} else {
-		printOut("The folder you selected does not exists on your local hard drive!");
-	}
-}
 
 /***************************************************************************
 Get a file size from the given file
@@ -3100,7 +3063,7 @@ function randomDate(date1, date2) {
    return randomDate;
 }
 /***************************************************************************
-See preferences. Testing only 
+Print out preferences. For testing purposes only 
 ****************************************************************************/
 function getPreferences(){
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
