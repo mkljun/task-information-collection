@@ -79,7 +79,7 @@ function drawTICElements() {
 	// draw all elements from the data object
 	Object.each (data, function(value, key){
 		//find item type and icon
-		icon = "images/" + value["extension"];
+		icon = "images/" + value["extension"];		
 
 		//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
 		coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
@@ -90,6 +90,7 @@ function drawTICElements() {
 		} else {
 			name = value["name"].replace(/_/gm, ' ');
 		}
+		var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 
 		//### BACKGROUND
 		$("itemsList").adopt(
@@ -202,6 +203,7 @@ function drawTICElements() {
 							position: "absolute",
 							top: "13px", 
 							left: "13px",
+							"font-size": "10px"
 						},
 						events : {
 							click : function(){
@@ -237,7 +239,58 @@ function drawTICElements() {
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 			$("moveimg" + key).setStyle("left","-13px");
 			$("moveimg" + key).setStyle("top","25px");
-		}		
+		}
+
+		//### Preview
+		if ((value["type"] == "URL") || (value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")
+			|| (fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")
+			|| (fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {		
+			$("item" + key).adopt( //span#move" + key
+				new Element("span#move" + key).adopt(
+					new Element("img#previmg" + key, {
+						src : "images/icons_general/Search.png",
+						alt : "Preview",
+						title : "Preview",
+						styles : {
+							cursor: "pointer",						
+							width : "20",
+							position: "absolute",
+							top: "28px", 
+							left: "28px"
+						},
+						events : {
+							click : function(){
+								//url
+								if (value["type"] == "URL") {
+								  var light = new LightFace.IFrame({ height:500, width:800, url: value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+								//notes
+							 	} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+							 		var profileBox = new LightFace({
+										width: 500, 
+										draggable: true,
+										title: '',
+										content: value["name"],
+										buttons: [
+											{ title: 'Close', event: function() { this.close(); }, color: 'blue' }
+										]
+									}).open();
+								//images
+							 	} else if ((fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")) {
+							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+							 	//plain text	
+							 	} else if ((fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {
+							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+							 	}
+							}
+						}
+					})
+				)
+			);
+		}	
+		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+			$("previmg" + key).setStyle("left","144px");
+			$("previmg" + key).setStyle("top","60px");		
+		}						
 		//### TEXT/NAME
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 			$("item" + key).adopt( //"span#name" + key
@@ -247,6 +300,7 @@ function drawTICElements() {
 						width : "100",
 						top: "2px",
 						left : "45",
+						"overflow": "hidden",
 						"font-size": "12px"
 					}
 				}).adopt(
@@ -257,7 +311,7 @@ function drawTICElements() {
 						events : {
 							click : function(){
 								if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-									//THE file.launch() AND file.reveal() WORK ON ALL PLATFORMS NOW!!!!
+									//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
 									//NO NEED FOR SPECIAL LINUX FILE MANAGER PROCESS RUN 
 									fileOpen(value["path"]);
 								} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
@@ -286,7 +340,8 @@ function drawTICElements() {
 						width: "135px",
 						height: "130px",
 						position : "absolute",
-						overflow: "hidden"
+						"overflow-y" : "hidden", //"scroll"
+						"overflow-x" : "hidden"
 					}
 				}).adopt(
 					new Element("div#nametext" + key, {
@@ -659,6 +714,10 @@ function drawTICElements() {
 				})
 			)
 		);	
+		//move this extra info box more down for notes
+		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+			$("information" + key).setStyle('top', '150px');						
+		}	
 
 		//print more information about the information item
 		Object.each(value, function(item,index){
@@ -706,6 +765,10 @@ function drawTICElements() {
 				//emphasize the item if the due date is approaching and is in less than 7 days
 				if (index == "date"){
     				checkDateElement(item,key);
+				}	
+				//don't print names for notes
+				if (index == "name" && ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML"))) {
+					item = "A note";						
 				}				
 
 				if (indivElement.get('html') == ""){
@@ -810,6 +873,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			} else {
 				name = value["name"].replace(/_/gm, ' ');
 			}
+			var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 
 			//### BACKGROUND
 			$("itemsList").adopt(
@@ -932,6 +996,56 @@ function drawTICElementsPastStates(pastStatesId) {
 				);		
 			}
 
+			//### Preview
+			if ((value["type"] == "URL") || (value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")
+				|| (fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")
+				|| (fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {		
+				$("item" + key).adopt( //span#move" + key
+					new Element("span#move" + key).adopt(
+						new Element("img#previmg" + key, {
+							src : "images/icons_general/Search.png",
+							alt : "Preview",
+							title : "Preview",
+							styles : {
+								cursor: "pointer",						
+								width : "20",
+								position: "absolute",
+								top: "28px", 
+								left: "28px"
+							},
+							events : {
+								click : function(){
+									//url
+									if (value["type"] == "URL") {
+									  var light = new LightFace.IFrame({ height:500, width:800, url: value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+									//notes
+								 	} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+								 		var profileBox = new LightFace({
+											width: 500, 
+											draggable: true,
+											title: '',
+											content: value["name"],
+											buttons: [
+												{ title: 'Close', event: function() { this.close(); }, color: 'blue' }
+											]
+										}).open();
+									//images
+								 	} else if ((fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")) {
+								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+								 	//plain text	
+								 	} else if ((fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {
+								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+								 	}
+								}
+							}
+						})
+					)
+				);
+			}	
+			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+				$("previmg" + key).setStyle("left","144px");
+				$("previmg" + key).setStyle("top","60px");		
+			}	
 			//### TEXT/NAME
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 				$("item" + key).adopt( //"span#name" + key
@@ -951,7 +1065,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							events : {
 								click : function(){
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-										//THE file.launch() AND file.reveal() WORK ON ALL PLATFORMS NOW!!!!
+										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
 										//NO NEED FOR SPECIAL LINUX FILE MANAGER PROCESS RUN 
 										fileOpen(value["path"]);
 									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
@@ -1190,6 +1304,11 @@ function drawTICElementsPastStates(pastStatesId) {
 					})
 				)
 			);	
+			//move this extra info box more down for notes
+			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+				$("msg").innerHTML += "------------------------T";
+				$("information" + key).setStyle('top', '155px');						
+			}	
 
 			//print more information about the information item
 			Object.each(value, function(item,index){
@@ -1237,7 +1356,11 @@ function drawTICElementsPastStates(pastStatesId) {
 					//emphasize the item if the due date is approaching and is in less than 7 days
 					if (index == "date"){
 	    				checkDateElement(item,key);
-					}				
+					}
+					//don't print names for notes
+					if (index == "name" && ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML"))) {
+						item = "A note";						
+					}										
 
 					if (indivElement.get('html') == ""){
 						indivElement.set({
@@ -1634,7 +1757,7 @@ function databaseConnect() {
    		//Will also create the file if it does not exist			
    		dbConn = Services.storage.openDatabase(file);
 		//create tables: 
-   		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)");
+   		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id INTEGER, coll_timestamp TEXT, coll_items TEXT)");
    		dbConn.executeSimpleSQL("CREATE INDEX collections_task_id ON tasks_collections (coll_id DESC, task_id DESC)");
@@ -2854,65 +2977,6 @@ function folderOpen(filetmp){
 	}
 }
 
-function folderOpenLinux(filetmp) {
-	//get the preference of fileManager value and try to see if it exists
-	//otherwise try other popular file managers
-	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-	                      .getService(Components.interfaces.nsIPrefService);
-	var branch = prefs.getBranch("extensions.tic.");
-	var fileManager = branch.getCharPref("fileManager");
-	// create an nsILocalFile to check which file manager exists
-	var file = Components.classes["@mozilla.org/file/local;1"]  
-	                      .createInstance(Components.interfaces.nsILocalFile); 										
-	//an array of most common file managers
-	var fileManagers = ["/usr/bin/nautilus", "/usr/local/bin/nautilus", 
-						  "/usr/bin/dolphin", "/usr/local/bin/dolphin",
-						  "/usr/bin/konqueror", "/usr/local/bin/konqueror",
-						  "/usr/bin/thunar", "/usr/local/bin/thunar",
-						  "/usr/local/bin/krusader", "/usr/bin/krusader",
-						  "/usr/bin/xfe", "/usr/local/bin/xfe",
-						  "/usr/bin/pcman", "/usr/local/bin/pcman"];
-	//check if fileManager is a unix file path and if it is append it at the beginning of the array	
-	//note: file,initWithPath("/") or ("//") fails			  
-	//$("msg").innerHTML = "-0-"+fileManager;
-	var reg = /^\/[^\/]+(\/[^\/]+)*$/;
-	if (reg.test(fileManager) == true) {
-		fileManagers.unshift(fileManager); 
-	//	$("msg").innerHTML += "-1-";
-	}
-	//$("msg").innerHTML += "-2-"+fileManagers.toSource();
-	//loop the array and find the first file manager that exists
-	var findFileManager = false;
-	fileManagers.each(function(item, index){
-	    if (!findFileManager){
-	        file.initWithPath(item);
-	        if (file.exists()) {  
-	            findFileManager = item;
-	 			//$("msg").innerHTML += "-3-"+item; 
-	        }
-
-	    }
-	});
-
-	if (findFileManager) { 
-		// create an nsIProcess  
-		var process = Components.classes["@mozilla.org/process/util;1"]  
-		                        .createInstance(Components.interfaces.nsIProcess);  
-		file.initWithPath(findFileManager);											                        
-		process.init(file); 
-		// Run the process.  
-		// If first param is true, calling thread will be blocked until called process terminates.  
-		// Second and third params are used to pass command-line arguments to the process.  
-		var args = [filetmp];  
-		process.run(false, args, args.length);  
-	} else { 
-		//2nd solution - open files & folder in a FF tab in no file manager is found
-		var fileUri = "file://"+value["path"];
-		window.open(fileUri);  
-	}
-}
-
-
 /***************************************************************************
 Get a file size from the given file
 ****************************************************************************/
@@ -3062,6 +3126,7 @@ function randomDate(date1, date2) {
    var randomDate = new Date().parse(random + "000").format('db');
    return randomDate;
 }
+
 /***************************************************************************
 Print out preferences. For testing purposes only 
 ****************************************************************************/
