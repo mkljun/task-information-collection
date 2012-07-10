@@ -242,7 +242,7 @@ function drawTICElements() {
 		}
 
 		//### Preview
-		if ((value["type"] == "URL") || (value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")
+		if (/*(value["type"] == "URL") || */(value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")
 			|| (fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")
 			|| (fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {		
 			$("item" + key).adopt( //span#move" + key
