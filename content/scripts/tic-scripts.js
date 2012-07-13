@@ -10,7 +10,9 @@ var data;
 var currentTaskId;
 var currentTaskName;
 var connection;
-var mySlide;
+//currently not using mootools slider - it's slow, it draws additional TIC before the last one
+//var mySlide; 
+var tempURIforXUL; //for opening preview of an URL in a XUL iframe
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -242,9 +244,19 @@ function drawTICElements() {
 		}
 
 		//### Preview
-		if (/*(value["type"] == "URL") || */(value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")
-			|| (fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")
-			|| (fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {		
+		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'bmp', 'apng'];
+		var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
+						 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
+		 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
+						 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
+						 'asp','vbs','vbe','wsf','wsc',
+						 'tex','bib','enl','ris', 'py','pyc','pyo' ,
+						 'm3u']; 	
+		var sourceTypes = ['NOTE', 'TEXT', 'HTML']; //these are tye types added when pieces of text are dropped or a note created
+		if ((value["type"] == "URL") 
+			|| sourceTypes.contains(value["type"])
+			|| imageTypes.contains(fileExt.toLowerCase())
+			|| textTypes.contains(fileExt.toLowerCase())) {		
 			$("item" + key).adopt( //span#move" + key
 				new Element("span#move" + key).adopt(
 					new Element("img#previmg" + key, {
@@ -260,13 +272,10 @@ function drawTICElements() {
 						},
 						events : {
 							click : function(){
-								//url
-								if (value["type"] == "URL") {
-								  var light = new LightFace.IFrame({ height:500, width:800, url: value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
 								//notes
-							 	} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+								if (sourceTypes.contains(value["type"])) {
 							 		var profileBox = new LightFace({
-										width: 500, 
+										width: 800, 
 										draggable: true,
 										title: '',
 										content: value["name"],
@@ -275,12 +284,25 @@ function drawTICElements() {
 										]
 									}).open();
 								//images
-							 	} else if ((fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")) {
-							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+							 	} else if (imageTypes.contains(fileExt.toLowerCase())) {
+									var images = ['file://'+value["path"]];
+									var light = new LightFace.Image({
+										title: 'Image',
+										fadeDuration: 100,
+										keys: {
+											esc: function() {
+												this.close();
+											}
+										}
+									}).addButton('Close', function() { light.close(); },true).load(images[0],'Image 1').open();
 							 	//plain text	
-							 	} else if ((fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {
-							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
-							 	}
+							 	} else if (textTypes.contains(fileExt.toLowerCase())) {
+							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'view-source:file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();						
+							 	//external URLs in XUL for security reasons
+							 	} else if (value["type"] == "URL") {
+							 		tempURIforXUL = value['path'];
+								    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
+							 	} 
 							}
 						}
 					})
