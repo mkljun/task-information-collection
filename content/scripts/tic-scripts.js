@@ -12,6 +12,9 @@ var currentTaskName;
 var connection;
 //currently not using mootools slider - it's slow, it draws additional TIC before the last one
 //var mySlide; 
+var pastTICStatesIds; //array of old ids
+var pastTICStatesCurrentIndex; //array of current viewable old id 
+var pastTICStatesInterval;
 var tempURIforXUL; //for opening preview of an URL in a XUL iframe
 
 /***************************************************************************
@@ -864,7 +867,6 @@ function drawTICElements() {
 }
 function drawTICElementsPastStates(pastStatesId) {
 
-	//$("msg").innerHTML += "-s" + pastStatesId + "-";
 	var coordinatexPastStates = "";
 	var iconPastStates = "";
 	var namePastStates = "";
@@ -1019,9 +1021,19 @@ function drawTICElementsPastStates(pastStatesId) {
 			}
 
 			//### Preview
-			if ((value["type"] == "URL") || (value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")
-				|| (fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")
-				|| (fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {		
+			var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'bmp', 'apng'];
+			var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
+							 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
+			 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
+							 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
+							 'asp','vbs','vbe','wsf','wsc',
+							 'tex','bib','enl','ris', 'py','pyc','pyo' ,
+							 'm3u']; 	
+			var sourceTypes = ['NOTE', 'TEXT', 'HTML']; //these are tye types added when pieces of text are dropped or a note created
+			if ((value["type"] == "URL") 
+				|| sourceTypes.contains(value["type"])
+				|| imageTypes.contains(fileExt.toLowerCase())
+				|| textTypes.contains(fileExt.toLowerCase())) {		
 				$("item" + key).adopt( //span#move" + key
 					new Element("span#move" + key).adopt(
 						new Element("img#previmg" + key, {
@@ -1037,13 +1049,10 @@ function drawTICElementsPastStates(pastStatesId) {
 							},
 							events : {
 								click : function(){
-									//url
-									if (value["type"] == "URL") {
-									  var light = new LightFace.IFrame({ height:500, width:800, url: value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
 									//notes
-								 	} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+									if (sourceTypes.contains(value["type"])) {
 								 		var profileBox = new LightFace({
-											width: 500, 
+											width: 800, 
 											draggable: true,
 											title: '',
 											content: value["name"],
@@ -1052,12 +1061,25 @@ function drawTICElementsPastStates(pastStatesId) {
 											]
 										}).open();
 									//images
-								 	} else if ((fileExt=="png") || (fileExt=="PNG") || (fileExt=="JPG") || (fileExt=="jpg") || (fileExt=="GIF") || (fileExt=="gif")) {
-								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
+								 	} else if (imageTypes.contains(fileExt.toLowerCase())) {
+										var images = ['file://'+value["path"]];
+										var light = new LightFace.Image({
+											title: 'Image',
+											fadeDuration: 100,
+											keys: {
+												esc: function() {
+													this.close();
+												}
+											}
+										}).addButton('Close', function() { light.close(); },true).load(images[0],'Image 1').open();
 								 	//plain text	
-								 	} else if ((fileExt=="sh") || (fileExt=="php") || (fileExt=="txt") || (fileExt=="cpp") || (fileExt=="c") || (fileExt=="h") || (fileExt=="css") || (fileExt=="js") || (fileExt=="log") || (fileExt=="py") || (fileExt=="rb")) {
-								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();							
-								 	}
+								 	} else if (textTypes.contains(fileExt.toLowerCase())) {
+								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'view-source:file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();						
+								 	//external URLs in XUL for security reasons
+								 	} else if (value["type"] == "URL") {
+								 		tempURIforXUL = value['path'];
+									    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
+								 	} 
 								}
 							}
 						})
@@ -1328,7 +1350,6 @@ function drawTICElementsPastStates(pastStatesId) {
 			);	
 			//move this extra info box more down for notes
 			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-				$("msg").innerHTML += "------------------------T";
 				$("information" + key).setStyle('top', '155px');						
 			}	
 
@@ -1342,9 +1363,7 @@ function drawTICElementsPastStates(pastStatesId) {
 
 					//get current size and make it human readable
 					if (index == "size"  && value["type"] == "FILE") {
-						var updatedSize = fileSizes(data[key]["path"]);
-						data[key]["size"] = updatedSize;
-						item = bytesToSize(updatedSize);	
+						value["size"] = bytesToSize(value["size"]);	
 					} else if (index == "size"  && value["type"] != "FILE") {
 						delete data[key]["size"];
 					}
@@ -1367,8 +1386,8 @@ function drawTICElementsPastStates(pastStatesId) {
 					} 
 					//get current modificaion time and make it human readable
 					if (index == "modified"){
-						var updatedModified = fileModified(data[key]["path"]);
-						data[key]["modified"] = updatedModified;
+						var updatedModified = fileModified(value["path"]);
+						value["modified"] = updatedModified;
 						if (updatedModified == "not available") {
 							item = updatedModified;					
 						} else {
@@ -1437,6 +1456,33 @@ function drawTICElementsPastStates(pastStatesId) {
 	} else {
 		printOut("Not a valid SQL statement: SELECT * FROM tasks_collections WHERE coll_id = :cid");
 	}			
+}
+
+function playDrawTICElementsPastStates() {
+	if (pastTICStatesCurrentIndex == pastTICStatesIds.length) {
+		pastTICStatesCurrentIndex = 0;
+	}
+
+	//clear the background of the previously selected past state
+	if (pastTICStatesCurrentIndex != 0) {
+		var prev = parseInt(pastTICStatesCurrentIndex)-1;
+    	$("pastState" + prev).setStyle('background-color', null);
+    } else if (pastTICStatesCurrentIndex == 0) {
+    	var prev = pastTICStatesIds.length-1;
+    	$("pastState" + prev).setStyle('background-color', null);
+    }
+
+	$("pastState" + pastTICStatesCurrentIndex).setStyle('background-color', '#ffffcc');
+	drawTICElementsPastStates(pastTICStatesIds[pastTICStatesCurrentIndex]);
+	pastTICStatesCurrentIndex = pastTICStatesCurrentIndex + 1;
+}
+
+function startDrawTICElementsPastStates() {
+	pastTICStatesInterval = playDrawTICElementsPastStates.periodical(1000);
+}
+
+function stopDrawTICElementsPastStates(pastStatesId) {
+	$clear(pastTICStatesInterval);
 }
 
 /***************************************************************************
@@ -2127,8 +2173,6 @@ function databaseMaintenance() {
 	}
 }
 
-
-
 /***************************************************************************
 Function prints out the list of all available tasks from the database to the 
 side panel. The function is called:
@@ -2440,14 +2484,32 @@ function databaseDrawTaskCollection(taskid) {
 			$("timelineSlideoutInner").empty();
 			$("timelineSlideoutInner").adopt(
 				new Element ("div#timelineInfo", {
-					html : "<a href=\"#current\" onclick=\"drawTICElements();return false;\">Current state</a><br />"
-						  +"Past states (0):",
 					styles : {
 						width : "210px",
 						"font-size" : "14px"
 					}
 				})
 			);
+			$("timelineInfo").adopt(
+				new Element("a", {
+					html : "Current state",
+					href : "#currentstate",
+					styles : {
+						cursor: "pointer"
+					},							
+					events : {
+						click : function(){
+							drawTICElements(); //return false;
+						}
+					}
+				})
+			);
+			$("timelineInfo").adopt(new Element("br"));
+			$("timelineInfo").adopt(
+				new Element("span", {
+					html: "Past states (0)"
+				})
+			);				
 		/*************** ROWS MORE THAN 0 **********/
 		} else {
 			var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC");	
@@ -2463,31 +2525,49 @@ function databaseDrawTaskCollection(taskid) {
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
-							html : "<a href=\"#current\" onclick=\"drawTICElements();return false;\">Current state</a><br />"
-								  +"Past states (0):",
 							styles : {
 								width : "210px",
 								"font-size" : "14px"
 							}
 						})
 					);	
+					$("timelineInfo").adopt(
+						new Element("a", {
+							html : "Current state",
+							href : "#currentstate",
+							styles : {
+								cursor: "pointer"
+							},							
+							events : {
+								click : function(){
+									drawTICElements(); //return false;
+								}
+							}
+						})
+					);
+					$("timelineInfo").adopt(new Element("br"));
+					$("timelineInfo").adopt(
+						new Element("span", {
+							html : "Past states (0)"
+						})
+					);					
 				/*************** ROWS MORE THAN 1 data and past tasks **********/		
 				} else if (numOfCols > 1) {
-					var pastStatesIds = [];
-					pastStatesIds.length = 0;
-					var pastStatesDates = [];
-					pastStatesDates.length = 0;
+					//this was mage a global variable so it could be played as a slideshow
+					pastTICStatesIds = [];
+					pastTICStatesCurrentIndex = 0;
+					pastTICStatesIds.length = 0;
+					var pastTICStatesDates = [];
+					pastTICStatesDates.length = 0;
 					//the first executeStep() was to fill the data, the rest is to fill the past states arrays
 					while (statement.executeStep()) { 
 						//store past states of the task from the table to a slider
-						pastStatesIds.push(statement.row.coll_id);
-						pastStatesDates.push(statement.row.coll_timestamp);								
+						pastTICStatesIds.push(statement.row.coll_id);
+						pastTICStatesDates.push(statement.row.coll_timestamp);								
 					}   	
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
-							html : "<a href=\"#current\" onclick=\"drawTICElements();return false;\">Current state</a><br />"
-								  +"Past states (" + pastStatesDates.length + "):",
 							styles : {
 								width : "210px",
 								"font-size" : "14px"
@@ -2496,7 +2576,7 @@ function databaseDrawTaskCollection(taskid) {
 						new Element ("div#timelineDate", {
 							styles : {
 								width : "210px",
-								height : "555px",
+								height : "540px",
 								"font-size" : "12px",
 								"margin" : "3px 0px 1px 0px",
 								padding : "1px 0px 1px 0px",
@@ -2507,14 +2587,140 @@ function databaseDrawTaskCollection(taskid) {
 							}
 						})
 					);
-					$('timelineDate').set('html', $('timelineDate').get('html') + "<ul>");
-					Array.each(pastStatesDates, function(date, index){
-						$('timelineDate').set('html', $('timelineDate').get('html') + "<li><a href=\"#lasttask\"" 
-						     + "onclick=\"drawTICElementsPastStates(" + pastStatesIds[index] + ");return false;\">"
-						     + pastStatesDates[index]
-						     + "</a></li>");			    
+					$("timelineInfo").adopt(
+						new Element("a", {
+							html : "Current state",
+							href : "#currentstate",
+							styles : {
+								cursor: "pointer"
+							},							
+							events : {
+								click : function(){
+									clearBackgroundTimelineItems();
+									pastTICStatesCurrentIndex = 0; //clear the current id of the past states
+									drawTICElements(); //return false;
+								}
+							}
+						})
+					);					
+					$("timelineInfo").adopt(new Element("br"));
+					$("timelineInfo").adopt(
+						new Element("span#playback", {
+							html : "Past states (" + pastTICStatesDates.length + "):",
+							styles : {
+								"float" : "left"
+							}
+						})
+					);	
+					//PLAYBACK BUTTONS	
+							//play button				
+							$("timelineInfo").adopt(
+								new Element("a", {
+									html : "",
+									href : "#statePlay",
+									styles : {
+										cursor: "pointer",
+										"border-color" : "transparent transparent transparent #FFFFFF",
+										"border-style" : "solid",
+										"border-width" : "8px 0 8px 12px",
+										"float" : "left",
+										"height" : "0",
+										"width" : "0",
+										"margin-left" : "20"
+									},							
+									events : {
+										click : function(){
+											startDrawTICElementsPastStates(); //return false;
+										}
+									}
+								})
+							);		
+							//stop button
+							$("timelineInfo").adopt(
+								new Element("a", {
+									html : "",
+									href : "#stateStop",
+									styles : {
+										cursor: "pointer",
+										border : "7px solid #FFFFFF",
+										"float" : "left",
+										height : "0",
+										width : "0",
+										"margin-left": "10"								
+									},							
+									events : {
+										click : function(){
+											stopDrawTICElementsPastStates();
+										}
+									}
+								})
+							);				
+							//next button	(pause + play)	
+							$("timelineInfo").adopt(
+								new Element("a", {
+									html : "",
+									href : "#stateNext",
+									styles : {
+										cursor: "pointer",
+										"border-color" : "transparent transparent transparent #FFFFFF",
+										"border-style" : "solid",
+										"border-width" : "8px 0 8px 12px",
+										"float" : "left",
+										"height" : "0",
+										"width" : "0",
+										"margin-left": "10"
+									},							
+									events : {
+										click : function(){
+											stopDrawTICElementsPastStates();
+											playDrawTICElementsPastStates();
+										}
+									}
+								})
+							).adopt(
+							    new Element ("span", { //need this part for the second part of the play-pause button
+									styles : {
+										"border-color" : "transparent #FFFFFF",
+										"border-style" : "solid",
+										"border-width" : "0 4px 0",
+										"float" : "left",
+										height : "15px",
+										"text-indent" : "-9999px",
+										width : "3px"				
+									}
+								})
+							);
+					//list of past states
+					$('timelineDate').adopt(
+						new Element("ul#pastStatesList")
+					);
+					Array.each(pastTICStatesDates, function(date, index){
+						$('pastStatesList').adopt(
+							new Element("li#pastState" + index, {
+								styles : {
+									width : "150",
+									"-moz-border-radius" : "3px 3px 3px 3px",
+									"border-radius" : "3px 3px 3px 3px"								
+								}
+							}). adopt(
+								new Element ("a",  {
+									html : pastTICStatesDates[index],
+									href : "#lasttask",
+									styles : {
+										cursor : "pointer"							
+									},							
+									events : {
+										click : function(){
+											//drawTICElementsPastStates(pastTICStatesIds[index]); //return false;
+											pastTICStatesCurrentIndex = index;
+											clearBackgroundTimelineItems();
+											playDrawTICElementsPastStates();
+										}
+									}
+								})
+							)
+						);
 					});
-					$('timelineDate').set('html', $('timelineDate').get('html') + "</ul>");	
 
 					// //SLIDER ----- very slow ... it prints out the last TIC so it needs to print TICs two times
 					// //set slide to null
@@ -2528,14 +2734,14 @@ function databaseDrawTaskCollection(taskid) {
 					// 	)
 					// );
 					// mySlide = new Slider($('slideArea'), $('slideKnob'), {	
-					// 	steps : pastStatesIds.length - 1,	
+					// 	steps : pastTICStatesIds.length - 1,	
 					// 	mode : 'vertical',
 					// 	wheel : 'true',
 					// 	onChange : function(step){
 					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawTICElements();return false;\">Current state</a><br />" 
-					// 									+ "date: " + pastStatesDates[step] + "<br/ >id: " 
-					// 									+ pastStatesIds[step] + "<br />step: " + step;
-					// 		drawTICElementsPastStates(pastStatesIds[step]);
+					// 									+ "date: " + pastTICStatesDates[step] + "<br/ >id: " 
+					// 									+ pastTICStatesIds[step] + "<br />step: " + step;
+					// 		drawTICElementsPastStates(pastTICStatesIds[step]);
 					// 	}
 					// }).set(0);
 					//mySlide.detach();									
@@ -3065,6 +3271,15 @@ The function gets the current date and time in YYYY-MM-DD HH:MM:SS format
 function getTimestamp(){
 	var time = new Date().format('db');
 	return time;
+}
+
+/***************************************************************************
+The function clears the background of all the past states in the timeline tab
+****************************************************************************/
+function clearBackgroundTimelineItems(){
+	Array.each(pastTICStatesIds, function (data, index){
+		$("pastState" + index).setStyle('background-color', null);
+	});
 }
 
 /***************************************************************************
