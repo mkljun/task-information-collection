@@ -2888,7 +2888,7 @@ The function is called:
 	- databaseShowTasks(): appand to the task name so it saves the task before task changes
 	- drawTICElements(): append to the links of overlapping tasks (the same as above)
 ****************************************************************************/
-function databaseSaveTaskCollection (callback, param) {
+function databaseSaveTaskCollection(callback, param) {
 	var dataTmp = ""; //this is for the last saved stage of the task/project collection
 	//count if the task is empty becuse if it is, the dataTmp can not be compared with data
 	var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");	
