@@ -1,21 +1,27 @@
 /***************************************************************************
-Global variables
-- data: stores a TIC of the currently selected task
-- currentTaskId: id of the currently selected task
-- currentTaskName: of the currently selected task
-- connection: a handle to the database connection
+* 
+* Task Information Collection
+* 
+* MIT licence
+* by Matjaž Kljun
+*
 ****************************************************************************/
-var data;
-//var dataPastStates; //I made this one local as it is not needed globally
-var currentTaskId;
-var currentTaskName;
-var connection;
+
+/***************************************************************************
+* 
+* Global variables
+*
+****************************************************************************/
+var data;             //stores a TIC of the currently selected task
+var currentTaskId;    //id of the currently selected task/project
+var currentTaskName;  //name of the currently selected task/project
+var connection;		  //a handle to the database connection
 //currently not using mootools slider - it's slow, it draws additional TIC before the last one
 //var mySlide; 
-var pastTICStatesIds; //array of old ids
-var pastTICStatesCurrentIndex; //array of current viewable old id 
-var pastTICStatesInterval;
-var tempURIforXUL; //for opening preview of an URL in a XUL iframe
+var pastTICStatesIds; //array of old ids used for timeline 
+var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
+var pastTICStatesInterval; //interval for each state to be visible in a playback
+var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -24,22 +30,16 @@ The function is called: after DOM loads
 window.addEvent('domready', function() { //adding different events to DOM elements
 	//create empty object
 	data = {};
-		//$("msg").innerHTML += "v0-";
 	//create DB handle
 	connection = databaseConnect();
-		//$("msg").innerHTML += "v1-";
 	//get the last selected task from the DB
 	currentTaskId = databaseGetLastTask();
-		//$("msg").innerHTML += "v2-";
 	//print out all tasks in the left panel
 	databaseShowTasks();		
-		//$("msg").innerHTML += "v3-";
 	//get and draw data from the last selected task
 	databaseDrawTaskCollection(currentTaskId);
-		//$("msg").innerHTML += "v4-";
 	//draw home, desktop and note icons
 	drawGeneralIcons();
-		//$("msg").innerHTML += "v5-";
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
@@ -59,18 +59,33 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 (function() { databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId) }).periodical(300000);
 //set the last task to the currently selected
 (function() { databaseSetLastTask() }).periodical(180000);
-//try to send the dump of the database every hour ... acctualy it sends it every 7 days
+//try to send the dump of the database every hour ... at sends it every 7 days based on the date in DB
 (function() { databaseDump() }).periodical(3600000);
-//run maintenance like Reindex and Vacuum once a month
+//run maintenance like Reindex and Vacuum once a month based on the date in DB
 (function() { databaseMaintenance() }).periodical(3600000);
 
 /***************************************************************************
-Function draws elements of a selected task on the page
-The function iterates trought object data.
-The function is called
-- databaseDrawTaskCollection(taskid): when a new task is selected
-- doDrop(event): when new items are dropped, saved in global data variable
-  and drawn back on the page
+Function to draw elements of the selected project/task on the page.
+The function are called:
+drawTICElements() function draws elements of a selected task on the page
+	The function iterates trought object data.
+	- databaseDrawTaskCollection(taskid): when a new task is selected
+	- doDrop(event): when new items are dropped, saved in global data variable
+  	  and drawn back on the page
+  	- window.onresize: when a browser window is resized
+  	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
+  	  and saved
+drawTICElementsPastStates(pastStatesId): draws past task states without 
+posibility to change things
+	- playDrawTICElementsPastStates(): when the playback of old states is selected
+playDrawTICElementsPastStates(): calls the drawing if an old state based on 
+pastTICStatesCurrentIndex
+    - databaseDrawTaskCollection(taskid) appended to the show next button on the timelene
+      and to the past states of the task on the mase timeline
+startDrawTICElementsPastStates() : starts the timeline playback
+	- databaseDrawTaskCollection(taskid) appended to the play button
+stopDrawTICElementsPastStates(pastStatesId): stops the timeleni playback
+	- databaseDrawTaskCollection(taskid): appended to the stop and playnext button
 ****************************************************************************/
 function drawTICElements() {
 	var coordinatex = "";
@@ -807,7 +822,7 @@ function drawTICElements() {
 		});	
 
 		//check for overlaping tasks for the informatuon item - 
-		//   if they share information items get array of tasks IDs
+		// if they share information items get array of tasks IDs
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 			//get the table and erease the id of the selected task
 		 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
@@ -865,6 +880,7 @@ function drawTICElements() {
 		}); 
 	});
 }
+
 function drawTICElementsPastStates(pastStatesId) {
 
 	var coordinatexPastStates = "";
@@ -1439,11 +1455,6 @@ function drawTICElementsPastStates(pastStatesId) {
 									"border-radius" : "20px",
 									"background-color" : "rgba(112,138,144,0.6)",
 									"text-align" : "center"
-								},
-								events : {
-									click : function(){
-										databaseSaveTaskCollection(databaseDrawTaskCollection, id);
-									}
 								}		
 							})
 						);
@@ -1486,8 +1497,20 @@ function stopDrawTICElementsPastStates(pastStatesId) {
 }
 
 /***************************************************************************
-Add, edit and delete elements and their values:
-- 
+Add, edit and delete elements and their values
+The function are called:
+addElementValue(key,tag,value): 
+	- drawTICElements(): append to buttons to add date, person, url, note
+deleteElementValue(key,tag,value):
+	- not used anywhere yet
+editElementName(key):
+	- drawTICElements(): edit content of notes by doubleclicking on it
+deleteElement(key, name): deleting the information item
+	- drawTICElements(): append to delete icon of every item/element on the page
+checkDateElement(date,key): check if the due date is approaching and emphasize the value	
+	- drawTICElements(): called for every item if it needs to be emphasized
+	- addElementValue(key,tag,value): check if the newly added value is date
+	  and it needs to be amphasized
 ****************************************************************************/
 
 function addElementValue(key,tag,value) { //adding a value/tag of the information item
@@ -1495,6 +1518,7 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	//we can't just draw because we don't save the new value in DB so the nev value is lost
 	//databaseDrawTaskCollection(currentTaskId);
 
+	//add or change the existng valuein th DOM
 	if ($("information" + key).contains($("list" + tag + key))) {
 		$("list" + tag + key).dispose();
 	}
@@ -1509,10 +1533,12 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
     	checkDateElement(value,key);
     }
 }
+
 function deleteElementValue(key,tag,value) { //deleting a value/tag of the information item
 	//data[key].tag = value;
 }
-function editElementName(key) {
+
+function editElementName(key) { //edit the name=content of notes
 	var name = data[key]["name"];
 	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 		name = name.replace( /<br \/>/gi, "\n");	
@@ -1553,6 +1579,7 @@ function editElementName(key) {
 				}).replaces($("nametext" + key));	
 	$("namearea" + key).focus();
 }
+
 function deleteElement(key, name) { //deleting the information item
 	//delete the element from data with the key
 	delete data[key];
@@ -1560,6 +1587,7 @@ function deleteElement(key, name) { //deleting the information item
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId);
 	printOut("Information item " + name + " was successfully deleted.");
 }
+
 function checkDateElement(date,key) { //check if the due date is approaching and emphasize the value
 	var today = new Date();
 	if ((today.diff(date) > -3) && (today.diff(date) < 7)) {
@@ -1597,7 +1625,8 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 /***************************************************************************
 Function prints the task name of the currently selected task in the centre 
 and title. The function is called:
-- databaseDrawTaskCollection(taskid): when new task is selected and drawn
+	- databaseDrawTaskCollection(taskid): when new task is selected and drawn
+	- databaseSaveEditTaskName(newName, taskid): when a task name is bing changed and saved
 ****************************************************************************/
 function printTaskNameCentre(taskId) {
 	//GET TASK NAME
@@ -1640,6 +1669,13 @@ function printTaskNameCentre(taskId) {
 
 /***************************************************************************
 Draw importance circles on the page
+The function are called:
+drawPICCircles(): 
+	- window.onresize: when the browser window is resized
+	- printTaskNameCentre(taskId): after the name of the task is printed in 
+	  the middle of the page the circles are drawn as well
+drawCentreDot(): draws the red dot in the centre of the page
+	- not used anywhere: for test purposes only
 ****************************************************************************/
 function drawPICCircles(){
 	var circleInnitialSize = parseInt(270*(window.innerWidth/1000));
@@ -1685,6 +1721,7 @@ function drawPICCircles(){
 		step = step-2;
 	}
 }
+
 function drawCentreDot(){
 	//draw a center of a page a red dot (0,0) in coordinate system
 	//$("dot").dispose();
@@ -1706,6 +1743,7 @@ function drawCentreDot(){
 
 /***************************************************************************
 Draw home, desktop and sticky note in the left top corner
+	- window.addEvent('domready': draw them after the DOM is loaded
 ****************************************************************************/
 function drawGeneralIcons(){
 	$("generalIcons").setStyles({
@@ -1806,10 +1844,11 @@ Function connects to the database.
 1. If the database file TaskInformationCollection.sqlite exists, it returns 
    the connection
 2. If the file does not exist, it creates it, creates tables and enetrs a
-   first task in and returns connection
+   first task in and returns the connection handle
 The function is called:
-- global variable var connection = databaseConnect(); so the script uses the 
-  same hndle
+- window.addEvent('domready': after the DOM loades and stores the connection 
+  handle to the global variable var connection = databaseConnect(); so the 
+  script uses the same handle all the time
 ****************************************************************************/
 function databaseConnect() {
 	var dbConn;
@@ -1865,9 +1904,16 @@ function databaseConnect() {
 
 /***************************************************************************
 STORE and GET last selected task
-The function is called:
-- GET startTIC(): when page loads
-- SET databaseDrawTaskCollection(taskid): when a new task is selected
+The function are called:
+databaseGetLastTask() 
+	- window.addEvent('domready': when the DOM is ready 
+	  currentTaskId = databaseGetLastTask();
+databaseSetLastTask()
+    - databaseDrawTaskCollection(taskid): when a new task is selected
+	- databaseDeleteTask(taskid,name): when the task is deleted it sets the 
+	  last task to the current one
+	- (function() { databaseSetLastTask() }).periodical(180000);
+	  saves the current task Id to the last viewed task
 ****************************************************************************/
 function databaseGetLastTask() {
 	//select from DB
@@ -1882,6 +1928,7 @@ function databaseGetLastTask() {
 	}	
 	return curtask;
 }
+
 function databaseSetLastTask() {
 	var statement = connection.createStatement("UPDATE tasks_last SET last_task = :lata WHERE last_id = 1");
 	statement.params.lata = currentTaskId;
@@ -1906,8 +1953,17 @@ function databaseSetLastTask() {
 }
 
 /***************************************************************************
-Send the dump of the database to the server if set in preferences 
-The function is called:
+Database backup and maintenance
+The function are called:
+databaseDump() Send the dump of the database to the server if set in preferences 
+	- (function() { databaseDump() }).periodical(3600000): starts it every hour
+sendJSON(userid,dbdump): sends the JSON of the DB dump to the server
+	- databaseDump(): when the dump is ready
+databaseMaintenance(): performs vacuum and reindexing once a month based on the value
+    stored in the DB table user
+	- (function() { databaseMaintenance() }).periodical(3600000): runs every hour
+compareAndCleanStages(): see beow detailed description 
+	- databaseMaintenance(): before the reindex and vacuuming
 ****************************************************************************/
 function databaseDump() {
 	//get the preference of shared4research2 value and send data only if it is yes == 2
@@ -2056,32 +2112,7 @@ function sendJSON(userid,dbdump) {
  	}).post(data);
 }
 
-function lzw_encode(s) {
-    var dict = {};
-    var data = (s + "").split("");
-    var out = [];
-    var currChar;
-    var phrase = data[0];
-    var code = 256;
-    for (var i = 1; i < data.length; i++) {
-        currChar = data[i];
-        if (dict[phrase + currChar] != null) {
-            phrase += currChar;
-        }
-        else {
-            out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-            dict[phrase + currChar] = code;
-            code++;
-            phrase = currChar;
-        }
-    }
-    out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
-    for (var i = 0; i < out.length; i++) {
-        out[i] = String.fromCharCode(out[i]);
-    }
-    return out.join("");
-}
-
+//vacuum db & reindex 
 function databaseMaintenance() {
 	//do maintenance once a month ... based on the date of the last dump
 	//Get the userid and last date the db was dumped and sent over
@@ -2101,6 +2132,8 @@ function databaseMaintenance() {
 		var lastMaintained = new Date().parse(dateLastMaintained);	
 		var difference = today.diff(lastMaintained);
 		if (difference <= -30){
+			//delete old tasks+ states than are not significanly different (coordinates, size, modification time)
+			compareAndCleanStages();
 
 			//reindex the indexes
 			var statement = connection.createStatement("REINDEX collections_task_id");	
@@ -2173,16 +2206,78 @@ function databaseMaintenance() {
 	}
 }
 
+//if the DB grows too big delete our rows from tasks_collections that have no significant changes
+//compare all consequent states of a task and delete based on compareDataObjectXYZ function
+//if two consequent stages differ only in certain tags(s) it deletes the oldes one
+function compareAndCleanStages(){
+	var tasksArray = [];
+	var statement = connection.createStatement("SELECT * FROM tasks ORDER BY task_id DESC");  
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+	if (statement.state == 1) { 
+		while (statement.executeStep()) { 
+			tasksArray.append([statement.row.task_id]);
+		}
+	}
+	statement.finalize();
+
+	//traverse through all tasks
+	for (var j = 0; j < tasksArray.length; j++ ) {
+		var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");		
+		statement.params.tid = tasksArray[j];
+		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+		if (statement.state == 1) {
+			//need to execute just once to count the # of task states (all collections)
+			statement.executeStep();
+			var numOfCols = parseInt(statement.row.l);
+			statement.finalize();
+			//do a clean-up only if there are more than 5 old states
+            if (numOfCols > 5) { 
+				var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id=:tid ORDER BY coll_id ASC");
+				statement.params.tid = tasksArray[j];
+				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+				if (statement.state == 1) {
+					var tmpArray = [];
+					statement.executeStep();
+					var obj1 = JSON.decode(statement.row.coll_items);
+					var tmpId1 = statement.row.coll_id;
+					statement.executeStep();
+					var obj2 = JSON.decode(statement.row.coll_items);
+					var tmpId2 = statement.row.coll_id; 
+					if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
+						tmpArray.append([tmpId1]);
+					}
+					while (statement.executeStep()) {
+						obj1 = obj2;
+						tmpId1 = tmpId2;
+						obj2 = JSON.decode(statement.row.coll_items);
+						tmpId2 = statement.row.coll_id;
+						if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
+							tmpArray.append([tmpId1]);
+						}
+					}
+					statement.finalize(); 	
+				} else {
+					printOut("Not a valid SQL statement: INSERT INTO tasks (task_name) VALUES(:tn)");
+				}
+
+				for (var i=0; i < tmpArray.length; i++) {
+					//$("msg").innerHTML += " -" + tmpArray[i] + "- ";
+					databaseDeleteTaskStage(tmpArray[i]);
+				}
+			}
+		}
+	}
+}
+
 /***************************************************************************
 Function prints out the list of all available tasks from the database to the 
 side panel. The function is called:
-- startTIC (): when the page loads
-- databaseEnterNewTask(): when new task is entered
-- probably later when we'll add, edit and delete tasks from the list
+	- window.addEvent('domready',: when the DOM loads
+	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
+	- databaseEnterNewTask(): when new task is entered
+	- databaseDeleteTask(taskid,name): when a task is deleted
 ****************************************************************************/
-function databaseShowTasks() {
-	//connect to DB
-	//connection = databaseConnect();	   	  
+function databaseShowTasks() {	   	  
 	//clear the tasks from DOM
 	$("tasksList").empty(); 
 	//select from DB
@@ -2311,7 +2406,10 @@ function databaseShowTasks() {
 
 /***************************************************************************
 Function gets the task name from the task id. The function is called:
-- databaseDrawTaskCollection(taskid): when new task is selected and drawn
+	- drawTICElements(): when overlapping tasks to show a name if mouseovered 
+	  the overlapping number in a circle above the item icon
+	- drawTICElementsPastStates(pastStatesId): the same as above
+	- printTaskNameCentre(taskId): to print a name in the centre of the page
 ****************************************************************************/
 function databaseGetTaskName(taskId) {
 	//GET TASK NAME
@@ -2351,9 +2449,11 @@ function databaseGetTaskName(taskId) {
 /***************************************************************************
 Changes and saves the task name text. Changing creates a form field around
 the task name and creates a save button 
-The function is called :
-- CHANGE databaseShowTasks(): on button click
-- SAVE changeEditTaskName(taskid): when the name is edited
+The functiona re called :
+changeEditTaskName(taskid) 
+	- databaseShowTasks(): append to the button edit besides task name in a side panel
+databaseSaveEditTaskName(newName, taskid)	
+	- changeEditTaskName(taskid): append to the Save button when the name is edited
 ****************************************************************************/
 function changeEditTaskName(taskid){
 	var taskText = $("taskName" + taskid).get('text');
@@ -2374,6 +2474,7 @@ function changeEditTaskName(taskid){
 			}							
 		}).replaces($("taskEdit" + taskid))
 }
+
 function databaseSaveEditTaskName(newName, taskid) {
 	var statement = connection.createStatement("UPDATE tasks SET task_name = :tn WHERE task_id= :tid");
 	statement.params.tn = newName;
@@ -2403,9 +2504,16 @@ function databaseSaveEditTaskName(newName, taskid) {
 }
 
 /***************************************************************************
-Function that deletes the task and all the associated collections 
-The function is called:
-- databaseShowTasks(): on button click
+Function to delete the whole task or just a particular stage of the task
+The functiona are called:
+databaseDeleteTask(taskid,name): deletes the task and all the associated collections
+	- databaseShowTasks(): append to the button bedised task name in the side panel
+databaseDeleteTaskStage(coll_id): deletes just one stage of a task
+	- databaseSaveTaskCollection (callback, param): if the new task stage and the 
+	  last one in the DB are differenc sheck if they differ in file sizes and mod 
+	  times onyl and if the d delete the one in the DB
+	- compareAndCleanStages(): compares two consequest stages of every task and
+	  if they don't significantly differ (e.g. only coordinates) the older one is deleted
 ****************************************************************************/
 function databaseDeleteTask(taskid,name){
 	var statement1 = connection.createStatement("DELETE FROM tasks_collections WHERE task_id= :tid");
@@ -2449,17 +2557,27 @@ function databaseDeleteTask(taskid,name){
 	}	
 }
 
+function databaseDeleteTaskStage(coll_id){
+	var statement = connection.createStatement("DELETE FROM tasks_collections WHERE coll_id= :cid");
+	statement.params.cid = coll_id;
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+	if (statement.state == 1) { 
+		statement.executeStep();
+	} else {
+		printOut("Not valid SQL statements: DELETE FROM tasks...");
+	}	
+}
+
 /***************************************************************************
 Function draws all information items of a selected task from the side panel
-It receives the ID od a tasks from the global variable currentTaskId.
-1. if the statement retuns 0 rows (new task) it prints out the manual and it
-	fades it away when the first item is dragged on
-2. if the statement returns rows it orders them by timestamp, prints out the 
-	first (last entered one) and adds the rest in the time line on the side
+It sets the global variable currentTaskId to the received taskid
+It gets all the rows (states) of the selected task, it orders them by timestamp, 
+prints out the first (last entered one) and adds the rest to the timeline on the side
 The function is called:
-- startTIC(): when the page loads
-- not really called but in databaseShowTasks() when listing tasks they 
-  call this function whe a task is selected
+	- window.addEvent('domready': when the page loads
+	- databaseShowTasks() append to the task names in the side panel
+	- databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId): as 
+	  a callback parameter whenever the task is saved
 ****************************************************************************/
 function databaseDrawTaskCollection(taskid) {
 	//remove the messages div before drawing the next collection
@@ -2711,7 +2829,6 @@ function databaseDrawTaskCollection(taskid) {
 									},							
 									events : {
 										click : function(){
-											//drawTICElementsPastStates(pastTICStatesIds[index]); //return false;
 											pastTICStatesCurrentIndex = index;
 											clearBackgroundTimelineItems();
 											playDrawTICElementsPastStates();
@@ -2762,88 +2879,95 @@ function databaseDrawTaskCollection(taskid) {
 Function saves all information items of the currently selected task (global
 variable currentTaskId) to the database
 The function is called:
-- drawTICElements(): when items are moved around
-- doDrop(event): when new items are dropped on the page
+	- doDrop(event): when new items/lements are dragged to the page 
+	- addNewNote(): when a new note is put on the page
+	- deleteElement(key, name): when an element is deleted from the page
+	- window.onunload: when the browser tab or windows closes
+	- (function() { databaseSaveTaskCollection(databaseDrawTaskCollection, 
+	   currentTaskId) }).periodical(300000): checks for changes every 5 minutes
+	- databaseShowTasks(): appand to the task name so it saves the task before task changes
+	- drawTICElements(): append to the links of overlapping tasks (the same as above)
 ****************************************************************************/
 function databaseSaveTaskCollection (callback, param) {
-	//start saving the collection only if the data has something in it. 
-	//If it is empty don't bother WE SHOULD Othrwise we cant delete the last item of a task
-	//if (JSON.encode(data) != "{}") {
-		var dataTmp = "";
-		//count if the task is empty becuse if it is, the dataTmp can not be compared with data
-		var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");	
-		statement.params.tid = currentTaskId;
-		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.		
-		if (statement.state == 1) {
-			statement.executeStep();
-			var rows = statement.row.l;
-			//finalize the statement as we gather all data
-			statement.finalize(); 
+	var dataTmp = ""; //this is for the last saved stage of the task/project collection
+	//count if the task is empty becuse if it is, the dataTmp can not be compared with data
+	var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");	
+	statement.params.tid = currentTaskId;
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.		
+	if (statement.state == 1) {
+		statement.executeStep();
+		var rows = statement.row.l;
+		//finalize the statement as we gather all data
+		statement.finalize(); 
 
-			/*CHECK THE OLD STATES*/
-			//if there are already some rows related to the task find the last one 
-			//to copmpare it to the current
-			if (parseInt(rows) > 0){
-				var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC LIMIT 1");	
-				statement.params.tid = currentTaskId;
-				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-				if (statement.state == 1) {
-					statement.executeStep();	
-					var dataTMP = statement.row.coll_items;
-					//finalize the statement as we got the last state of the task from the database
-					statement.finalize();
-				} else {
-					printOut("Not a valid SQL statement: SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC LIMIT 1");
-				}
+		/*CHECK THE OLD STATES*/
+		//if there are already some rows related to the task find the last one 
+		//to copmpare it to the current
+		if (parseInt(rows) > 0){
+			var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC LIMIT 1");	
+			statement.params.tid = currentTaskId;
+			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+			if (statement.state == 1) {
+				statement.executeStep();	
+				var dataTMP = statement.row.coll_items;
+				var previousStageId = statement.row.coll_id;
+				//finalize the statement as we got the last state of the task from the database
+				statement.finalize();
 			} else {
-				//if there are no past states in the database dataTMP is empty
-				dataTMP = "{}";
+				printOut("Not a valid SQL statement: SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC LIMIT 1");
 			}
-
-			/*SAVE THE NEW STATE IF IT'S DIFFERENT FROM THE PREVIOUS*/
-			//check if the old state is the same as the new one
-			if (dataTMP == JSON.encode(data)) {
-				//nothing has changed
-				callback(param);
-			} else {		
-				//set the time variables
-				var currentTime = new Date().format('db');
-				var statement = connection.createStatement("INSERT INTO tasks_collections (task_id, coll_timestamp, coll_items) VALUES(:tid, :ts, :items)");
-				statement.params.tid = currentTaskId;
-				statement.params.ts = currentTime;
-				statement.params.items = JSON.encode(data);
-				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-				if (statement.state == 1) {
-					connection.executeAsync([statement], 1, {
-						handleCompletion : function(aReason) {
-							// if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-			  				// 	printOut("Query canceled or aborted!" + aReason);
-					  		// } else {
-					  		// 	callback(param);
-					  		// }   
-			  				callback(param);
-			  				statement.finalize();   				
-			  			},
-						handleError : function(aError) {printOut(aError.message);},
-						handleResult : function() {}
-					});
-	  			} else {
-					printOut("Not a valid SQL statement: INSERT INTO tasks_collections (task_id, coll_timestamp, coll_items) VALUES(:tid, :ts, :items)");
-				}
-			}
-
 		} else {
-			printOut("Not a valid SQL statement: SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");
-		}	 		
-	//} else {
-	//	callback(param);
-	//}
+			//if there are no past states in the database dataTMP is empty
+			dataTMP = "{}";
+		}
+
+		/*SAVE THE NEW STATE IF IT'S DIFFERENT FROM THE PREVIOUS*/
+		//check if the old state is the same as the new one
+		if (dataTMP == JSON.encode(data)) {
+			//nothing has changed
+			callback(param); //rteqrtwertwertwer
+		} else {	
+			//The STRINGS are NOT the same .. DO some more comparison
+			if (compareDataObjectSizeMod(data, JSON.decode(dataTMP)) != false) {
+				//if true the objects differ in size and modification time only and we delete the old one
+				databaseDeleteTaskStage(previousStageId); 
+			}
+
+			//set the time variables
+			var currentTime = new Date().format('db');
+			var statement = connection.createStatement("INSERT INTO tasks_collections (task_id, coll_timestamp, coll_items) VALUES(:tid, :ts, :items)");
+			statement.params.tid = currentTaskId;
+			statement.params.ts = currentTime;
+			statement.params.items = JSON.encode(data);
+			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+			if (statement.state == 1) {
+				connection.executeAsync([statement], 1, {
+					handleCompletion : function(aReason) {
+						// if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+		  				// 	printOut("Query canceled or aborted!" + aReason);
+				  		// } else {
+				  		// 	callback(param);
+				  		// }   
+		  				callback(param);
+		  				statement.finalize();   				
+		  			},
+					handleError : function(aError) {printOut(aError.message);},
+					handleResult : function() {}
+				});
+  			} else {
+				printOut("Not a valid SQL statement: INSERT INTO tasks_collections (task_id, coll_timestamp, coll_items) VALUES(:tid, :ts, :items)");
+			}
+		}
+
+	} else {
+		printOut("Not a valid SQL statement: SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");
+	}	 		
 }
 
 /***************************************************************************
-Function new task to the database from the form and calls a function that 
+Enters a new task to the database from the form and calls a function that 
 prints new task list
-The function is called: DOM FORM 
+	- append to the form on the Projects/Tasks panel 
 ****************************************************************************/
 function databaseEnterNewTask() {
 	var statement = connection.createStatement("INSERT INTO tasks (task_name) VALUES(:tn)");
@@ -2873,6 +2997,10 @@ function databaseEnterNewTask() {
 /***************************************************************************
 Function that finds overlapping tasks for a given URL and returns an array
 of coresponding IDs
+The function is called:
+	- drawTICElements(): checks for every element/item if it is in any other
+	  task
+	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
 function databaseOverlapingTasks(informationPath) {
 	var tasksIdsArray = [];
@@ -2893,12 +3021,6 @@ function databaseOverlapingTasks(informationPath) {
 		printOut("Not a valid SQL statement: SELECT * FROM tasks_collections WHERE coll_items LIKE '%:pt%'");
 		return false;
 	}	
-}
-
-/***************************************************************************
-****************************************************************************/
-function checkDrag(event) {
-	//check wether the dropped elements are of right type
 }
 
 /***************************************************************************
@@ -2924,7 +3046,8 @@ Dragged types:
 	text/html 4: (string) : [The additional methods ...] - USE THIS
 	text/plain 4: (string) : [The additional methods ...] 
 * Other Types: FOLDER, ... maybe implement NOTE, TALK, TODO
-The function is called: NONE		
+The function is called: 
+	- when an item is dropped on the page		
 ****************************************************************************/
 function doDrop(event) { //add new information items to the page and variable data
 	//do not propagate default actions when dragging over
@@ -3093,7 +3216,7 @@ function doDrop(event) { //add new information items to the page and variable da
 /***************************************************************************
 Function that finds next key which is one more than the last inserted.
 The function is called:
-- 
+	-drawGeneralIcons(): append to the note icon s when it's clicked it calls this finction 
 ****************************************************************************/
 function addNewNote() {
 	var nextKey = findNextKey(data);			
@@ -3111,9 +3234,10 @@ function addNewNote() {
 }
 
 /***************************************************************************
-Function that finds next key which is one more than the last inserted.
-The function is called:
-- 
+Function that returns next key from an object which is one more than the last 
+inserted. The function is called:
+	- doDrop(event): when new items are dropped on the page it gets the id for it
+	- addNewNote(): when a nw note is added .. the same as above
 ****************************************************************************/
 function findNextKey(datatmp) {
 	var tmplenght = Object.getLength(datatmp);
@@ -3129,8 +3253,8 @@ function findNextKey(datatmp) {
 /***************************************************************************
 Function that iterates through a given object and deletes all content in it
 The function is called:
-- databaseDrawTaskCollection(taskid): when new task is selected and no TICs
-- ... past states?
+	- databaseDrawTaskCollection(taskid): empties the data object so it can 
+	  get the new task stage in
 ****************************************************************************/
 function emptyObject(datatmp) {
 	Object.each (datatmp, function(value, key){
@@ -3140,18 +3264,31 @@ function emptyObject(datatmp) {
 
 /***************************************************************************
 Prints messages on the screen
+The functions are called: 
+printOut(message) 
+	- whenever there's a message to print out
+printOutHide()
+	- databaseConnect(): it hides the printOut message so the About box
+	  can be shown when the TIc is run for the firts time
+printAboutShow()
+    - databaseConnect(): prints out the About box when the TIC is run for the first time
+printAboutHide()
+	- append to the button in the About box     
 ****************************************************************************/
 function printOut(message){	
 	$("printText").removeClass("hidden");
 	(function() {$("printText").addClass("hidden")}).delay(4000);
 	$("printText").set('html', message);
 }
+
 function printOutHide(){	
 	$("printText").addClass("hidden");
 }
+
 function printAboutShow(){	
 	$("aboutI").removeClass("hidden");
 }
+
 function printAboutHide(){	
 	$("aboutI").addClass("hidden");
 	//print out the message to drag some data over
@@ -3160,6 +3297,10 @@ function printAboutHide(){
 
 /***************************************************************************
 Converts bytes to human readable format
+The function is called:
+	- drawTICElements(): converts size in the more information box of every 
+	  item that has this value
+	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
 function bytesToSize(bytes) {  
 	//thx http://bateru.com/news/2011/08/code-of-the-day-javascript-convert-bytes-to-kb-mb-gb-etc/
@@ -3179,9 +3320,17 @@ function bytesToSize(bytes) {
 }
 
 /***************************************************************************
+Function that open applications or file manager
+The functions are called:
 fileOpen(filetmp) Open files with local applications
+	- drawTICElements(): when clicked on an element/item name (files)
+	- drawTICElementsPastStates(pastStatesId): the same as above
 folderOpen(filetmp) and folderOpenLinux(filetmp) Open folder of a selected 
 	file or folder
+	- drawTICElements(): when clicked on a path of an element/item in the 
+	  more information box for files and folders
+	- drawTICElementsPastStates(pastStatesId): the same as above
+	- drawGeneralIcons(): opening a home folder or desktop
 ****************************************************************************/
 function fileOpen(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
@@ -3207,6 +3356,9 @@ function folderOpen(filetmp){
 
 /***************************************************************************
 Get a file size from the given file
+The function is called:
+	- drawTICElements(): checkes for the new size 
+	  in the more information box of every item that has this value
 ****************************************************************************/
 function fileSizes(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
@@ -3220,6 +3372,10 @@ function fileSizes(filetmp){
 
 /***************************************************************************
 Get a modification time from the given file
+The function is called:
+	- drawTICElements(): checkes for the new modification time
+	  in the more information box of every item that has this value
+	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
 function fileModified(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
@@ -3233,6 +3389,10 @@ function fileModified(filetmp){
 
 /***************************************************************************
 Convert unix time to yyyy-mm-dd hh:mm
+The function is called:
+	- drawTICElements(): converts the modification time
+	  in the more information box of every item that has this value
+	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
 function unixToTime(unixTime){
 	// var a = new Date(unixTime); //*1000);  
@@ -3267,6 +3427,9 @@ function unixToTime(unixTime){
 
 /***************************************************************************
 The function gets the current date and time in YYYY-MM-DD HH:MM:SS format
+The function is called:
+	- doDrop(event): puts a time stamp to the newly dropped item on a page
+ 	- addNewNote(): the same as above 
 ****************************************************************************/
 function getTimestamp(){
 	var time = new Date().format('db');
@@ -3275,6 +3438,9 @@ function getTimestamp(){
 
 /***************************************************************************
 The function clears the background of all the past states in the timeline tab
+The function is called:
+	- databaseDrawTaskCollection(taskid): clears the bg of possible highlighted
+	  items in a timeline on the side panel
 ****************************************************************************/
 function clearBackgroundTimelineItems(){
 	Array.each(pastTICStatesIds, function (data, index){
@@ -3296,12 +3462,17 @@ function tipShow(el) {
 	);
 	$('tip').set('class', 'tipVisible');
 }
+
 function tipHide(el) {
 }
 
 /***************************************************************************
 Calculate the angle from a point on a page to the centre.
 Return array angle & quadrant
+The function is called:
+	- drawTICElements(): gets the angle of arrows for every item/element on 
+	  the page and when the items are moved it changes it
+	- drawTICElementsPastStates(pastStatesId): the same as above except moving
 ****************************************************************************/
 function getAngle(coorX,coorY) {
 	//transform the coordinates so the centre of a page is (0,0)
@@ -3332,7 +3503,11 @@ function getAngle(coorX,coorY) {
 }
 
 /***************************************************************************
-Clean the html of all formating and empty tags
+Clean html of all formating and empty tags
+The function is called:
+	- drawTICElements(): before showing notes
+	- drawTICElementsPastStates(pastStatesId): the same as above 
+	- doDrop(event): when text is dragged over it cleans it before saving
 ****************************************************************************/
 function cleanHtml(str) {
 	str = str.replace( /<\s*p[^>]+>/gi, "<p>");
@@ -3355,6 +3530,8 @@ function cleanHtml(str) {
 /***************************************************************************
 Returns a random date between two other dates
 var randomDateTmp = randomDate('1999-06-08 16:34:52', new Date()); 
+The function is called:
+	- not called .. used for testing purposes
 ****************************************************************************/
 function randomDate(date1, date2) {
    var minD = new Date().parse(date1).format('%s');
@@ -3365,7 +3542,159 @@ function randomDate(date1, date2) {
 }
 
 /***************************************************************************
-Print out preferences. For testing purposes only 
+Compares specific two data objects and finds the differences between them.
+Never checking: extension, type, path, timestamp
+compareDataObjectSizeMod(data1, data2): 
+	returns TRUE: if changed size, modified
+	   event: The last stored state in DB will be deleted after the new one is saved.
+	returns FALSE: if changed coordinates, name, vote, email, person, arrow, url, note, date, vote
+	returns FALSE: objects are not of the same length 
+	   event: New stage will be saved and no previous deleted
+The function is called:
+	- compareAndCleanStages(): deleted stages without significant changes
+	- databaseSaveTaskCollection (callback, param): checked if the new state differs in 
+	  size and modofication only 
+compareDataObjectCoordinates(data1, data2): 
+	returns TRUE: if changed coordinates
+	returns FALSE: if changed size, modified, name, vote, email, person, arrow, url, note, date, vote
+	returns FALSE: objects are not of the same length 
+The function is called:	   
+	- compareAndCleanStages(): deleted stages without significant changes
+****************************************************************************/
+function compareDataObjectSizeMod(data1, data2) {
+	//check if the objects are of the same length 
+	//if they are not return false and the new task will be saved.
+	if (Object.getLength(data1) != Object.getLength(data2)) {
+		return false;
+		//this means an item has been added or deleted to the new stage
+		//this can happen because a new state is also saved when items are
+		//added doDrop(event) or deleted deleteElement(key, name)
+	} else { 
+		//if they are of the same length compare values
+		var countChangesT = 0; //returning true if not null
+		var countChangesF = 0; //returning false if not null
+		Object.each (data2, function(value, key){
+ 
+			//CHECK if the arrays are the same length ...
+			//find out which array is longer so we'll start traversing that one ...
+			if (Object.getLength(value) <= Object.getLength(data1[key])) {
+				var dataOuter = data1[key];
+				var dataInner = value;
+			} else {
+				var dataOuter = value;
+				var dataInner = data1[key];					
+			}
+
+			//traverse the item' s tags of the longer array 
+			//and check which one does not exist in the shorter one and which one changed				
+			Object.each(dataOuter, function(item, index){
+				if (dataInner[index] != null) { //check if index exists in the other array
+					//$("msg").innerHTML += "-y-";		
+					if (dataInner[index] != item) { //check if he value has changed
+		    			if (index == "modified" || index == "size") {
+		    				countChangesT = countChangesT + 1;
+		    				//$("msg").innerHTML += "1-i:" + index + "-item:" + item;
+	    				} 
+	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
+	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
+	    					 || index == "note" || index == "date" || index == "vote") {
+	    					countChangesF = countChangesF + 1;
+	  						//$("msg").innerHTML += "2-i:" + index + "-item:" + item;
+	    				}
+    				}
+				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
+		    			if (index == "modified" || index == "size") {
+		    				countChangesT = countChangesT + 1;
+		    				//$("msg").innerHTML += "3-i:" + index + "-item:" + item;
+	    				} 
+	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
+	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
+	    					 || index == "note" || index == "date" || index == "vote") {
+	    					countChangesF = countChangesF + 1;
+							//$("msg").innerHTML += "4-i:" + index + "-item:" + item;
+	    				}
+				}
+			});
+
+		});
+
+		if (countChangesF > 0){
+			return false;
+		} else {
+			return true;
+		}
+	}
+}
+
+function compareDataObjectCoordinates(data1, data2) {
+	//check if the objects are of the same length 
+	//if they are not return false and the new task will be saved.
+	if (Object.getLength(data1) != Object.getLength(data2)) {
+		return false;
+		//this means an item has been added or deleted to the new stage
+		//this can happen because a new state is also saved when items are
+		//added doDrop(event) or deleted deleteElement(key, name)
+	} else { 
+		//if they are of the same length compare values
+		var countChangesT = 0; //returning true if not null
+		var countChangesF = 0; //returning false if not null
+		Object.each (data2, function(value, key){
+ 
+			//CHECK if the arrays are the same length ...
+			//find out which array is longer so we'll start traversing that one ...
+			if (Object.getLength(value) <= Object.getLength(data1[key])) {
+				var dataOuter = data1[key];
+				var dataInner = value;
+			} else {
+				var dataOuter = value;
+				var dataInner = data1[key];					
+			}
+
+			//traverse the item' s tags of the longer array (if deleting tags will ever be implemented)
+			//and check which one does not exist in the shorter one and which one changed				
+			Object.each(dataOuter, function(item, index){
+				if (dataInner[index] != null) { //check if index exists in the other array
+					//$("msg").innerHTML += "-y-";		
+					if (dataInner[index] != item) { //check if he value has changed
+		    			if (index == "coordinatex" || index == "coordinatey") {
+		    				countChangesT = countChangesT + 1;
+		    				//$("msg").innerHTML += "1-i:" + index + "-item:" + item;
+	    				} 
+	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
+	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
+	    					 || index == "note" || index == "date" || index == "vote") {
+	    					countChangesF = countChangesF + 1;
+	  						//$("msg").innerHTML += "2-i:" + index + "-item:" + item;
+	    				}
+    				}
+				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
+		    			if (index == "coordinatex" || index == "coordinatey") {
+		    				countChangesT = countChangesT + 1;
+		    				//$("msg").innerHTML += "3-i:" + index + "-item:" + item;
+	    				} 
+	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
+	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
+	    					 || index == "note" || index == "date" || index == "vote") {
+	    					countChangesF = countChangesF + 1;
+							//$("msg").innerHTML += "4-i:" + index + "-item:" + item;
+	    				}
+				}
+			});
+
+		});
+
+		if (countChangesF > 0){
+			return false;
+		} else {
+			return true;
+		}
+	}
+}
+
+/***************************************************************************
+Print out preferences. 
+The function is called:
+	- for testing purposes only 
 ****************************************************************************/
 function getPreferences(){
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
