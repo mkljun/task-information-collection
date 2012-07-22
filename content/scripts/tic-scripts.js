@@ -2134,6 +2134,8 @@ function databaseMaintenance() {
 		if (difference <= -30){
 			//delete old tasks+ states than are not significanly different (coordinates, size, modification time)
 			compareAndCleanStages();
+			//we need to redraw the current task so the old stages are updated if some are deleted
+			databaseDrawTaskCollection(currentTaskId);
 
 			//reindex the indexes
 			var statement = connection.createStatement("REINDEX collections_task_id");	
