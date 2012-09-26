@@ -98,8 +98,39 @@ function drawTICElements() {
 	$("tasknametext").set('html', currentTaskName);
 	// draw all elements from the data object
 	Object.each (data, function(value, key){
+		var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 		//find item type and icon
-		icon = "images/" + value["extension"];		
+		if ((value["type"] == "FILE")) {
+			if (fileExt.toLowerCase() == "exe") {
+				//icon of EXE file - program or software  
+				var ios = Components.classes["@mozilla.org/network/io-service;1"].
+				  getService(Components.interfaces.nsIIOService);
+				var fph = ios.getProtocolHandler("file").
+				  QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+				var lf = Components.classes["@mozilla.org/file/local;1"].
+				  createInstance(Components.interfaces.nsILocalFile);
+				lf.initWithPath(value["path"]);
+				var f = lf.QueryInterface(Components.interfaces.nsIFile);
+				var us = fph.getURLSpecFromFile(f);
+				icon = "moz-icon://" + us + "?size=128";
+			} else {
+				//icon of a normal file
+				icon = "moz-icon://." + fileExt + "?size=128";
+			}
+		} else if ((value["type"] == "FOLDER")) {
+			//var ext = "icons_content/FOLDER.png";
+			if (Browser.Platform.mac) {
+				icon = "images/icons_content/FOLDER-OSX.png";
+			} else if (Browser.Platform.win) {
+				icon = "images/icons_content/FOLDER-WIN.png";
+			} else {
+				icon = "images/icons_content/FOLDER-GEN.png";
+			}
+		} else if ((value["type"] == "URL")) {				
+			icon = "images/icons_content/URL.png";		
+		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+			icon = "images/icons_content/GEN.png";					
+		}
 
 		//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
 		coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
@@ -110,7 +141,6 @@ function drawTICElements() {
 		} else {
 			name = value["name"].replace(/_/gm, ' ');
 		}
-		var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 
 		//### BACKGROUND
 		$("itemsList").adopt(
@@ -132,7 +162,7 @@ function drawTICElements() {
 			$("item" + key).setStyle('height', '140px');
 			$("item" + key).setStyle('background-image', 'url(images/note.png)');
 		}
-		//### ICON 
+		//### ICON		
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {		
 			$("item" + key).adopt( //"div#icon"
 				new Element("div#icon" + key, {
@@ -140,7 +170,7 @@ function drawTICElements() {
 						height : "60px",
 					}
 				}).adopt(
-					new Element("img", {
+					new Element("img#iconimg" + key, {
 						src : icon,
 						alt : "Icon",
 						title : "Expand information",				
@@ -199,6 +229,9 @@ function drawTICElements() {
 					})
 				)
 			);	
+		}
+		if (value["type"] == "FILE") {
+			$("iconimg" + key).setStyles({width: 35, top: 5, left: 3 });
 		}
 		// get the favicon of an url and place it over the icon
 		if (value["type"] == "URL") {
@@ -899,21 +932,39 @@ function drawTICElementsPastStates(pastStatesId) {
 
 		// draw all elements from the data object
 		Object.each (dataPastStates, function(value, key){
-
-
-			//find item type and icon
-			icon = "images/" + value["extension"];
-
-			//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
-			coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
-			coordinatey = (value["coordinatey"]*(window.innerHeight/1000)).toFixed(parseInt(0));	
-
-			if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
-				name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
-			} else {
-				name = value["name"].replace(/_/gm, ' ');
-			}
 			var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
+			//find item type and icon
+			if ((value["type"] == "FILE")) {
+				if (fileExt.toLowerCase() == "exe") {
+					//icon of EXE file - program or software  
+					var ios = Components.classes["@mozilla.org/network/io-service;1"].
+					  getService(Components.interfaces.nsIIOService);
+					var fph = ios.getProtocolHandler("file").
+					  QueryInterface(Components.interfaces.nsIFileProtocolHandler);
+					var lf = Components.classes["@mozilla.org/file/local;1"].
+					  createInstance(Components.interfaces.nsILocalFile);
+					lf.initWithPath(value["path"]);
+					var f = lf.QueryInterface(Components.interfaces.nsIFile);
+					var us = fph.getURLSpecFromFile(f);
+					icon = "moz-icon://" + us + "?size=128";
+				} else {
+					//icon of a normal file
+					icon = "moz-icon://." + fileExt + "?size=128";
+				}
+			} else if ((value["type"] == "FOLDER")) {
+				//var ext = "icons_content/FOLDER.png";
+				if (Browser.Platform.mac) {
+					icon = "images/icons_content/FOLDER-OSX.png";
+				} else if (Browser.Platform.win) {
+					icon = "images/icons_content/FOLDER-WIN.png";
+				} else {
+					icon = "images/icons_content/FOLDER-GEN.png";
+				}
+			} else if ((value["type"] == "URL")) {				
+				icon = "images/icons_content/URL.png";		
+			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+				icon = "images/icons_content/GEN.png";					
+			}
 
 			//### BACKGROUND
 			$("itemsList").adopt(
@@ -999,6 +1050,9 @@ function drawTICElementsPastStates(pastStatesId) {
 					)
 				);	
 			}
+			if (value["type"] == "FILE") {
+				$("iconimg" + key).setStyles({width: 35, top: 5, left: 3 });
+			}			
 			// get the favicon of an url and place it over the icon
 			if (value["type"] == "URL") {
 				var url = value["path"].match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/)[2];
@@ -3099,28 +3153,27 @@ function doDrop(event) { //add new information items to the page and variable da
 				//if (extension.length > 6) {
 				if(fileDragged.isDirectory()) { 
 					fileType = "FOLDER";
-					var ext = "icons_content/FOLDER.png";
 				} else {
 					fileType = "FILE";
 					//check if extension exists in array of available images
-					var extAvailable = ["ani", "wma", "aac", "ac3", "ai", "aiff", "asf", "au", "avi", 
-										"bat", "bin", "bmp", "bup", "c", "cab", "cal", "cat", "cpp", 
-										"css", "cur", "dat", "dcr", "der", "dic", "dll", "dmg", "doc", 
-										"docx", "dotx", "dvd", "dwg", "dwt", "dxf", "eps", "exe", "flv", 
-										"fon", "gif", "h", "hlp", "hpp", "hst", "html", "ico", "ics",
-										"ifo", "inf", "ini", "iso", "java", "jif", "jpg", "key", "log", 
-										"m4a", "mid", "mmf", "mmm", "mov", "mp2", "mp2v", "mp3", "mp4", 
-										"mpeg", "mpg", "msp", "odf", "ods", "odt", "otp", "ots", "ott", 
-										"pdf", "php", "png", "ppt", "pptx", "psd", "py", "qt", "ra", 
-										"rar", "rb", "reg", "rtf", "sql", "tga", "tgz", "theme", 
-										"tiff", "tlb", "ttf", "txt", "vob", "wav", "wmv", "wpl", "wri", 
-										"xls", "xlsx", "xml", "xsl", "yml", "zip"];
-					var tmp = extension.toLowerCase();									
-		  			if (extAvailable.contains(tmp)) {		   						
-						var ext = "icons_files/" + tmp + ".png";
-					} else {
-						var ext = "icons_content/GEN.png";
-					}
+					// var extAvailable = ["ani", "wma", "aac", "ac3", "ai", "aiff", "asf", "au", "avi", 
+					// 					"bat", "bin", "bmp", "bup", "c", "cab", "cal", "cat", "cpp", 
+					// 					"css", "cur", "dat", "dcr", "der", "dic", "dll", "dmg", "doc", 
+					// 					"docx", "dotx", "dvd", "dwg", "dwt", "dxf", "eps", "exe", "flv", 
+					// 					"fon", "gif", "h", "hlp", "hpp", "hst", "html", "ico", "ics",
+					// 					"ifo", "inf", "ini", "iso", "java", "jif", "jpg", "key", "log", 
+					// 					"m4a", "mid", "mmf", "mmm", "mov", "mp2", "mp2v", "mp3", "mp4", 
+					// 					"mpeg", "mpg", "msp", "odf", "ods", "odt", "otp", "ots", "ott", 
+					// 					"pdf", "php", "png", "ppt", "pptx", "psd", "py", "qt", "ra", 
+					// 					"rar", "rb", "reg", "rtf", "sql", "tga", "tgz", "theme", 
+					// 					"tiff", "tlb", "ttf", "txt", "vob", "wav", "wmv", "wpl", "wri", 
+					// 					"xls", "xlsx", "xml", "xsl", "yml", "zip"];
+					// var tmp = extension.toLowerCase();									
+		  			// if (extAvailable.contains(tmp)) {		   						
+					// 	var ext = "icons_files/" + tmp + ".png";
+					// } else {
+					// 	var ext = "icons_content/GEN.png";
+					// }
 				}
 				//set the global nexKey variable to the next highest index
 				var nextKey = findNextKey(data);
@@ -3128,7 +3181,6 @@ function doDrop(event) { //add new information items to the page and variable da
 						type : fileType,
 						path : fullPath,
 						name : fileDragged.leafName,
-						extension : ext,
 						coordinatex : coorX,
 						coordinatey : coorY,
 						size : fileDragged.fileSize,
@@ -3153,7 +3205,6 @@ function doDrop(event) { //add new information items to the page and variable da
 					type : "URL",
 					path : url,
 					name : title[1],
-					extension : "icons_content/URL.png",					
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
@@ -3169,7 +3220,6 @@ function doDrop(event) { //add new information items to the page and variable da
 					type : "TEXT",
 					path : "",
 					name : textDragged,
-					extension : "icons_content/TEXT.png",
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
@@ -3185,7 +3235,6 @@ function doDrop(event) { //add new information items to the page and variable da
 					type : "TEXT",
 					path : "",
 					name : textDragged,
-					extension : "icons_content/TEXT.png",
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
@@ -3202,7 +3251,6 @@ function doDrop(event) { //add new information items to the page and variable da
 					type : "HTML",
 					path : "",
 					name : textDragged,
-					extension : "icons_content/TEXT.png",					
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
