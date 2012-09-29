@@ -98,8 +98,9 @@ function drawTICElements() {
 	$("tasknametext").set('html', currentTaskName);
 	// draw all elements from the data object
 	Object.each (data, function(value, key){
-		var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
+
 		//find item type and icon
+		var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 		if ((value["type"] == "FILE")) {
 			if (fileExt.toLowerCase() == "exe") {
 				//icon of EXE file - program or software  
@@ -159,9 +160,21 @@ function drawTICElements() {
 		);
 		//Set the background for notes, text and html
 		if (value["type"] == "NOTE" || value["type"] == "TEXT" || value["type"] == "HTML") {
-			$("item" + key).setStyle('height', '140px');
-			$("item" + key).setStyle('background-image', 'url(images/note.png)');
+			if (value["width"] && value["height"]) {
+				$("item" + key).setStyle('height', value["height"]);
+				$("item" + key).setStyle('width', value["width"]);
+			} else {
+				$("item" + key).setStyle('height', '140px');
+				data[key]["width"] = "150";
+				data[key]["height"] = "140";
+			}
+			//$("item" + key).setStyle('background-image', 'url(images/note.png)');
+			$("item" + key).setStyles({
+						background : "#F7F7F7 url('images/dogear_small.png') no-repeat",
+					    "background-position" : "100% 0%",
+					    border : "1px dotted #ccc"});
 		}
+
 		//### ICON		
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {		
 			$("item" + key).adopt( //"div#icon"
@@ -197,13 +210,18 @@ function drawTICElements() {
 				)
 			);		
 		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+			if (value["width"]) {
+				var xleft = value["width"]-10;
+			} else {
+				var xleft = "140px";
+			}
 			$("item" + key).adopt( //"div#icon"
 				new Element("div#icon" + key, {
 					styles : {
 						height : "60px",
 					}
 				}).adopt(
-					new Element("img", {
+					new Element("img#iconimg" + key, {
 						src : icon,
 						alt : "Icon",
 						title : "Expand information",				
@@ -211,8 +229,8 @@ function drawTICElements() {
 							cursor: "pointer",
 							width : "20px",
 							position: "absolute",
-							top: "36px", 
-							left: "140px",
+							top: "40px", 
+							left: xleft,
 							float: "left"
 						},
 						events : {
@@ -293,6 +311,31 @@ function drawTICElements() {
 			$("moveimg" + key).setStyle("left","-13px");
 			$("moveimg" + key).setStyle("top","25px");
 		}
+		//### RESIZE NOTES
+		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+			if (value["width"] && value["height"]) {
+				var xleft = value["width"]-10;
+				var ytop = value["height"]-10;
+			} else {
+				var xleft = "139px";
+				var ytop  = "129px";
+			}
+			$("item" + key).adopt( //span#move" + key
+					new Element("img#resizeimg" + key, {
+						src : "images/resize-icon.gif",
+						alt : "Resize",
+						title : "Resize",
+						styles : {
+							cursor : "se-resize",						
+							position : "absolute",
+							width : "11px",
+							height : "11px",
+							top : ytop, 
+							left : xleft
+						}
+					})
+			);
+		}		
 
 		//### Preview
 		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'bmp', 'apng'];
@@ -309,7 +352,7 @@ function drawTICElements() {
 			|| imageTypes.contains(fileExt.toLowerCase())
 			|| textTypes.contains(fileExt.toLowerCase())) {		
 			$("item" + key).adopt( //span#move" + key
-				new Element("span#move" + key).adopt(
+				new Element("span#prev" + key).adopt(
 					new Element("img#previmg" + key, {
 						src : "images/icons_general/Search.png",
 						alt : "Preview",
@@ -361,7 +404,12 @@ function drawTICElements() {
 			);
 		}	
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			$("previmg" + key).setStyle("left","144px");
+			if (value["width"]) {
+				var xleft = value["width"]-8;
+			} else {
+				var xleft = "139px";
+			}			
+			$("previmg" + key).setStyle("left",xleft);
 			$("previmg" + key).setStyle("top","60px");		
 		}						
 		//### TEXT/NAME
@@ -405,13 +453,20 @@ function drawTICElements() {
 			data[key]["name"] = value["name"];
 			if (value["type"] == "TEXT" || value["type"] == "NOTE") {
 				value["name"] = value["name"].replace( /\n/gi, "<br />");	
-			}				
+			}
+			if (value["width"] && value["height"]) {
+				var xleft = value["width"]-10;
+				var ytop = value["height"]-10;
+			} else {
+				var xleft = "135px";
+				var ytop  = "130px";
+			}							
 			$("item" + key).adopt(
-				new Element("div", {
+				new Element("div#textbox" + key, {
 					styles : {
 						top: "2px",
-						width: "135px",
-						height: "130px",
+						width: xleft,
+						height: ytop,
 						position : "absolute",
 						"overflow-y" : "hidden", //"scroll"
 						"overflow-x" : "hidden"
@@ -427,8 +482,8 @@ function drawTICElements() {
 							"color": "#666666",
 							padding : "5px 10px 10px 10px",
 							"background": "rgba(0, 0, 0, 0)", /* transparent background */
-							width: "135px",
-							height: "130px",
+							width: xleft-10,
+							height: ytop,
 							"text-overflow": "ellipsis",
 							"font-family": "arial, sans-serif",
 							"border-style": "none"//"1px solid"						
@@ -450,9 +505,14 @@ function drawTICElements() {
 		var borderOpacity = [0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5];
 		var borderWidth =   [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20];
 		$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
-		$("item" + key).adopt( //span#vote" + key
+		if (value["width"]) {
+			var xleft = value["width"]-7;
+		} else {
+			var xleft = "143px";
+		}		
+		$("item" + key).adopt( //span#vote" + key			
 			new Element("span#upvote" + key).adopt(
-				new Element("img", {
+				new Element("img#upvoteimg" + key, {
 					src : "images/upvote.png",
 					alt : "Upvote importance",
 					title : "Upvote importance",
@@ -461,8 +521,7 @@ function drawTICElements() {
 						width : "15",
 						position : "absolute",
 						top : "7px", 
-						left : "143px",
-						"background" : "white"
+						left : xleft
 					},
 					events : {
 						click : function(){
@@ -486,13 +545,13 @@ function drawTICElements() {
 						top : "16px", 
 						"color" : "grey",
 						"font-size" : "12px",
-						left : "144px",
+						left : xleft,
 						"text-align" : "center",
 						"background" : "white"
 					}
 			}),			
-			new Element("span#upvote" + key).adopt(
-				new Element("img", {
+			new Element("span#downvote" + key).adopt(
+				new Element("img#downvoteimg" + key, {
 					src : "images/upvote.png",
 					alt : "Downvote importance",
 					title : "Downvote importance",
@@ -501,10 +560,9 @@ function drawTICElements() {
 						width : "15",
 						position : "absolute",
 						top : "30px", 
-						left : "143px",
+						left : xleft,
 						"-moz-transform" : "rotate(-180deg)",
-						"-moz-transform-origin" : "center center",
-						"background" : "white"
+						"-moz-transform-origin" : "center center"
 					},
 					events : {
 						click : function(){
@@ -789,14 +847,20 @@ function drawTICElements() {
 		);	
 		//move this extra info box more down for notes
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			$("information" + key).setStyle('top', '150px');						
+			if (value["height"]) {
+				var ytop = parseInt(value["height"])+5;
+			} else {
+				var ytop = "150px";
+			}	
+			$("information" + key).setStyle('top', ytop);
 		}	
 
 		//print more information about the information item
 		Object.each(value, function(item,index){
 			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
-				&& (index != "vote") && (index != "timestamp")) {
+				&& (index != "vote") && (index != "timestamp") && (index != "width")
+				&& (index != "height")) {
 
 				var indivElement  = new Element("div#list" + index + key);
 
@@ -911,6 +975,40 @@ function drawTICElements() {
 				$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");
 			}
 		}); 
+
+		//make notes resizable
+		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+			$("item" + key).makeResizable({
+				limit: {x: [150, 600], y: [86, 500]},
+				handle : $("resizeimg" + key),
+				onComplete: function(){
+					if ($("item" + key).contains($("nametext" + key))) {
+	    			    $("nametext" + key).set('html', value["name"]);
+	    			}
+					data[key].width = ($("item" + key).getSize().x - 6);
+					data[key].height = ($("item" + key).getSize().y - 6);
+   				},
+				onDrag: function(){
+					var newWidth = $("item" + key).getSize().x - 12;
+					var newHeight = $("item" + key).getSize().y - 12;
+					$("iconimg" + key).setStyle('left', newWidth);
+					$("previmg" + key).setStyle('left', newWidth+2);
+					$("upvoteimg" + key).setStyle('left', newWidth);
+					$("downvoteimg" + key).setStyle('left', newWidth);					
+					$("vote" + key).setStyle('left', newWidth+1);
+					$("textbox" + key).setStyles({'width': newWidth, 'height': newHeight});
+					if ($("item" + key).contains($("nametext" + key))) {
+						$("nametext" + key).setStyles({'width': newWidth, 'height': newHeight});
+					}
+					$("resizeimg" + key).setStyles({'left': newWidth-4, 'top': newHeight-4});
+					$("information" + key).setStyle('top', newHeight+15);
+					if ($("item" + key).contains($("emphasizedate" + key))) {
+						$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25, 'top': newHeight+7});
+					}					
+   				}   				
+			});
+		}
+
 	});
 }
 
@@ -932,8 +1030,9 @@ function drawTICElementsPastStates(pastStatesId) {
 
 		// draw all elements from the data object
 		Object.each (dataPastStates, function(value, key){
-			var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
+
 			//find item type and icon
+			var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 			if ((value["type"] == "FILE")) {
 				if (fileExt.toLowerCase() == "exe") {
 					//icon of EXE file - program or software  
@@ -966,6 +1065,16 @@ function drawTICElementsPastStates(pastStatesId) {
 				icon = "images/icons_content/GEN.png";					
 			}
 
+			//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
+			coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
+			coordinatey = (value["coordinatey"]*(window.innerHeight/1000)).toFixed(parseInt(0));	
+
+			if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
+				name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
+			} else {
+				name = value["name"].replace(/_/gm, ' ');
+			}
+
 			//### BACKGROUND
 			$("itemsList").adopt(
 				new Element("div#item" + key, {
@@ -976,17 +1085,27 @@ function drawTICElementsPastStates(pastStatesId) {
 						left : coordinatex,
 						top : coordinatey,
 						border : "0.1em solid",
-						"border-radius" : 5,
-						"border-color" : "rgba(112,138,144,0.2)",
+						"border-radius": 5,
+						"border-color": "rgba(112,138,144,0.2)",
 					}
 				})
 			);
 			//Set the background for notes, text and html
 			if (value["type"] == "NOTE" || value["type"] == "TEXT" || value["type"] == "HTML") {
-				$("item" + key).setStyle('height', '140px');
-				$("item" + key).setStyle('background-image', 'url(images/note.png)');
+				if (value["width"] && value["height"]) {
+					$("item" + key).setStyle('height', value["height"]);
+					$("item" + key).setStyle('width', value["width"]);
+				} else {
+					$("item" + key).setStyle('height', '140px');
+				}
+				//$("item" + key).setStyle('background-image', 'url(images/note.png)');
+				$("item" + key).setStyles({
+							background : "#F7F7F7 url('images/dogear_small.png') no-repeat",
+						    "background-position" : "100% 0%",
+						    border : "1px dotted #ccc"});
 			}
-			//### ICON 
+
+			//### ICON		
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {		
 				$("item" + key).adopt( //"div#icon"
 					new Element("div#icon" + key, {
@@ -994,24 +1113,26 @@ function drawTICElementsPastStates(pastStatesId) {
 							height : "60px",
 						}
 					}).adopt(
-						new Element("img", {
+						new Element("img#iconimg" + key, {
 							src : icon,
 							alt : "Icon",
 							title : "Expand information",				
 							styles : {
 								cursor : "pointer",
 								width : "42px",
-								position : "relative",
-								top : "2px", 
-								left : "0px",
-								float : "left"
+								position: "relative",
+								top: "2px", 
+								left: "0px",
+								float: "left"
 							},
 							events : {
 								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
+										//data[key]["display"] = "block";
 									} else {
 										$("information" + key).setStyle('display','none');
+										//data[key]["display"] = "none";
 									}							
 								}
 							}					
@@ -1019,30 +1140,37 @@ function drawTICElementsPastStates(pastStatesId) {
 					)
 				);		
 			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+				if (value["width"]) {
+					var xleft = value["width"]-10;
+				} else {
+					var xleft = "140px";
+				}
 				$("item" + key).adopt( //"div#icon"
 					new Element("div#icon" + key, {
 						styles : {
 							height : "60px",
 						}
 					}).adopt(
-						new Element("img", {
+						new Element("img#iconimg" + key, {
 							src : icon,
 							alt : "Icon",
 							title : "Expand information",				
 							styles : {
-								cursor : "pointer",
+								cursor: "pointer",
 								width : "20px",
-								position : "absolute",
-								top : "36px", 
-								left : "140px",
-								float : "left"
+								position: "absolute",
+								top: "40px", 
+								left: xleft,
+								float: "left"
 							},
 							events : {
 								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
+										//data[key]["display"] = "block";
 									} else {
 										$("information" + key).setStyle('display','none');
+										//data[key]["display"] = "none";
 									}							
 								}
 							}					
@@ -1052,7 +1180,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			}
 			if (value["type"] == "FILE") {
 				$("iconimg" + key).setStyles({width: 35, top: 5, left: 3 });
-			}			
+			}
 			// get the favicon of an url and place it over the icon
 			if (value["type"] == "URL") {
 				var url = value["path"].match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/)[2];
@@ -1071,24 +1199,27 @@ function drawTICElementsPastStates(pastStatesId) {
 							alt : "Icon",
 							title : "Expand information",
 							styles : {
-								cursor : "pointer",
+								cursor: "pointer",
 								width : "18px",
-								position : "absolute",
-								top : "13px", 
-								left : "13px",
+								position: "absolute",
+								top: "13px", 
+								left: "13px",
+								"font-size": "10px"
 							},
 							events : {
 								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
+										//data[key]["display"] = "block";
 									} else {
 										$("information" + key).setStyle('display','none');
+										//data[key]["display"] = "none";
 									}							
 								}
 							}
 						})
 				);		
-			}
+			}		
 
 			//### Preview
 			var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'bmp', 'apng'];
@@ -1105,7 +1236,7 @@ function drawTICElementsPastStates(pastStatesId) {
 				|| imageTypes.contains(fileExt.toLowerCase())
 				|| textTypes.contains(fileExt.toLowerCase())) {		
 				$("item" + key).adopt( //span#move" + key
-					new Element("span#move" + key).adopt(
+					new Element("span#prev" + key).adopt(
 						new Element("img#previmg" + key, {
 							src : "images/icons_general/Search.png",
 							alt : "Preview",
@@ -1157,19 +1288,25 @@ function drawTICElementsPastStates(pastStatesId) {
 				);
 			}	
 			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-				$("previmg" + key).setStyle("left","144px");
+				if (value["width"]) {
+					var xleft = value["width"]-8;
+				} else {
+					var xleft = "139px";
+				}			
+				$("previmg" + key).setStyle("left",xleft);
 				$("previmg" + key).setStyle("top","60px");		
-			}	
+			}						
 			//### TEXT/NAME
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 				$("item" + key).adopt( //"span#name" + key
 					new Element("span#name" + key,  {
 						styles : {
-							position : "absolute",
+							position: "absolute",
 							width : "100",
-							top : "2px",
+							top: "2px",
 							left : "45",
-							"font-size" : "12px"
+							"overflow": "hidden",
+							"font-size": "12px"
 						}
 					}).adopt(
 						new Element("a", {
@@ -1196,39 +1333,49 @@ function drawTICElementsPastStates(pastStatesId) {
 				);	
 			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				$("item" + key).setStyle("z-index","0");
-							value["name"] = cleanHtml(value["name"]);
-							dataPastStates[key]["name"] = value["name"];
+				value["name"] = cleanHtml(value["name"]);
+//				data[key]["name"] = value["name"];
+				if (value["type"] == "TEXT" || value["type"] == "NOTE") {
+					value["name"] = value["name"].replace( /\n/gi, "<br />");	
+				}
+				if (value["width"] && value["height"]) {
+					var xleft = value["width"]-10;
+					var ytop = value["height"]-10;
+				} else {
+					var xleft = "135px";
+					var ytop  = "130px";
+				}							
 				$("item" + key).adopt(
-					new Element("div", {
+					new Element("div#textbox" + key, {
 						styles : {
-							top : "2px",
-							width : "135px",
-							height : "130px",
+							top: "2px",
+							width: xleft,
+							height: ytop,
 							position : "absolute",
-							overflow : "hidden"
+							"overflow-y" : "hidden", //"scroll"
+							"overflow-x" : "hidden"
 						}
 					}).adopt(
 						new Element("div#nametext" + key, {
-							//text : value["name"].replace(/<[^>]*>?/gm, ''),
-							html : value["name"],
-							styles : {
+							//text: value["name"].replace(/<[^>]*>?/gm, ''),
+							html: value["name"],
+							styles: {
 								position : "absolute",
-								top : "2px",
-								"font-size" : "11px",
-								"color" : "#666666",
+								top: "2px",
+								"font-size": "11px",
+								"color": "#666666",
 								padding : "5px 10px 10px 10px",
-								"background" : "rgba(0, 0, 0, 0)", /* transparent background */
-								width : "135px",
-								height : "130px",
-								"text-overflow" : "ellipsis",
-								"font-family" : "arial, sans-serif",
-								"border-style" : "none"//"1px solid"						
+								"background": "rgba(0, 0, 0, 0)", /* transparent background */
+								width: xleft-10,
+								height: ytop,
+								"text-overflow": "ellipsis",
+								"font-family": "arial, sans-serif",
+								"border-style": "none"//"1px solid"						
 							}
 						})
 					)
 				);
 			}
-		
 
 			//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE 
 			var borderRed =		[112, 126, 140, 155, 169, 183, 197, 212, 226, 240, 255];
@@ -1237,9 +1384,14 @@ function drawTICElementsPastStates(pastStatesId) {
 			var borderOpacity = [0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5];
 			var borderWidth =   [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20];
 			$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
-			$("item" + key).adopt( //span#vote" + key
+			if (value["width"]) {
+				var xleft = value["width"]-7;
+			} else {
+				var xleft = "143px";
+			}		
+			$("item" + key).adopt( //span#vote" + key			
 				new Element("span#upvote" + key).adopt(
-					new Element("img", {
+					new Element("img#upvoteimg" + key, {
 						src : "images/upvote.png",
 						alt : "Upvote importance",
 						title : "Upvote importance",
@@ -1247,9 +1399,8 @@ function drawTICElementsPastStates(pastStatesId) {
 							width : "15",
 							position : "absolute",
 							top : "7px", 
-							left : "143px",
-							"background" : "white"
-						}				
+							left : xleft
+						}					
 					})
 				),
 				new Element("span#vote" + key, { 
@@ -1261,13 +1412,13 @@ function drawTICElementsPastStates(pastStatesId) {
 							top : "16px", 
 							"color" : "grey",
 							"font-size" : "12px",
-							left : "144px",
+							left : xleft,
 							"text-align" : "center",
 							"background" : "white"
 						}
 				}),			
-				new Element("span#upvote" + key).adopt(
-					new Element("img", {
+				new Element("span#downvote" + key).adopt(
+					new Element("img#downvoteimg" + key, {
 						src : "images/upvote.png",
 						alt : "Downvote importance",
 						title : "Downvote importance",
@@ -1275,10 +1426,9 @@ function drawTICElementsPastStates(pastStatesId) {
 							width : "15",
 							position : "absolute",
 							top : "30px", 
-							left : "143px",
+							left : xleft,
 							"-moz-transform" : "rotate(-180deg)",
-							"-moz-transform-origin" : "center center",
-							"background" : "white"
+							"-moz-transform-origin" : "center center"
 						}
 					})
 				)					
@@ -1297,8 +1447,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			} else if ((value["arrow"] == "in-out"))  {
 				imageSrc = 'images/arrow_in-out.png';
 			} 
-			$("item" + key).adopt( //"img#arrow" + key
-				new Element ("a#arrowlink" + key).adopt( 
+			$("item" + key).adopt( 
 					new Element("img#arrow" + key, {
 						src : imageSrc,
 						title : "Click to define if information is 'input' or 'output' to the task or both",
@@ -1311,8 +1460,8 @@ function drawTICElementsPastStates(pastStatesId) {
 						 	"-moz-transform-origin" : "center center"
 						}
 					})
-				)
 			);
+
 
 			//set the display to none if it is undefined 
 			//value["display"] is used to display or not to display $("information" + key) element
@@ -1335,7 +1484,6 @@ function drawTICElementsPastStates(pastStatesId) {
 				})							
 			);
 			$("information" + key).adopt ( //"a#date" + key
-				new Element("a#date" + key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Calendar.png",
 						alt : "Add a due date",
@@ -1346,10 +1494,8 @@ function drawTICElementsPastStates(pastStatesId) {
 							opacity : "0.8"
 						}					
 					})
-				)	
 			);
 			$("information" + key).adopt ( //"a#user" + key
-				new Element("a#user" + key).adopt(
 					new Element("img", {
 						src : "images/icons_general/User.png",
 						alt : "Add a person's name to the item",
@@ -1360,10 +1506,8 @@ function drawTICElementsPastStates(pastStatesId) {
 							opacity : "0.8"
 						}					
 					})
-				)	
 			);
 			$("information" + key).adopt ( //"a#email" + key
-				new Element("a#email" + key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Address_Book.png",
 						alt : "Add an email address",
@@ -1374,10 +1518,8 @@ function drawTICElementsPastStates(pastStatesId) {
 							opacity : "0.8"
 						}					
 					})
-				)	
 			);	
 			$("information" + key).adopt ( //"a#url" + key
-				new Element("a#url" + key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Internet.png",
 						alt : "Add an URL",
@@ -1388,10 +1530,8 @@ function drawTICElementsPastStates(pastStatesId) {
 							opacity : "0.8"
 						}					
 					})
-				)	
 			);
 			$("information" + key).adopt ( //"a#note" + key
-				new Element("a#note" + key).adopt(
 					new Element("img", {
 						src : "images/icons_general/Notepad2.png",
 						alt : "Add a note",
@@ -1402,10 +1542,8 @@ function drawTICElementsPastStates(pastStatesId) {
 							opacity : "0.8"
 						}					
 					})
-				)	
 			);						
 			$("information" + key).adopt ( //"a#delete" + key
-				new Element("a#delete" + key).adopt(
 					new Element("img", {
 						src : "images/icons_general/RecycleBin_Empty.png",
 						alt : "Remove item",
@@ -1416,26 +1554,31 @@ function drawTICElementsPastStates(pastStatesId) {
 							opacity : "0.8"
 						}					
 					})
-				)
 			);	
 			//move this extra info box more down for notes
 			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-				$("information" + key).setStyle('top', '155px');						
+				if (value["height"]) {
+					var ytop = value["height"]+5;
+				} else {
+					var ytop = "150px";
+				}	
+				$("information" + key).setStyle('top', ytop);						
 			}	
 
 			//print more information about the information item
 			Object.each(value, function(item,index){
 				if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 					&& (index != "extension") && (index != "type")  && (index != "arrow")
-					&& (index != "vote") && (index != "timestamp")) {
+					&& (index != "vote") && (index != "timestamp") && (index != "width")
+					&& (index != "height")) {
 
 					var indivElement  = new Element("div#list" + index + key);
 
 					//get current size and make it human readable
 					if (index == "size"  && value["type"] == "FILE") {
-						value["size"] = bytesToSize(value["size"]);	
+						item = bytesToSize(value["size"]);	
 					} else if (index == "size"  && value["type"] != "FILE") {
-						delete data[key]["size"];
+						delete value["size"];
 					}
 					//make paths and links clickable
 					if (index == "path" && (value["type"] == "FILE" || value["type"] == "FOLDER")) {
@@ -1456,22 +1599,16 @@ function drawTICElementsPastStates(pastStatesId) {
 					} 
 					//get current modificaion time and make it human readable
 					if (index == "modified"){
-						var updatedModified = fileModified(value["path"]);
-						value["modified"] = updatedModified;
-						if (updatedModified == "not available") {
-							item = updatedModified;					
-						} else {
-							item = unixToTime(updatedModified);						
-						}						
+						item = unixToTime(value["modified"]);											
 					}
 					//emphasize the item if the due date is approaching and is in less than 7 days
 					if (index == "date"){
 	    				checkDateElement(item,key);
-					}
+					}	
 					//don't print names for notes
 					if (index == "name" && ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML"))) {
 						item = "A note";						
-					}										
+					}				
 
 					if (indivElement.get('html') == ""){
 						indivElement.set({
@@ -1479,12 +1616,12 @@ function drawTICElementsPastStates(pastStatesId) {
 						});					
 					}
 
-					$("information" + key).adopt (indivElement);
+					$("information" + key).adopt (indivElement);	
 				} 
 			});	
 
 			//check for overlaping tasks for the informatuon item - 
-			//   if they share information items get array of tasks IDs
+			// if they share information items get array of tasks IDs
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 				//get the table and erease the id of the selected task
 			 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
@@ -1509,12 +1646,19 @@ function drawTICElementsPastStates(pastStatesId) {
 									"border-radius" : "20px",
 									"background-color" : "rgba(112,138,144,0.6)",
 									"text-align" : "center"
+								},
+								events : {
+									click : function(){
+										databaseSaveTaskCollection(databaseDrawTaskCollection, id);
+									}
 								}		
 							})
 						);
 					});
 				}
 			} 
+
+
 		});
 		//empty the object as it cannot be edited and we don't need it anymore.
 		dataPastStates = {};
@@ -1596,6 +1740,14 @@ function editElementName(key) { //edit the name=content of notes
 	var name = data[key]["name"];
 	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 		name = name.replace( /<br \/>/gi, "\n");	
+	}
+	//get the width and height of the element	
+	if (data[key]["width"] && data[key]["height"]) {
+		var xleft = data[key]["width"]-10;
+		var ytop = data[key]["height"]-10;
+	} else {
+		var xleft = "145px";
+		var ytop  = "130px";
 	}	
 	var copy = $("nametext" + key).clone(true,true);
 	copy.cloneEvents($("nametext" + key));
@@ -1609,8 +1761,8 @@ function editElementName(key) { //edit the name=content of notes
 						padding : "5px 10px 10px 10px",
 						"background" : "rgba(0, 0, 0, 0)", /* transparent background */
 						"resize" : "none",
-						width : "145px",
-						height : "130px",
+						width : xleft,
+						height : ytop,
 						//"overflow-y" : "scroll",
 						"font-family" : "arial, sans-serif",
 						"border-style" : "none"
@@ -1648,26 +1800,34 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 		$("item" + key).setStyle('border','0.2em solid rgba(204, 0, 0, 0.5)');
 		//$("msg").innerHTML += "-|" + parseInt(today.diff(date)) + "|-";
 		//remove the old date from DOM if it exist
+		if (data[key]["width"] && data[key]["height"]) {
+			var xleft = ((data[key]["width"]-10)/2-25) + "px";
+			var ytop = (data[key]["height"]+1) + "px";
+		} else {
+			var xleft = "50px";
+			if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
+				var ytop  = "141px";
+			} else { 
+				var ytop  = "47px";
+			}
+		}			
+
 		if ($("item" + key).contains($("emphasizedate" + key))) {
 			$("emphasizedate" + key).dispose();
 		}		
 		$("item" + key).adopt(
 			new Element("span#emphasizedate" + key, {
-				text : date,
+				text : date ,
 				styles : {
 					position : "absolute",
-				 	top : "47px",
+				 	top : ytop,
 				 	"font-size" : "11px",
 				 	"z-index" : "3",
-				 	left : "50px",
+				 	left : xleft,
 				 	color : "rgba(204, 0, 0, 1)"
 				}
 			})
 		);
-		if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
-			$("emphasizedate" + key).setStyle('top','141px');
-		}
-		
 	} else {
 		$("item" + key).setStyle('border','0.1em solid rgba(112,138,144,0.2)');
 		if ($("item" + key).contains($("emphasizedate" + key))) {
@@ -2799,7 +2959,7 @@ function databaseDrawTaskCollection(taskid) {
 										"border-width" : "8px 0 8px 12px",
 										"float" : "left",
 										"height" : "0",
-										"width" : "0",
+										width : "0",
 										"margin-left" : "20"
 									},							
 									events : {
@@ -3155,25 +3315,6 @@ function doDrop(event) { //add new information items to the page and variable da
 					fileType = "FOLDER";
 				} else {
 					fileType = "FILE";
-					//check if extension exists in array of available images
-					// var extAvailable = ["ani", "wma", "aac", "ac3", "ai", "aiff", "asf", "au", "avi", 
-					// 					"bat", "bin", "bmp", "bup", "c", "cab", "cal", "cat", "cpp", 
-					// 					"css", "cur", "dat", "dcr", "der", "dic", "dll", "dmg", "doc", 
-					// 					"docx", "dotx", "dvd", "dwg", "dwt", "dxf", "eps", "exe", "flv", 
-					// 					"fon", "gif", "h", "hlp", "hpp", "hst", "html", "ico", "ics",
-					// 					"ifo", "inf", "ini", "iso", "java", "jif", "jpg", "key", "log", 
-					// 					"m4a", "mid", "mmf", "mmm", "mov", "mp2", "mp2v", "mp3", "mp4", 
-					// 					"mpeg", "mpg", "msp", "odf", "ods", "odt", "otp", "ots", "ott", 
-					// 					"pdf", "php", "png", "ppt", "pptx", "psd", "py", "qt", "ra", 
-					// 					"rar", "rb", "reg", "rtf", "sql", "tga", "tgz", "theme", 
-					// 					"tiff", "tlb", "ttf", "txt", "vob", "wav", "wmv", "wpl", "wri", 
-					// 					"xls", "xlsx", "xml", "xsl", "yml", "zip"];
-					// var tmp = extension.toLowerCase();									
-		  			// if (extAvailable.contains(tmp)) {		   						
-					// 	var ext = "icons_files/" + tmp + ".png";
-					// } else {
-					// 	var ext = "icons_content/GEN.png";
-					// }
 				}
 				//set the global nexKey variable to the next highest index
 				var nextKey = findNextKey(data);
@@ -3223,6 +3364,8 @@ function doDrop(event) { //add new information items to the page and variable da
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
+					width: "150",
+					height: "140",
 					vote : "0",
 					arrow : "no-no"
 			};
@@ -3238,6 +3381,8 @@ function doDrop(event) { //add new information items to the page and variable da
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
+					width: "150",
+					height: "140",					
 					vote : "0",
 					arrow : "no-no"
 			};						 									 	
@@ -3254,6 +3399,8 @@ function doDrop(event) { //add new information items to the page and variable da
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
+					width: "150",
+					height: "140",					
 					vote : "0",
 					arrow : "no-no"
 			};		
@@ -3276,6 +3423,8 @@ function addNewNote() {
 			coordinatex : "75",
 			coordinatey : "60",
 			timestamp : getTimestamp(),
+			width: "150",
+			height: "140",			
 			vote : "0",
 			arrow : "no-no",
 			extension : "icons_content/TEXT.png"
