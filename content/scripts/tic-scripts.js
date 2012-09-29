@@ -1825,7 +1825,7 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 				 	"z-index" : "3",
 				 	left : xleft,
 				 	color : "rgba(204, 0, 0, 1)"
-				}
+				} 
 			})
 		);
 	} else {
