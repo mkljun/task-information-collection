@@ -66,7 +66,7 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 
 /***************************************************************************
 Function to draw elements of the selected project/task on the page.
-The function are called:
+The functions are called:
 drawTICElements() function draws elements of a selected task on the page
 	The function iterates trought object data.
 	- databaseDrawTaskCollection(taskid): when a new task is selected
@@ -1738,6 +1738,7 @@ function deleteElementValue(key,tag,value) { //deleting a value/tag of the infor
 
 function editElementName(key) { //edit the name=content of notes
 	var name = data[key]["name"];
+	var autosave;
 	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 		name = name.replace( /<br \/>/gi, "\n");	
 	}
@@ -1771,20 +1772,29 @@ function editElementName(key) { //edit the name=content of notes
 						click : function(){
 							this.focus();
 						},
+						focus : function() {
+							var element = this;
+                            autosave = (function() {editElementNameSave(element.get("value"),key);}).periodical(2500);  							
+							//autosave = editElementNameSave.periodical(1700, [this.get("value"),key]);
+						},
 						blur : function() {
-							str = this.get("value"); //.replace(/\n/g, '<br />');
-							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
-								str = str.replace( /\n/gi, "<br />");	
-							}								
-							data[key]["name"] = str; //this.get("value");
-							copy.setProperty("html", str); //this.get("value"));
-							$("listname" + key).setProperty("html", str); //this.get("value"));
+							clearInterval(autosave);
+							editElementNameSave(element.get("value"),key);
+							copy.setProperty("html", str); 
+							$("listname" + key).setProperty("html", str);
 							copy.replaces(this);
 						}					
 					}
 				}).replaces($("nametext" + key));	
 	$("namearea" + key).focus();
 }
+function editElementNameSave(text, key) {
+	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+		text = text.replace( /\n/gi, "<br />");	
+	}
+	data[key]["name"] = text;
+}
+
 
 function deleteElement(key, name) { //deleting the information item
 	//delete the element from data with the key
@@ -2949,7 +2959,7 @@ function databaseDrawTaskCollection(taskid) {
 					//PLAYBACK BUTTONS	
 							//play button				
 							$("timelineInfo").adopt(
-								new Element("a", {
+								new Element("a#playback-play", {
 									html : "",
 									href : "#statePlay",
 									styles : {
@@ -2964,6 +2974,7 @@ function databaseDrawTaskCollection(taskid) {
 									},							
 									events : {
 										click : function(){
+											stopDrawTICElementsPastStates();
 											startDrawTICElementsPastStates(); //return false;
 										}
 									}
@@ -2971,7 +2982,7 @@ function databaseDrawTaskCollection(taskid) {
 							);		
 							//stop button
 							$("timelineInfo").adopt(
-								new Element("a", {
+								new Element("a#playback-stop", {
 									html : "",
 									href : "#stateStop",
 									styles : {
@@ -2991,7 +3002,7 @@ function databaseDrawTaskCollection(taskid) {
 							);				
 							//next button	(pause + play)	
 							$("timelineInfo").adopt(
-								new Element("a", {
+								new Element("aplayback-step", {
 									html : "",
 									href : "#stateNext",
 									styles : {
@@ -3196,6 +3207,8 @@ function databaseEnterNewTask() {
 					printOut("Query canceled or aborted!");
 				} else {
 					printOut("New task \"" + $("createName").value + "\" was successfully created!");
+					$('createName').set('value', 'Enter a new project name');
+					$('createName').setStyle('color', '#888');
 					databaseShowTasks();
 				} 
 	  			statement.finalize();   				
@@ -3561,11 +3574,12 @@ The function is called:
 ****************************************************************************/
 function fileSizes(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	file.initWithPath(filetmp); 
-	if ( file.exists() ) { 
-		return file.fileSize;  
-	} else {
-		return "not available";
+	if (file.initWithPath(filetmp)) { 
+		if ( file.exists() ) { 
+			return file.fileSize;  
+		} else {
+			return "not available";
+		}
 	}
 }
 
@@ -3578,11 +3592,12 @@ The function is called:
 ****************************************************************************/
 function fileModified(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	file.initWithPath(filetmp); 
-	if ( file.exists() ) { 
-		return file.lastModifiedTime;  
-	} else {
-		return "not available";
+	if (file.initWithPath(filetmp)) {  
+		if ( file.exists() ) { 
+			return file.lastModifiedTime;  
+		} else {
+			return "not available";
+		}
 	}
 }
 

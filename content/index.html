@@ -229,9 +229,13 @@
 	.input {
 		border: 1px;
 		border-style: solid;		
-		background-color : #99FFCC;
+		background-color : #99FFBB;
 		border: 1px solid #008000;
-		width: 130px;
+		width: 150px;
+		color: #888;
+		-moz-border-radius: 3px;
+		border-radius: 3px; 
+		margin-bottom: 5px;		
 	}
 	.verticalTab{
 		-moz-transform: rotate(-90deg);
@@ -497,10 +501,12 @@
 		<div class="tasksForms">
 			<img scr="images/spacer.gif" width="200px" height="1px">
 			<form id="formCreate" action="javascript: databaseEnterNewTask();">
-				<input type="text" id="createName" title="Name of a new task" class="input"
-				  onblur="if(this.value==''){this.value=this.title;}" 
-				  onfocus="if(this.value==this.title)this.value=''" >
-				<button>Create New</button>
+				<input type="text" id="createName" class="input" autocomplete="off" 
+				  title="Enter a new project name" 
+				  value="Enter a new project name"
+				  onblur="if (this.value.trim()=='') {this.value='Enter a new project name'; this.style.color='#888';}" 
+				  onclick="this.value=''; this.style.color='#000';" >				  
+				<button onclick="if ($('createName').get('value').trim()=='' || $('createName').get('value')=='Enter a new project name') {return false ;};" >Create New Project/Task</button>
 			</form>			
 <!-- 			<form id="formSearch" action="">
 				<input type="text" id="searchName" title="Search" class="input">
