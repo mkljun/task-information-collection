@@ -2052,7 +2052,7 @@ function drawGeneralIcons(){
 				title : "New note",
 				src : 'images/icons_content/notes.png',
 				styles : {
-					width : '30px',
+					width : '27px',
 					cursor : 'pointer',
 					"margin-top" : "2px"
 				},			
@@ -2538,11 +2538,7 @@ function databaseShowTasks() {
 					new Element ("div#task" + taskid, {
 						styles : {
 							width : "195",
-							display : "block"//,
-							//"padding-bottom" : "2px",
-							//"font-size" : "14px",
-							//"border-bottom" : "1px solid",
-							//"border-color" : "rgba(112,138,144,0.8)"
+							display : "block"
 						}
 					})				
 				);	
@@ -2552,9 +2548,6 @@ function databaseShowTasks() {
 							"href" : "#" + taskname,
 							 "text" : taskid,
 							styles : {
-								//position : "absolute",
-								//left : leftStep + "px",
-								//top : "-20px",
 								float : "left",
 								width : "20px",
 								height : "20px",	
@@ -2630,9 +2623,7 @@ function databaseShowTasks() {
 									if (question == true){
 										databaseDeleteTask(taskid,taskname);
 									} else {
-										//alert("?");
 									}
-									
 								}
 							}							
 						}),
@@ -2662,7 +2653,6 @@ function databaseShowTasks() {
 								width : "195px"
 							}							
 						})
-
 				);
 			})();
 		} 
@@ -2960,7 +2950,7 @@ function databaseDeleteTask(taskid,name){
 		statement2.finalize();
 		databaseShowTasks();
 		databaseShowArchivedTasks();
-		printOut("Task \"" + name + "\" was successfully deleted!");
+		printOut("Project \"" + name + "\" was successfully deleted!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3010,12 +3000,13 @@ function databaseArchiveTask(taskid, name) {
 		}); 
 		statement.finalize();
 		databaseShowTasks();
+		databaseShowTasks();
 		databaseShowArchivedTasks();
-		printOut("Task \"" + name + "\" was archived to Archive!");
+		databaseShowArchivedTasks();
+		printOut("Project \"" + name + "\" was archived to Archive!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
-
 }
 
 function databaseRetrieveTask(taskid, name) {
@@ -3036,8 +3027,10 @@ function databaseRetrieveTask(taskid, name) {
 		}); 
 		statement.finalize();
 		databaseShowTasks();
+		databaseShowTasks();
 		databaseShowArchivedTasks();
-		printOut("Task \"" + name + "\" was retrieved back to Projects/Tasks!");
+		databaseShowArchivedTasks();
+		printOut("Project \"" + name + "\" was retrieved back to Projects/Tasks!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3738,7 +3731,7 @@ printAboutHide()
 ****************************************************************************/
 function printOut(message){	
 	$("printText").removeClass("hidden");
-	(function() {$("printText").addClass("hidden")}).delay(4000);
+	(function() {$("printText").addClass("hidden")}).delay(5000);
 	$("printText").set('html', message);
 }
 
@@ -3795,24 +3788,34 @@ folderOpen(filetmp) and folderOpenLinux(filetmp) Open folder of a selected
 ****************************************************************************/
 function fileOpen(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	file.initWithPath(filetmp); 
-	if ( file.exists() ) { 
-		file.launch();  
-	} else {
-		printOut("The file or the folder you selected does not exists on your local hard drive!");
-	}
+    //when synced between different OSs ignore erros of wrong paths
+	try {
+		file.initWithPath(filetmp); 
+		if ( file.exists() ) { 
+			file.launch();  
+		} else {
+			printOut("The file or the folder you selected does not exists on your local hard drive!");
+		}
+	} catch(e) { 
+		printOut("The file you selected is probably on another comouter!");
+	}		
 }
 
 function folderOpen(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	file.initWithPath(filetmp); 
-	if ( file.exists() ) { 
-		file.reveal();  
-		//could also use this to get the parent folder of a file
-		// folder = file.parent;		
-	} else {
-		printOut("The folder you selected does not exists on your local hard drive!");
-	}
+    //when synced between different OSs ignore erros of wrong paths
+	try {
+		file.initWithPath(filetmp); 
+		if ( file.exists() ) { 
+			file.reveal();  
+			//could also use this to get the parent folder of a file
+			// folder = file.parent;		
+		} else {
+			printOut("The folder you selected does not exists on your local hard drive!");
+		}
+	} catch(e) { 
+		printOut("The folder you selected is probably on another comouter!");
+	}		
 }
 
 /***************************************************************************
@@ -3822,13 +3825,17 @@ The function is called:
 	  in the more information box of every item that has this value
 ****************************************************************************/
 function fileSizes(filetmp){
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	if (file.initWithPath(filetmp)) { 
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  	
+    //when synced between different OSs ignore erros of wrong paths
+	try {
+		file.initWithPath(filetmp);
 		if ( file.exists() ) { 
 			return file.fileSize;  
 		} else {
 			return "not available";
 		}
+	} catch(e) { 
+		printOut("The folder you selected does not exists on your local hard drive!");
 	}
 }
 
@@ -3841,13 +3848,17 @@ The function is called:
 ****************************************************************************/
 function fileModified(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-	if (file.initWithPath(filetmp)) {  
+    //when synced between different OSs ignore erros of wrong paths
+	try {
+		file.initWithPath(filetmp);
 		if ( file.exists() ) { 
 			return file.lastModifiedTime;  
 		} else {
 			return "not available";
 		}
-	}
+	} catch(e) { 
+		printOut("The folder you selected does not exists on your local hard drive!");
+	}		
 }
 
 /***************************************************************************
@@ -3858,32 +3869,6 @@ The function is called:
 	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
 function unixToTime(unixTime){
-	// var a = new Date(unixTime); //*1000);  
-	// var year = a.getFullYear();
-	// var month = a.getMonth();
-	// month = String(month + 1);
-	// if (month.length == 1) {
-	// 	month = "0" + month;
-	// }
-	// var day = a.getDate();
-	// day = String(day);
-	// if (day.length == 1) {
-	// 	day = "0" + day;
-	// }
-	// var hour = a.getUTCHours();
-	// hour = String(hour);
-	// if (hour.length == 1) {
-	// 	hour = "0" + hour;
-	// }	
-	// var min = a.getUTCMinutes();
-	// min = String(min);
-	// if (min.length == 1) {
-	// 	min = "0" + min;
-	// }	  
-	// var sec = a.getUTCSeconds();
-	// var time = year + "-" + month + "-" + day + " " + hour + ':' + min;
-	// return time;
-
 	var time = new Date(unixTime).format('db');
 	return time; 
 }
@@ -3973,20 +3958,20 @@ The function is called:
 	- doDrop(event): when text is dragged over it cleans it before saving
 ****************************************************************************/
 function cleanHtml(str) {
-	str = str.replace( /<\s*p[^>]+>/gi, "<p>");
-	str = str.replace( /<\s*h[1-6][^>]*>/gi, "<strong>") ;
-	str = str.replace( /<\/h[1-6][^>]*>/gi, "</strong>") ;
-	str = str.replace( /<\s*font[^>]*>/gi, "<font>") ;
-	str = str.replace( /<\s*span[^>]*>/gi, "<span>") ;
-	str = str.replace( /<\s*div[^>]*>/gi, "<div>") ;
+	str = str.replace( /<\s*p\s[^>]+>/gi, "<p>");
+	str = str.replace( /<\s*h[1-6]\s[^>]*>/gi, "<strong>") ;
+	str = str.replace( /<\/h[1-6]\s[^>]*>/gi, "</strong>") ;
+	str = str.replace( /<\s*font\s[^>]*>/gi, "<font>") ;
+	str = str.replace( /<\s*span\s[^>]*>/gi, "<span>") ;
+	str = str.replace( /<\s*div\s[^>]*>/gi, "<div>") ;
 	str = str.replace( /<[^>]>(&nbsp;|\s|\t)*<\/[^>]+>/gm, '' ) ; //empty tags
 	str = str.replace( /<\s*table[^>]*>/gi, "<table>") ;
-	str = str.replace( /<\s*th[^>]*>/gi, "<th>") ;
-	str = str.replace( /<\s*tr[^>]*>/gi, "<tr>") ;
-	str = str.replace( /<\s*td[^>]*>/gi, "<td>") ;
-	str = str.replace( /<\s*ul[^>]*>/gi, "<ul>") ;		
-	str = str.replace( /<\s*li[^>]*>/gi, "<li>") ;
-	str = str.replace( /<\s*ol[^>]*>/gi, "<ol>") ;
+	str = str.replace( /<\s*th\s[^>]*>/gi, "<th>") ;
+	str = str.replace( /<\s*tr\s[^>]*>/gi, "<tr>") ;
+	str = str.replace( /<\s*td\s[^>]*>/gi, "<td>") ;
+	str = str.replace( /<\s*ul\s[^>]*>/gi, "<ul>") ;		
+	str = str.replace( /<\s*li\s[^>]*>/gi, "<li>") ;
+	str = str.replace( /<\s*ol\s[^>]*>/gi, "<ol>") ;
  	return str.trim();
 }
 
