@@ -121,7 +121,6 @@ function drawTICElements() {
 				icon = "moz-icon://." + fileExt + "?size=128";
 			}
 		} else if ((value["type"] == "FOLDER")) {
-			//var ext = "icons_content/FOLDER.png";
 			if (Browser.Platform.mac) {
 				icon = "images/icons_content/FOLDER-OSX.png";
 			} else if (Browser.Platform.win) {
@@ -201,10 +200,8 @@ function drawTICElements() {
 							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
-									//data[key]["display"] = "block";
 								} else {
 									$("information" + key).setStyle('display','none');
-									//data[key]["display"] = "none";
 								}							
 							}
 						}					
@@ -239,10 +236,8 @@ function drawTICElements() {
 							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
-									//data[key]["display"] = "block";
 								} else {
 									$("information" + key).setStyle('display','none');
-									//data[key]["display"] = "none";
 								}							
 							}
 						}					
@@ -282,10 +277,8 @@ function drawTICElements() {
 							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
-									//data[key]["display"] = "block";
 								} else {
 									$("information" + key).setStyle('display','none');
-									//data[key]["display"] = "none";
 								}							
 							}
 						}
@@ -340,7 +333,7 @@ function drawTICElements() {
 		}		
 
 		//### Preview
-		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'bmp', 'apng'];
+		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
 		var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
 						 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 		 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
@@ -428,7 +421,7 @@ function drawTICElements() {
 					}
 				}).adopt(
 					new Element("a", {
-						href : "#open",//value["path"],
+						href : "#open",
 						html : name,
 						title : "Open",
 						events : {
@@ -470,12 +463,11 @@ function drawTICElements() {
 						width: xleft,
 						height: ytop,
 						position : "absolute",
-						"overflow-y" : "hidden", //"scroll"
+						"overflow-y" : "hidden", 
 						"overflow-x" : "hidden"
 					}
 				}).adopt(
 					new Element("div#nametext" + key, {
-						//text: value["name"].replace(/<[^>]*>?/gm, ''),
 						html: value["name"],
 						styles: {
 							position : "absolute",
@@ -488,7 +480,7 @@ function drawTICElements() {
 							height: ytop,
 							"text-overflow": "ellipsis",
 							"font-family": "arial, sans-serif",
-							"border-style": "none"//"1px solid"						
+							"border-style": "none"						
 						},
 						events: {
 							dblclick : function(){
@@ -603,22 +595,18 @@ function drawTICElements() {
 							$("arrow" + key).erase('src');
 							$("arrow" + key).set('src','images/arrow_in-no.png');
 							data[key]["arrow"] = "in-no";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];							
 						} else if ((value["arrow"] == "in-no")) {
 							$("arrow" + key).erase('src');
 							$("arrow" + key).set('src','images/arrow_no-out.png');
 							data[key]["arrow"] = "no-out";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];
 						} else if ((value["arrow"] == "no-out")) {
 							$("arrow" + key).erase('src');
 							$("arrow" + key).set('src','images/arrow_in-out.png');	
 							data[key]["arrow"] = "in-out";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];
 						} else if ((value["arrow"] == "in-out"))  {
 							$("arrow" + key).erase('src');
 							$("arrow" + key).set('src','images/arrow_no-no.png');
 							data[key]["arrow"] = "no-no";
-							//$("listarrow" + key).innerHTML = "<strong>arrow</strong>: " + data[key]["arrow"];
 						} 
 						return false;
 					}
@@ -639,14 +627,11 @@ function drawTICElements() {
 			)
 		);
 
-
-		//set the display to none if it is undefined 
-		//value["display"] is used to display or not to display $("information" + key) element
 		$("item" + key).adopt( //"div#information" + key
 			new Element("div#information" + key,  {
 				styles : {
 					position : "absolute",
-					display : "none", //value["display"],
+					display : "none",
 					width : "144",
 					top : "55px",
 					visibility : "visible",
@@ -1010,7 +995,6 @@ function drawTICElements() {
    				}   				
 			});
 		}
-
 	});
 }
 
@@ -1053,7 +1037,6 @@ function drawTICElementsPastStates(pastStatesId) {
 					icon = "moz-icon://." + fileExt + "?size=128";
 				}
 			} else if ((value["type"] == "FOLDER")) {
-				//var ext = "icons_content/FOLDER.png";
 				if (Browser.Platform.mac) {
 					icon = "images/icons_content/FOLDER-OSX.png";
 				} else if (Browser.Platform.win) {
@@ -1100,7 +1083,6 @@ function drawTICElementsPastStates(pastStatesId) {
 				} else {
 					$("item" + key).setStyle('height', '140px');
 				}
-				//$("item" + key).setStyle('background-image', 'url(images/note.png)');
 				$("item" + key).setStyles({
 							background : "#F7F7F7 url('images/dogear_small.png') no-repeat",
 						    "background-position" : "100% 0%",
@@ -1131,10 +1113,8 @@ function drawTICElementsPastStates(pastStatesId) {
 								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
-										//data[key]["display"] = "block";
 									} else {
 										$("information" + key).setStyle('display','none');
-										//data[key]["display"] = "none";
 									}							
 								}
 							}					
@@ -1169,10 +1149,8 @@ function drawTICElementsPastStates(pastStatesId) {
 								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
-										//data[key]["display"] = "block";
 									} else {
 										$("information" + key).setStyle('display','none');
-										//data[key]["display"] = "none";
 									}							
 								}
 							}					
@@ -1212,10 +1190,8 @@ function drawTICElementsPastStates(pastStatesId) {
 								click : function(){
 									if ($("information" + key).getStyle("display") == "none") {
 										$("information" + key).setStyle('display','block');
-										//data[key]["display"] = "block";
 									} else {
 										$("information" + key).setStyle('display','none');
-										//data[key]["display"] = "none";
 									}							
 								}
 							}
@@ -1224,7 +1200,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			}		
 
 			//### Preview
-			var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'bmp', 'apng'];
+			var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
 			var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
 							 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 			 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
@@ -1336,7 +1312,6 @@ function drawTICElementsPastStates(pastStatesId) {
 			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				$("item" + key).setStyle("z-index","0");
 				value["name"] = cleanHtml(value["name"]);
-				//data[key]["name"] = value["name"];
 				if (value["type"] == "TEXT" || value["type"] == "NOTE") {
 					value["name"] = value["name"].replace( /\n/gi, "<br />");	
 				}
@@ -1359,7 +1334,6 @@ function drawTICElementsPastStates(pastStatesId) {
 						}
 					}).adopt(
 						new Element("div#nametext" + key, {
-							//text: value["name"].replace(/<[^>]*>?/gm, ''),
 							html: value["name"],
 							styles: {
 								position : "absolute",
@@ -1372,7 +1346,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								height: ytop,
 								"text-overflow": "ellipsis",
 								"font-family": "arial, sans-serif",
-								"border-style": "none"//"1px solid"						
+								"border-style": "none"						
 							}
 						})
 					)
@@ -1464,14 +1438,11 @@ function drawTICElementsPastStates(pastStatesId) {
 					})
 			);
 
-
-			//set the display to none if it is undefined 
-			//value["display"] is used to display or not to display $("information" + key) element
 			$("item" + key).adopt( //"div#information" + key
 				new Element("div#information" + key,  {
 					styles : {
 						position : "absolute",
-						display : "none", //value["display"],
+						display : "none",
 						width : "144",
 						top : "55px",
 						visibility : "visible",
@@ -1659,8 +1630,6 @@ function drawTICElementsPastStates(pastStatesId) {
 					});
 				}
 			} 
-
-
 		});
 		//empty the object as it cannot be edited and we don't need it anymore.
 		dataPastStates = {};
@@ -1705,6 +1674,8 @@ deleteElementValue(key,tag,value):
 	- not used anywhere yet
 editElementName(key):
 	- drawTICElements(): edit content of notes by doubleclicking on it
+editElementNameSave(text, key):
+	- editElementName(key): autosaving every 3 seconds when in fucus or when focus is gone
 deleteElement(key, name): deleting the information item
 	- drawTICElements(): append to delete icon of every item/element on the page
 checkDateElement(date,key): check if the due date is approaching and emphasize the value	
@@ -1755,7 +1726,7 @@ function editElementName(key) { //edit the name=content of notes
 	var copy = $("nametext" + key).clone(true,true);
 	copy.cloneEvents($("nametext" + key));
 	var textarea = new Element("textarea#namearea" + key, {
-					value : name, //.replace(/<[^>]*>?/gm, ''),
+					value : name, 
 					styles : {
 						position : "absolute",
 						top : "2px",
@@ -1766,7 +1737,6 @@ function editElementName(key) { //edit the name=content of notes
 						"resize" : "none",
 						width : xleft,
 						height : ytop,
-						//"overflow-y" : "scroll",
 						"font-family" : "arial, sans-serif",
 						"border-style" : "none"
 					},
@@ -1790,6 +1760,7 @@ function editElementName(key) { //edit the name=content of notes
 				}).replaces($("nametext" + key));	
 	$("namearea" + key).focus();
 }
+
 function editElementNameSave(text, key) {
 	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 		text = text.replace( /\n/gi, "<br />");	
@@ -1811,7 +1782,6 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 	var today = new Date();
 	if ((today.diff(date) > -3) && (today.diff(date) < 7)) {
 		$("item" + key).setStyle('border','0.2em solid rgba(204, 0, 0, 0.5)');
-		//$("msg").innerHTML += "-|" + parseInt(today.diff(date)) + "|-";
 		//remove the old date from DOM if it exist
 		if (data[key]["width"] && data[key]["height"]) {
 			var xleft = ((data[key]["width"]-10)/2-25) + "px";
@@ -1879,11 +1849,6 @@ function printTaskNameCentre(taskId) {
 				styles : {
 					position : "relative",
 					"font-size" : "14px",
-					//margin : "-38px 0px 0 -43px",
-					//top : "50%",
-					//left : "50%",
-					//width : "70%",
-					//"text-align" : "center"
 					"display" : "table-cell",
   					"vertical-align" : "middle",
   					"text-align" : "center"
@@ -1927,21 +1892,7 @@ function drawPICCircles(){
 					display : "inline",
 					"border-color" : "rgba(112,138,144,0.2)"
 				}
-			})//.adopt(
-			//  	new Element ("span", {
-			// 		text : "Importance level " + step,			
-			//  		styles : {
-			//  			"text-align" : "center",
-			//  			"float" : "left",
-			// 			"font-size" : "11px",					
-			// 			"-moz-transform" : "rotate(-44deg)",
-			// 			margin : "0 0 0 0",
-			// 			padding : topPadding + " 0px 0px " + topPadding,
-			// 			"-moz-transform-origin" : "right bottom",
-			// 			"color" : "rgba(112,138,144,0.3)"
-			//  		}
-			//  	})
-			// )
+			})
 		);
 		circleInnitialSize = circleInnitialSize + parseInt(135*(window.innerWidth/1000));
 		topPadding = topPadding + 17.5;
@@ -1951,7 +1902,6 @@ function drawPICCircles(){
 
 function drawCentreDot(){
 	//draw a center of a page a red dot (0,0) in coordinate system
-	//$("dot").dispose();
 	$("body").adopt(
 		new Element("div#dot", {
 			styles : {
@@ -2093,7 +2043,7 @@ function databaseConnect() {
 		while (statement.executeStep()) {
 			aRows.push(statement.row.name);
 		}
-		statement.finalize(); //$("msg").innerHTML += aRows.toSource()
+		statement.finalize(); 
 		if (aRows.contains('task_archived') == false) {
 			dbConn.executeSimpleSQL("ALTER TABLE tasks ADD COLUMN task_archived BOOL DEFAULT 0");
 		}
@@ -2122,16 +2072,6 @@ function databaseConnect() {
 			//synchronus ... we can't do anything before the DB is set up
 			statement.execute();
 			statement.finalize();
-			// connection.executeAsync([statement], 1,  {
-			// 	handleCompletion : function(aReason) {
-			// 		if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-			// 				printOut("Query canceled or aborted!");
-			// 		}
-			// 		statement.finalize();
-			// 	},
-			// 	handleError : function(aError) {printOut(aError.message);},
-			// 	handleResult : function(aResultSet) {}
-			// }); 
 		} else {
 			printOut("Not a valid SQL statement: INSERT INTO data (data_userid, data_last_sent) VALUES(:uid, :date)");
 		}	
@@ -2173,11 +2113,10 @@ function databaseSetLastTask() {
 	statement.params.lata = currentTaskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) { 
-		//statement.executeStep();
 		connection.executeAsync([statement], 1,  {
 			handleCompletion : function(aReason) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-						printOut("Query canceled or aborted!");
+					printOut("Query canceled or aborted!");
 				} else {
 					//printOut(aReason.message);
 				}
@@ -2238,21 +2177,21 @@ function databaseDump() {
 				var statement = connection.createStatement("SELECT * FROM tasks");	
 				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 				if (statement.state == 1) {
-					dumpText += "DROP TABLE IF EXISTS \"tasks\"";
-					dumpText += "CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT)";
+					dumpText += "DROP TABLE IF EXISTS \"tasks\";\n";
+					dumpText += "CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT, task_archived BOOL DEFAULT 0);\n";
 					while (statement.executeStep()) { 
-						dumpText += "INSERT INTO \"tasks\" VALUES(" + statement.row.task_id + ",'" + statement.row.task_name.replace("'", "''", "g") + "','" + statement.row.task_due + "');\n"; 			
+						dumpText += "INSERT INTO \"tasks\" VALUES(" + statement.row.task_id + ",'" + statement.row.task_name.replace("'", "''", "g") + "','" + statement.row.task_due + "','" + statement.row.task_share_email + "','" + statement.row.task_archived + "');\n"; 			
 					}
 					statement.finalize(); 
 				} else {
 					printOut("Not a valid SQL statement: SELECT * FROM tasks");
 					return false;
-				}			
+				}	
 				var statement = connection.createStatement("SELECT * FROM tasks_collections");	
 				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 				if (statement.state == 1) {
-					dumpText += "DROP TABLE IF EXISTS \"tasks_collections\"";
-					dumpText += "CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id , coll_timestamp TEXT, coll_items TEXT)";
+					dumpText += "DROP TABLE IF EXISTS \"tasks_collections\";\n";
+					dumpText += "CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id , coll_timestamp TEXT, coll_items TEXT);\n";
 					while (statement.executeStep()) { 
 						dumpText += "INSERT INTO \"tasks_collections\" VALUES(" + statement.row.coll_id + "," + statement.row.task_id + ",'" + statement.row.coll_timestamp + "','" + statement.row.coll_items.replace("'", "''", "g") + "');\n";					
 					}
@@ -2261,12 +2200,33 @@ function databaseDump() {
 					printOut("Not a valid SQL statement: SELECT * FROM tasks_collections");
 					return false;
 				}
-				//DROP TABLE IF EXISTS "tasks_last";
-				//CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER);
-				//DROP TABLE IF EXISTS "data";
-				//CREATE TABLE data (data_userid TEXT PRIMARY KEY  NOT NULL, data_last_sent TEXT);
+				var statement = connection.createStatement("SELECT * FROM tasks_last");	
+				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+				if (statement.state == 1) {
+					dumpText += "DROP TABLE IF EXISTS \"tasks_last\";\n";
+					dumpText += "CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER);\n";
+					while (statement.executeStep()) { 
+						dumpText += "INSERT INTO \"tasks_last\" VALUES(" + statement.row.last_id + "," + statement.row.last_task + ");\n";					
+					}
+					statement.finalize(); 
+				} else {
+					printOut("Not a valid SQL statement: SELECT * FROM tasks_last");
+					return false;
+				}	
+				var statement = connection.createStatement("SELECT * FROM user");	
+				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+				if (statement.state == 1) {
+					dumpText += "DROP TABLE IF EXISTS \"user\";\n";
+					dumpText += "CREATE TABLE user (data_id INTEGER PRIMARY KEY, data_userid TEXT, data_last_sent TEXT, data_last_mantained TEXT, data_user_email TEXT, data_user_password TEXT);\n";
+					while (statement.executeStep()) { 
+						dumpText += "INSERT INTO \"user\" VALUES(" + statement.row.data_id + ",'" + statement.row.data_userid + "','" + statement.row.data_last_sent + "','" + statement.row.data_last_mantained + "','" + statement.row.data_user_email + "','" + statement.row.data_user_password + "');\n";					
+					}
+					statement.finalize(); 
+				} else {
+					printOut("Not a valid SQL statement: SELECT * FROM user");
+					return false;
+				}							
 
-				//var dataToBeSentJSON = JSON.encode(dataToBeSent);
 	    		sendJSON(userId,dumpText);
 			}
 		} else {
@@ -2291,7 +2251,9 @@ function databaseDump() {
 				printOut("Not a valid SQL statement: INSERT INTO user (data_id, data_userid, data_last_sent) VALUES(1,:uid, :date)");
 			}
 		}
-		/* //Write dump to a file 01.sql in the profile folder for testing purposes
+
+		/*
+		//Write dump to a file 01.sql in the profile folder for testing purposes
 			Components.utils.import("resource://gre/modules/Services.jsm"); 
 			Components.utils.import("resource://gre/modules/FileUtils.jsm");  
 			//ProfD = profile directory https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO
@@ -2312,6 +2274,7 @@ function databaseDump() {
 		    converter.writeString(dumpText);  
 		    converter.close(); // this closes foStream  
 		*/
+
 	} //do the above only if it is selected in preference to dump the DB and send it over for research
 }
 
@@ -2331,7 +2294,6 @@ function sendJSON(userid,dbdump) {
 			statement.params.uid = userid
 			//MOZ_STORAGE_STATEMENT_READY 1 The SQL statement is ready to be executed.
 			if (statement.state == 1) { 
-				//statement.executeStep(); //<--- synchronus ... 
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
 						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
@@ -2502,7 +2464,6 @@ function compareAndCleanStages(){
 				}
 
 				for (var i=0; i < tmpArray.length; i++) {
-					//$("msg").innerHTML += " -" + tmpArray[i] + "- ";
 					databaseDeleteTaskStage(tmpArray[i]);
 				}
 			}
@@ -2678,11 +2639,7 @@ function databaseShowArchivedTasks() {
 					new Element ("div#task" + taskid, {
 						styles : {
 							width : "195",
-							display : "block"//,
-							//"padding-bottom" : "2px",
-							//"font-size" : "14px",
-							//"border-bottom" : "1px solid",
-							//"border-color" : "rgba(112,138,144,0.8)"
+							display : "block"
 						}
 					})				
 				);	
@@ -2692,9 +2649,6 @@ function databaseShowArchivedTasks() {
 							"href" : "#" + taskname,
 							 "text" : taskid,
 							styles : {
-								//position : "absolute",
-								//left : leftStep + "px",
-								//top : "-20px",
 								float : "left",
 								width : "20px",
 								height : "20px",	
@@ -2825,23 +2779,6 @@ function databaseGetTaskName(taskId) {
 	statement.params.tid = taskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
-		/*connection.executeAsync([statement], 1,  {
-			handleResult : function(aResultSet) {
-				var row;
-			    while(row = aResultSet.getNextRow()) {  			  
-			      	taskname = row.getResultByName("task_name");
-			    } 
-			},			
-			handleCompletion : function(aReason) {
-				 if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-				 		printOut("Query canceled or aborted!");
-				 } 
-			    $("msg").innerHTML += "----" + taskname;
-	   			return taskname;				
-			},
-			handleError : function(aError) {printOut(aError.message);}
-
-		}); */
 		var taskname; 
 		while (statement.executeStep()) { 
 			taskname = statement.row.task_name;
@@ -2865,7 +2802,6 @@ databaseSaveEditTaskName(newName, taskid)
 ****************************************************************************/
 function changeEditTaskName(taskid){
 	var taskText = $("taskName" + taskid).get('text');
-	//printOut(text);
 	var input = new Element("input", {
 			"id" : "taskInput" + taskid,
 			"type": "text",
@@ -2894,15 +2830,14 @@ function databaseSaveEditTaskName(newName, taskid) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
-					//printOut(aReason.message);
+					statement.finalize();
+					databaseShowTasks();
+					databaseShowArchivedTasks();
+					if (taskid == currentTaskId) { 
+						printTaskNameCentre(taskid);
+						drawTICElements();
+					}
 				}	
-				statement.finalize();
-				databaseShowTasks();
-				databaseShowArchivedTasks();
-				if (taskid == currentTaskId) { 
-					printTaskNameCentre(taskid);
-					drawTICElements();
-				}
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
@@ -2940,7 +2875,9 @@ function databaseDeleteTask(taskid,name){
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
-					//printOut(aReason.message);
+					databaseShowTasks();
+					databaseShowArchivedTasks();
+					printOut("Project \"" + name + "\" was successfully deleted!");					
 				}	
 			},
 			handleError : function(aError) {printOut(aError.message);},
@@ -2948,9 +2885,6 @@ function databaseDeleteTask(taskid,name){
 		}); 
 		statement1.finalize();
 		statement2.finalize();
-		databaseShowTasks();
-		databaseShowArchivedTasks();
-		printOut("Project \"" + name + "\" was successfully deleted!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3045,9 +2979,8 @@ function databaseDrawTaskCollection(taskid) {
 	//remove the messages div before drawing the next collection
 	$("printText").addClass("hidden");
 	currentTaskId = taskid;
-	//databaseSetLastTask(); 	  
+	//databaseSetLastTask(); 	// <-- THIS slows down everything?!?
 	//count the number of results
-	//var statement = connection.createStatement("SELECT task_id, coll_timestamp, coll_items, COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC");	
 	var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");		
 	statement.params.tid = currentTaskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
@@ -3079,7 +3012,7 @@ function databaseDrawTaskCollection(taskid) {
 					},							
 					events : {
 						click : function(){
-							drawTICElements(); //return false;
+							drawTICElements(); 
 						}
 					}
 				})
@@ -3120,7 +3053,7 @@ function databaseDrawTaskCollection(taskid) {
 							},							
 							events : {
 								click : function(){
-									drawTICElements(); //return false;
+									drawTICElements(); 
 								}
 							}
 						})
@@ -3178,7 +3111,7 @@ function databaseDrawTaskCollection(taskid) {
 								click : function(){
 									clearBackgroundTimelineItems();
 									pastTICStatesCurrentIndex = 0; //clear the current id of the past states
-									drawTICElements(); //return false;
+									drawTICElements(); 
 								}
 							}
 						})
@@ -3211,7 +3144,7 @@ function databaseDrawTaskCollection(taskid) {
 									events : {
 										click : function(){
 											stopDrawTICElementsPastStates();
-											startDrawTICElementsPastStates(); //return false;
+											startDrawTICElementsPastStates(); 
 										}
 									}
 								})
@@ -3300,31 +3233,7 @@ function databaseDrawTaskCollection(taskid) {
 								})
 							)
 						);
-					});
-
-					// //SLIDER ----- very slow ... it prints out the last TIC so it needs to print TICs two times
-					// //set slide to null
-					// mySlide = null;
-					// //recreate the timelineSlideoutInner div strcture
-					// $("timelineSlideoutInner").empty();
-					// $("timelineSlideoutInner").adopt(
-					// 	new Element ("div#timelineDate"),
-					// 	new Element ("div#slideArea").adopt(
-					// 		new Element("div#slideKnob")
-					// 	)
-					// );
-					// mySlide = new Slider($('slideArea'), $('slideKnob'), {	
-					// 	steps : pastTICStatesIds.length - 1,	
-					// 	mode : 'vertical',
-					// 	wheel : 'true',
-					// 	onChange : function(step){
-					// 		$('timelineDate').innerHTML = "<a href=\"#lasttask\" onclick=\"drawTICElements();return false;\">Current state</a><br />" 
-					// 									+ "date: " + pastTICStatesDates[step] + "<br/ >id: " 
-					// 									+ pastTICStatesIds[step] + "<br />step: " + step;
-					// 		drawTICElementsPastStates(pastTICStatesIds[step]);
-					// 	}
-					// }).set(0);
-					//mySlide.detach();									
+					});								
 				}
 			}
 			statement.finalize();
@@ -3388,7 +3297,7 @@ function databaseSaveTaskCollection(callback, param) {
 		//check if the old state is the same as the new one
 		if (dataTMP == JSON.encode(data)) {
 			//nothing has changed
-			callback(param); //rteqrtwertwertwer
+			callback(param);
 		} else {	
 			//The STRINGS are NOT the same .. DO some more comparison
 			if (compareDataObjectSizeMod(data, JSON.decode(dataTMP)) != false) {
@@ -3405,12 +3314,7 @@ function databaseSaveTaskCollection(callback, param) {
 			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 			if (statement.state == 1) {
 				connection.executeAsync([statement], 1, {
-					handleCompletion : function(aReason) {
-						// if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
-		  				// 	printOut("Query canceled or aborted!" + aReason);
-				  		// } else {
-				  		// 	callback(param);
-				  		// }   
+					handleCompletion : function(aReason) { 
 		  				callback(param);
 		  				statement.finalize();   				
 		  			},
@@ -3533,7 +3437,6 @@ function doDrop(event) { //add new information items to the page and variable da
 	} else {
 		tempX = event.clientX;
 	}	
-	//$("msg").innerHTML +="-"+event.clientX+"-"+tempX;
 	var tempY = 0;
 	if (event.clientY > window.innerHeight - 60) {
 	 	tempY = window.innerHeight - 37;
@@ -3542,7 +3445,6 @@ function doDrop(event) { //add new information items to the page and variable da
 	} else {
 		tempY = event.clientY;
 	}	
-	//$("msg").innerHTML +="-"+event.clientY+"-"+tempY;
 	//change the coordinates of the new element to the default width 1000px
 	//we need this to position the elements right if the window is resized
 	//Lower the Y coordinate by 40 so the moving arrows come under the moise pointer	
@@ -3562,7 +3464,6 @@ function doDrop(event) { //add new information items to the page and variable da
 				var fullPath = fileDragged.path;
 				var fileType = fullPath.split(".");
 				var extension = fileType.getLast();
-				//if (extension.length > 6) {
 				if(fileDragged.isDirectory()) { 
 					fileType = "FOLDER";
 				} else {
@@ -3805,8 +3706,7 @@ function folderOpen(filetmp){
 		file.initWithPath(filetmp); 
 		if ( file.exists() ) { 
 			file.reveal();  
-			//could also use this to get the parent folder of a file
-			// folder = file.parent;		
+			//could also use this to get the parent folder of a file: folder = file.parent;		
 		} else {
 			printOut("The folder you selected does not exists on your local hard drive!");
 		}
@@ -3941,7 +3841,6 @@ function getAngle(coorX,coorY) {
 	} else if ((newX >= 0) && (newY < 0)) {
 		quadrant = 4;
 	}
-	//$("msg").innerHTML += Math.round(angle1*100)/100 + ":" + Math.round(angle2*100)/100 + "-";
 	angle2 = -angle2;
 	var array = [angle2, quadrant];
  	return array;
@@ -4038,25 +3937,21 @@ function compareDataObjectSizeMod(data1, data2) {
 					if (dataInner[index] != item) { //check if he value has changed
 		    			if (index == "modified" || index == "size") {
 		    				countChangesT = countChangesT + 1;
-		    				//$("msg").innerHTML += "1-i:" + index + "-item:" + item;
 	    				} 
 	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
 	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
 	    					 || index == "note" || index == "date" || index == "vote") {
 	    					countChangesF = countChangesF + 1;
-	  						//$("msg").innerHTML += "2-i:" + index + "-item:" + item;
 	    				}
     				}
 				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
 		    			if (index == "modified" || index == "size") {
 		    				countChangesT = countChangesT + 1;
-		    				//$("msg").innerHTML += "3-i:" + index + "-item:" + item;
 	    				} 
 	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
 	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
 	    					 || index == "note" || index == "date" || index == "vote") {
 	    					countChangesF = countChangesF + 1;
-							//$("msg").innerHTML += "4-i:" + index + "-item:" + item;
 	    				}
 				}
 			});
@@ -4099,29 +3994,24 @@ function compareDataObjectCoordinates(data1, data2) {
 			//and check which one does not exist in the shorter one and which one changed				
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
-					//$("msg").innerHTML += "-y-";		
 					if (dataInner[index] != item) { //check if he value has changed
 		    			if (index == "coordinatex" || index == "coordinatey") {
 		    				countChangesT = countChangesT + 1;
-		    				//$("msg").innerHTML += "1-i:" + index + "-item:" + item;
 	    				} 
 	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
 	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
 	    					 || index == "note" || index == "date" || index == "vote") {
 	    					countChangesF = countChangesF + 1;
-	  						//$("msg").innerHTML += "2-i:" + index + "-item:" + item;
 	    				}
     				}
 				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
 		    			if (index == "coordinatex" || index == "coordinatey") {
 		    				countChangesT = countChangesT + 1;
-		    				//$("msg").innerHTML += "3-i:" + index + "-item:" + item;
 	    				} 
 	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
 	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
 	    					 || index == "note" || index == "date" || index == "vote") {
 	    					countChangesF = countChangesF + 1;
-							//$("msg").innerHTML += "4-i:" + index + "-item:" + item;
 	    				}
 				}
 			});
@@ -4146,11 +4036,8 @@ function getPreferences(){
 	                      .getService(Components.interfaces.nsIPrefService);
 	var branch = prefs.getBranch("extensions.tic.");
 	var children = branch.getChildList("", {});
-	//$("msg").innerHTML = children;	
 	var share4research2 = branch.getIntPref("share4research2");
-	//$("msg").innerHTML += "-"+share4research2;
 	var fileManager = branch.getCharPref("fileManager");
-	//$("msg").innerHTML += "-"+fileManager;	
 }
 
 

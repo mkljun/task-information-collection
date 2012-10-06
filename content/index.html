@@ -32,7 +32,6 @@
 		width: 100%;
 		min-height: 100%;
 	    font-family: Arial, Helvetica, sans-serif;
-	    /*font-size: 14px;*/
 	} 
 
 	table, thead, tbody, tr, td, th, div, ul, li, ol, p, span, a {
@@ -81,7 +80,6 @@
 		background-color:rgba(112,138,144,0.8);
 		width: 215px;
 		padding: 10px;
-		/*height: 600px;*/
 		height: 90%;
 		-moz-transition-duration: 0.3s;
 		text-align: left;
@@ -95,13 +93,6 @@
 		left: 0;
 	}	
 	#tasksList{
-		/*height: 520px; */
-		height: 90%;
-		overflow: auto;
-		font-size: 14px;
-	}
-	#tasksListArchived{
-		/*height: 520px; */
 		height: 90%;
 		overflow: auto;
 		font-size: 14px;
@@ -134,9 +125,7 @@
 		-moz-transition-duration: 0.3s;
 		text-align: left;
 		-moz-border-radius: 0px 5px 5px 0px;
-		border-radius: 0px 5px 5px 0px;
-/*		border-style: solid;
-		border-width: 1px;	*/	
+		border-radius: 0px 5px 5px 0px;	
 	}
 	#timelineSlideout:hover {
 		left: 235px;
@@ -168,15 +157,12 @@
 		background-color:rgba(112,138,144,0.8);
 		width: 215px;
 		padding: 10px 10px 10px 10px;
-		/*height: 600px;*/
 		height: 90%;
 		overflow:auto;
 		-moz-transition-duration: 0.3s;
 		text-align: left;
 		-moz-border-radius: 0px 5px 5px 0px;
 		border-radius: 0px 5px 5px 0px;
-/*		border-style: solid;
-		border-width: 1px;	*/	
 	}
 	#archiveSlideout:hover {
 		left: 235px;
@@ -185,6 +171,11 @@
 	#archiveSlideout:hover #archiveSlideoutInner {
 		left: 0px;
 		z-index: 6;
+	}	
+	#tasksListArchived{
+		height: 100%;
+		overflow: auto;
+		font-size: 14px;
 	}	
 
 	
@@ -227,7 +218,6 @@
 	div#printOuter {
         position: absolute;
         left: 70%;
-        /*margin-right: 10px;*/
         top: 10px;
         z-index: 7;
         visibility: hidden;
@@ -250,7 +240,6 @@
 		border-radius: 8px;
         height: 150px;
         position: relative;
-        /*left: -50%;*/
 		background-color:rgba(112,138,144,0.9);
 		padding: 10px;
 		-moz-transition: opacity 0.5s ease-in-out;
