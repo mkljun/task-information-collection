@@ -229,7 +229,7 @@ function drawTICElements() {
 							cursor: "pointer",
 							width : "20px",
 							position: "absolute",
-							top: "40px", 
+							top: "41px", 
 							left: xleft,
 							float: "left"
 						},
@@ -361,7 +361,7 @@ function drawTICElements() {
 							cursor: "pointer",						
 							width : "20",
 							position: "absolute",
-							top: "28px", 
+							top: "30px", 
 							left: "28px"
 						},
 						events : {
@@ -410,7 +410,7 @@ function drawTICElements() {
 				var xleft = "139px";
 			}			
 			$("previmg" + key).setStyle("left",xleft);
-			$("previmg" + key).setStyle("top","60px");		
+			$("previmg" + key).setStyle("top","62px");		
 		}						
 		//### TEXT/NAME
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
@@ -979,7 +979,7 @@ function drawTICElements() {
 		//make notes resizable
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 			$("item" + key).makeResizable({
-				limit: {x: [150, 600], y: [86, 500]},
+				limit: {x: [150, 600], y: [90, 500]},
 				handle : $("resizeimg" + key),
 				onComplete: function(){
 					if ($("item" + key).contains($("nametext" + key))) {
@@ -1159,7 +1159,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								cursor: "pointer",
 								width : "20px",
 								position: "absolute",
-								top: "40px", 
+								top: "41px", 
 								left: xleft,
 								float: "left"
 							},
@@ -1245,7 +1245,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								cursor: "pointer",						
 								width : "20",
 								position: "absolute",
-								top: "28px", 
+								top: "30px", 
 								left: "28px"
 							},
 							events : {
@@ -1294,7 +1294,7 @@ function drawTICElementsPastStates(pastStatesId) {
 					var xleft = "139px";
 				}			
 				$("previmg" + key).setStyle("left",xleft);
-				$("previmg" + key).setStyle("top","60px");		
+				$("previmg" + key).setStyle("top","62px");		
 			}						
 			//### TEXT/NAME
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
@@ -1334,7 +1334,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				$("item" + key).setStyle("z-index","0");
 				value["name"] = cleanHtml(value["name"]);
-//				data[key]["name"] = value["name"];
+				//data[key]["name"] = value["name"];
 				if (value["type"] == "TEXT" || value["type"] == "NOTE") {
 					value["name"] = value["name"].replace( /\n/gi, "<br />");	
 				}
