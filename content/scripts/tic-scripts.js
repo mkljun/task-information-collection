@@ -2992,18 +2992,15 @@ function databaseArchiveTask(taskid, name) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
-					//printOut(aReason.message);
+					statement.finalize();
+					databaseShowTasks();
+					databaseShowArchivedTasks();
+					printOut("Project \"" + name + "\" was archived to Archive!");					
 				}	
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
 		}); 
-		statement.finalize();
-		databaseShowTasks();
-		databaseShowTasks();
-		databaseShowArchivedTasks();
-		databaseShowArchivedTasks();
-		printOut("Project \"" + name + "\" was archived to Archive!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3019,18 +3016,15 @@ function databaseRetrieveTask(taskid, name) {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 						printOut("Query canceled or aborted!");
 				} else {
-					//printOut(aReason.message);
+					statement.finalize();
+					databaseShowTasks();
+					databaseShowArchivedTasks();
+					printOut("Project \"" + name + "\" was retrieved back to Projects/Tasks!");					
 				}	
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
 		}); 
-		statement.finalize();
-		databaseShowTasks();
-		databaseShowTasks();
-		databaseShowArchivedTasks();
-		databaseShowArchivedTasks();
-		printOut("Project \"" + name + "\" was retrieved back to Projects/Tasks!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3448,10 +3442,13 @@ function databaseEnterNewTask() {
 				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
 					printOut("Query canceled or aborted!");
 				} else {
-					printOut("New task \"" + $("createName").value + "\" was successfully created!");
+					printOut("New project \"" + $("createName").value + "\" was successfully created!");
 					$('createName').set('value', 'Enter a new project name');
 					$('createName').setStyle('color', '#888');
 					databaseShowTasks();
+					//open (draw) the last inserted project
+					var rowid = connection.lastInsertRowID;
+					databaseSaveTaskCollection(databaseDrawTaskCollection, rowid);					
 				} 
 	  			statement.finalize();   				
 			},
