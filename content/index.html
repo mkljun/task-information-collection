@@ -100,6 +100,12 @@
 		overflow: auto;
 		font-size: 14px;
 	}
+	#tasksListArchived{
+		/*height: 520px; */
+		height: 90%;
+		overflow: auto;
+		font-size: 14px;
+	}
 	
 	#timelineSlideout {
 		position: fixed;
@@ -107,8 +113,8 @@
 		left: 0px;
 		z-index: 4;			
 		width: 30px;
-		height: 170px;
-		padding: 17px 3px 0px 0px;
+		height: 110px;
+		padding: 3px 3px 0px 0px;
 		text-align: center;
 		background-color:rgba(112,138,144,0.8);
 		-moz-transition-duration: 0.3s;
@@ -122,7 +128,8 @@
 		background-color:rgba(112,138,144,0.8);
 		width: 215px;
 		padding: 10px 10px 10px 10px;
-		height: 600px;
+		/*height: 600px;*/
+		height: 90%;
 		overflow:auto;
 		-moz-transition-duration: 0.3s;
 		text-align: left;
@@ -139,6 +146,47 @@
 		left: 0px;
 		z-index: 6;
 	}	
+
+	#archiveSlideout {
+		position: fixed;
+		top: 393px;
+		left: 0px;
+		z-index: 4;			
+		width: 30px;
+		height: 110px;
+		padding: 3px 3px 0px 0px;
+		text-align: center;
+		background-color:rgba(112,138,144,0.8);
+		-moz-transition-duration: 0.3s;
+		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;
+	}
+	#archiveSlideoutInner {
+		position: fixed;
+		top: 40px;
+		left: -235px;
+		background-color:rgba(112,138,144,0.8);
+		width: 215px;
+		padding: 10px 10px 10px 10px;
+		/*height: 600px;*/
+		height: 90%;
+		overflow:auto;
+		-moz-transition-duration: 0.3s;
+		text-align: left;
+		-moz-border-radius: 0px 5px 5px 0px;
+		border-radius: 0px 5px 5px 0px;
+/*		border-style: solid;
+		border-width: 1px;	*/	
+	}
+	#archiveSlideout:hover {
+		left: 235px;
+		z-index: 6;
+	}
+	#archiveSlideout:hover #archiveSlideoutInner {
+		left: 0px;
+		z-index: 6;
+	}	
+
 	
 	#commentSlideout {
 		position: fixed;
@@ -237,7 +285,7 @@
 		border-radius: 3px; 
 		margin-bottom: 5px;		
 	}
-	.verticalTab{
+	.verticalTab1{
 		-moz-transform: rotate(-90deg);
 		-moz-transform-origin: left top;
 		width: 150px;
@@ -249,6 +297,18 @@
 		bottom:0px;
 		letter-spacing:3px;
 	}
+	.verticalTab2{
+		-moz-transform: rotate(-90deg);
+		-moz-transform-origin: left top;
+		width: 90px;
+		height: 6px;
+		margin: 0px 0px 0px 0px ;
+		padding: 7px 0px 0px 0px ;
+		line-height:98%;
+		position: absolute;
+		bottom:0px;
+		letter-spacing:3px;
+	}	
 	.timestamp{
 		line-height:98%;
 		font-size:13px;
@@ -496,7 +556,7 @@
 <div id="printOuter"><div id="printInner"><div id="printText" class="hidden"></div></div></div>
 
 <div id="tasksSlideout">
-	<p class="verticalTab">Projects/Tasks<p>
+	<p class="verticalTab1">Projects/Tasks<p>
 	<div id="tasksSlideoutInner">
 		<div class="tasksForms">
 			<img scr="images/spacer.gif" width="200px" height="1px">
@@ -520,9 +580,16 @@
 <div id="itemsList"></div>
 
 <div id="timelineSlideout">
-	<p class="verticalTab">Timeline<p>
+	<p class="verticalTab2">Timeline<p>
 	<div id="timelineSlideoutInner"></div>
 </div>
+
+<div id="archiveSlideout">
+	<p class="verticalTab2">Archive<p>
+	<div id="archiveSlideoutInner">
+		<div id="tasksListArchived"></div>
+	</div>
+</div> 
 
 <!-- <div id="commentSlideout">
 	<p class="verticalTab" style="top: 165px;">Comment<p>

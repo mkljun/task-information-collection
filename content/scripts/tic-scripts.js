@@ -22,6 +22,7 @@ var pastTICStatesIds; //array of old ids used for timeline
 var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
 var pastTICStatesInterval; //interval for each state to be visible in a playback
 var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
+//version ... for updating DB
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -35,7 +36,8 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	//get the last selected task from the DB
 	currentTaskId = databaseGetLastTask();
 	//print out all tasks in the left panel
-	databaseShowTasks();		
+	databaseShowTasks();	
+	databaseShowArchivedTasks();	
 	//get and draw data from the last selected task
 	databaseDrawTaskCollection(currentTaskId);
 	//draw home, desktop and note icons
@@ -1779,7 +1781,7 @@ function editElementName(key) { //edit the name=content of notes
 						},
 						blur : function() {
 							clearInterval(autosave);
-							editElementNameSave(element.get("value"),key);
+							str = editElementNameSave(this.get("value"),key);							
 							copy.setProperty("html", str); 
 							$("listname" + key).setProperty("html", str);
 							copy.replaces(this);
@@ -1793,6 +1795,7 @@ function editElementNameSave(text, key) {
 		text = text.replace( /\n/gi, "<br />");	
 	}
 	data[key]["name"] = text;
+	return text;
 }
 
 
@@ -2047,7 +2050,7 @@ function drawGeneralIcons(){
 		}).adopt(		
 			new Element("img", {
 				title : "New note",
-				src : 'images/note_icon.png',
+				src : 'images/icons_content/notes.png',
 				styles : {
 					width : '30px',
 					cursor : 'pointer',
@@ -2083,12 +2086,24 @@ function databaseConnect() {
    	if (file.exists()) {
    		dbConn = Services.storage.openDatabase(file);
    		printAboutHide();
-   		return dbConn;
+
+		//update tables - add task_archived
+		var aRows = [];
+		var statement = dbConn.createStatement("PRAGMA table_info(tasks)");
+		while (statement.executeStep()) {
+			aRows.push(statement.row.name);
+		}
+		statement.finalize(); //$("msg").innerHTML += aRows.toSource()
+		if (aRows.contains('task_archived') == false) {
+			dbConn.executeSimpleSQL("ALTER TABLE tasks ADD COLUMN task_archived BOOL DEFAULT 0");
+		}
+
+        return dbConn;
    	} else {
    		//Will also create the file if it does not exist			
    		dbConn = Services.storage.openDatabase(file);
 		//create tables: 
-   		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT)");
+   		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT, task_archived BOOL DEFAULT 0)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id INTEGER, coll_timestamp TEXT, coll_items TEXT)");
    		dbConn.executeSimpleSQL("CREATE INDEX collections_task_id ON tasks_collections (coll_id DESC, task_id DESC)");
@@ -2496,18 +2511,23 @@ function compareAndCleanStages(){
 }
 
 /***************************************************************************
-Function prints out the list of all available tasks from the database to the 
+Functions print out the list of all available tasks from the database to the 
 side panel. The function is called:
+databaseShowTasks()
 	- window.addEvent('domready',: when the DOM loads
 	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
 	- databaseEnterNewTask(): when new task is entered
+	- databaseDeleteTask(taskid,name): when a task is deleted
+databaseShowArchivedTasks()	
+	- window.addEvent('domready',: when the DOM loads
+	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
 	- databaseDeleteTask(taskid,name): when a task is deleted
 ****************************************************************************/
 function databaseShowTasks() {	   	  
 	//clear the tasks from DOM
 	$("tasksList").empty(); 
 	//select from DB
-	var statement = connection.createStatement("SELECT * FROM tasks ORDER BY task_id DESC");  
+	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=0 ORDER BY task_id DESC");  
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) { 
 		while (statement.executeStep()) { 
@@ -2517,7 +2537,7 @@ function databaseShowTasks() {
 				$("tasksList").adopt(
 					new Element ("div#task" + taskid, {
 						styles : {
-							width : "90%",
+							width : "195",
 							display : "block"//,
 							//"padding-bottom" : "2px",
 							//"font-size" : "14px",
@@ -2556,7 +2576,7 @@ function databaseShowTasks() {
 							"html" : "&nbsp;",
 							styles : {
 								float : "left",
-								width : "3px"
+								width : "3px" 
 							}							
 						}),					    
 						new Element("a", {
@@ -2565,7 +2585,7 @@ function databaseShowTasks() {
 							"html" : taskname,
 							styles : {
 								float : "left", 
-								width : "115"							
+								width : "121"							
 							},
 							events : {
 								click : function(){
@@ -2579,9 +2599,11 @@ function databaseShowTasks() {
 							"id" : "taskEdit" + taskid,
 							"alt" : "Edit",
 							"title" : "Edit task name",
-							"width" : "20px",
+							"width" : "17px",
+							"height" : "20px",
 							styles : {
-								float : "left"								
+								float : "left",
+								cursor : "pointer"								
 							},
 							events : {
 								click : function(){
@@ -2595,9 +2617,11 @@ function databaseShowTasks() {
 							"id" : "taskDelete" + taskid,
 							"alt" : "Delete",
 							"title" : "Remove task",
-							"width" : "20px",							
+							"width" : "17px",
+							"height" : "20px",							
 							styles : {
-								float : "left"								
+								float : "left",
+								cursor : "pointer"								
 							},
 							events : {
 								click : function(){
@@ -2612,12 +2636,30 @@ function databaseShowTasks() {
 								}
 							}							
 						}),
+						new Element("img", {
+							"src" : "images/icons_general/file_cabinet_closed.png",
+							"id" : "taskArchive" + taskid,
+							"alt" : "Archive",
+							"title" : "Archive",
+							"width" : "17px",
+							"height" : "20px",							
+							styles : {
+								float : "left",
+								cursor : "pointer"								
+							},
+							events : {
+								click : function(){
+									databaseArchiveTask(taskid, taskname);
+								}
+							}							
+						}),						
 						new Element("div", {						
 							styles : {
 								"clear" : "both",
 								"border-style" : "solid",
 								"border-width" : "1px 0px 0px 0px",
-								"border-color" : "#98AFC7"
+								"border-color" : "#98AFC7",
+								width : "195px"
 							}							
 						})
 
@@ -2628,6 +2670,156 @@ function databaseShowTasks() {
 	} else {
 		printOut("Not a valid SQL statement: SELECT * FROM tasks ORDER BY task_id DESC");
 	}				
+}
+
+function databaseShowArchivedTasks() {	   	  
+	//clear the tasks from DOM
+	$("tasksListArchived").empty(); 
+	//select from DB
+	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=1 ORDER BY task_id DESC");  
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+
+	if (statement.state == 1) { 
+		while (statement.executeStep()) { 
+			(function(){  
+				var taskname = statement.row.task_name;
+				var taskid = statement.row.task_id;
+				$("tasksListArchived").adopt(
+					new Element ("div#task" + taskid, {
+						styles : {
+							width : "195",
+							display : "block"//,
+							//"padding-bottom" : "2px",
+							//"font-size" : "14px",
+							//"border-bottom" : "1px solid",
+							//"border-color" : "rgba(112,138,144,0.8)"
+						}
+					})				
+				);	
+				$("task" + taskid).adopt( 
+					    new Element("a", {
+							"id" : "taskIdCircle" + taskid,
+							"href" : "#" + taskname,
+							 "text" : taskid,
+							styles : {
+								//position : "absolute",
+								//left : leftStep + "px",
+								//top : "-20px",
+								float : "left",
+								width : "20px",
+								height : "20px",	
+								"font-size" : "11px",
+								"line-height" : "20px",
+								display : "block",
+								"border-radius" : "20px",
+								"background-color" : "#C0C0C0",
+								"text-align" : "center"
+							},
+							events : {
+								click : function(){
+									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
+									return false;									
+								}
+							}				    	
+					    }),
+						new Element("span", {
+							"html" : "&nbsp;",
+							styles : {
+								float : "left",
+								width : "3px" 
+							}							
+						}),					    
+						new Element("a", {
+							"id" : "taskName" + taskid,
+							"href" : "#" + taskname,
+							"html" : taskname,
+							styles : {
+								float : "left", 
+								width : "121"							
+							},
+							events : {
+								click : function(){
+									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
+									return false;
+								}
+							}
+						}),
+						new Element("img", {
+							"src" : "images/icons_general/Prorgrams.png",
+							"id" : "taskEdit" + taskid,
+							"alt" : "Edit",
+							"title" : "Edit task name",
+							"width" : "17px",
+							"height" : "20px",
+							styles : {
+								float : "left",
+								cursor : "pointer"								
+							},
+							events : {
+								click : function(){
+									//call function that replaces the above a with input
+									changeEditTaskName(taskid);
+								}
+							}							
+						}),
+						new Element("img", {
+							"src" : "images/icons_general/RecycleBin_Empty.png",
+							"id" : "taskDelete" + taskid,
+							"alt" : "Delete",
+							"title" : "Remove task",
+							"width" : "17px",
+							"height" : "20px",							
+							styles : {
+								float : "left",
+								cursor : "pointer"								
+							},
+							events : {
+								click : function(){
+									//fire up the confirmation box
+									var question = confirm("PERMANENTLY delete the task " + taskname + "?")
+									if (question == true){
+										databaseDeleteTask(taskid,taskname);
+									} else {
+										//alert("?");
+									}
+									
+								}
+							}							
+						}),
+						new Element("img", {
+							"src" : "images/icons_general/file_cabinet_opened.png",
+							"id" : "taskArchive" + taskid,
+							"alt" : "Retrieve",
+							"title" : "Retrieve",
+							"width" : "17px",
+							"height" : "20px",							
+							styles : {
+								float : "left",
+								cursor : "pointer"								
+							},
+							events : {
+								click : function(){
+									databaseRetrieveTask(taskid,taskname);
+								}
+							}							
+						}),						
+						new Element("div", {						
+							styles : {
+								"clear" : "both",
+								"border-style" : "solid",
+								"border-width" : "1px 0px 0px 0px",
+								"border-color" : "#98AFC7",
+								width : "195px"
+							}							
+						})
+
+				);
+			})();
+		} 
+		statement.finalize();
+	} else {
+		printOut("Not a valid SQL statement: SELECT * FROM tasks ORDER BY task_id DESC");
+	}		
 }
 
 /***************************************************************************
@@ -2716,6 +2908,7 @@ function databaseSaveEditTaskName(newName, taskid) {
 				}	
 				statement.finalize();
 				databaseShowTasks();
+				databaseShowArchivedTasks();
 				if (taskid == currentTaskId) { 
 					printTaskNameCentre(taskid);
 					drawTICElements();
@@ -2740,6 +2933,10 @@ databaseDeleteTaskStage(coll_id): deletes just one stage of a task
 	  times onyl and if the d delete the one in the DB
 	- compareAndCleanStages(): compares two consequest stages of every task and
 	  if they don't significantly differ (e.g. only coordinates) the older one is deleted
+databaseArchiveTask(taskid, name): Moves a task to archived
+	- databaseShowTasks(): called when user sclicks on the icon
+databaseRetrieveTask(taskid, name): retrieves task back to tasklist
+	- databaseShowArchivedTasks(): called when user sclicks on the icon
 ****************************************************************************/
 function databaseDeleteTask(taskid,name){
 	var statement1 = connection.createStatement("DELETE FROM tasks_collections WHERE task_id= :tid");
@@ -2762,6 +2959,7 @@ function databaseDeleteTask(taskid,name){
 		statement1.finalize();
 		statement2.finalize();
 		databaseShowTasks();
+		databaseShowArchivedTasks();
 		printOut("Task \"" + name + "\" was successfully deleted!");
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
@@ -2792,6 +2990,57 @@ function databaseDeleteTaskStage(coll_id){
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}	
+}
+
+function databaseArchiveTask(taskid, name) {
+	var statement = connection.createStatement("UPDATE tasks SET task_archived=1 WHERE  task_id= :tid");
+	statement.params.tid = taskid;
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+	if (statement.state == 1) { 
+		connection.executeAsync([statement], 1,  {
+			handleCompletion : function(aReason) {
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						printOut("Query canceled or aborted!");
+				} else {
+					//printOut(aReason.message);
+				}	
+			},
+			handleError : function(aError) {printOut(aError.message);},
+			handleResult : function() {}
+		}); 
+		statement.finalize();
+		databaseShowTasks();
+		databaseShowArchivedTasks();
+		printOut("Task \"" + name + "\" was archived to Archive!");
+	} else {
+		printOut("Not valid SQL statements: DELETE FROM tasks...");
+	}
+
+}
+
+function databaseRetrieveTask(taskid, name) {
+	var statement = connection.createStatement("UPDATE tasks SET task_archived=0 WHERE  task_id= :tid");
+	statement.params.tid = taskid;
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+	if (statement.state == 1) { 
+		connection.executeAsync([statement], 1,  {
+			handleCompletion : function(aReason) {
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						printOut("Query canceled or aborted!");
+				} else {
+					//printOut(aReason.message);
+				}	
+			},
+			handleError : function(aError) {printOut(aError.message);},
+			handleResult : function() {}
+		}); 
+		statement.finalize();
+		databaseShowTasks();
+		databaseShowArchivedTasks();
+		printOut("Task \"" + name + "\" was retrieved back to Projects/Tasks!");
+	} else {
+		printOut("Not valid SQL statements: DELETE FROM tasks...");
+	}
 }
 
 /***************************************************************************
@@ -2920,7 +3169,7 @@ function databaseDrawTaskCollection(taskid) {
 						new Element ("div#timelineDate", {
 							styles : {
 								width : "210px",
-								height : "540px",
+								height : "92%",
 								"font-size" : "12px",
 								"margin" : "3px 0px 1px 0px",
 								padding : "1px 0px 1px 0px",
