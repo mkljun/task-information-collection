@@ -22,7 +22,7 @@ var pastTICStatesIds; //array of old ids used for timeline
 var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
 var pastTICStatesInterval; //interval for each state to be visible in a playback
 var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
-var framekiller = false; //for checking if preview page prevents opening in iframe and warn user
+var framekiller = false; //for checking if previewed page prevents opening in iframe and warn user
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -43,12 +43,12 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	//draw home, desktop and note icons
 	drawGeneralIcons();
 
-	//ask user if the want a previewed page thed does not allow it to overide TIC
+	//if previewed page prevents opening in iframe ask user about overide TIC or not
 	window.onbeforeunload = function() { 
 	  if(framekiller == true) {
 	 	framekiller = false;
 		alert("This page prevents previewing and wants to redirect you. " +
-			  "Open it with cliking on its link instead.");
+			  "Open it with cliking on its link instead.");			
 		return false; 	
 	  }
 	}
