@@ -22,7 +22,7 @@ var pastTICStatesIds; //array of old ids used for timeline
 var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
 var pastTICStatesInterval; //interval for each state to be visible in a playback
 var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
-//version ... for updating DB
+var framekiller = false; //for checking if preview page prevents opening in iframe and warn user
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -42,6 +42,16 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	databaseDrawTaskCollection(currentTaskId);
 	//draw home, desktop and note icons
 	drawGeneralIcons();
+
+	//ask user if the want a previewed page thed does not allow it to overide TIC
+	window.onbeforeunload = function() { 
+	  if(framekiller == true) {
+	 	framekiller = false;
+		alert("This page prevents previewing and wants to redirect you. " +
+			  "Open it with cliking on its link instead.");
+		return false; 	
+	  }
+	}
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
@@ -390,6 +400,7 @@ function drawTICElements() {
 							 	//external URLs in XUL for security reasons
 							 	} else if (value["type"] == "URL") {
 							 		tempURIforXUL = value['path'];
+							 		framekiller = true;
 								    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
 							 	} 
 							}
