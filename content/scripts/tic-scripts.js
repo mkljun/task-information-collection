@@ -344,6 +344,7 @@ function drawTICElements() {
 
 		//### Preview
 		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
+		var htmlTypes = ['htm', 'html'];
 		var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
 						 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 		 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
@@ -355,6 +356,7 @@ function drawTICElements() {
 		if ((value["type"] == "URL") 
 			|| sourceTypes.contains(value["type"])
 			|| imageTypes.contains(fileExt.toLowerCase())
+			|| htmlTypes.contains(fileExt.toLowerCase())
 			|| textTypes.contains(fileExt.toLowerCase())) {		
 			$("item" + key).adopt( //span#move" + key
 				new Element("span#prev" + key).adopt(
@@ -383,7 +385,7 @@ function drawTICElements() {
 										]
 									}).open();
 								//images
-							 	} else if (imageTypes.contains(fileExt.toLowerCase())) {
+							 	} else if (value["type"] == "FILE" && imageTypes.contains(fileExt.toLowerCase())) {
 									var images = ['file://'+value["path"]];
 									var light = new LightFace.Image({
 										title: 'Image',
@@ -395,11 +397,15 @@ function drawTICElements() {
 										}
 									}).addButton('Close', function() { light.close(); },true).load(images[0],'Image 1').open();
 							 	//plain text	
-							 	} else if (textTypes.contains(fileExt.toLowerCase())) {
+							 	} else if (value["type"] == "FILE" && textTypes.contains(fileExt.toLowerCase())) {
 							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'view-source:file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();						
-							 	//external URLs in XUL for security reasons
-							 	} else if (value["type"] == "URL") {
-							 		tempURIforXUL = value['path'];
+							 	//HTML or URLs opened in XUL for security reasons
+							 	} else if (value["type"] == "URL" || value["type"] == "FILE" && htmlTypes.contains(fileExt.toLowerCase())) {
+							 		if (value["type"] == "URL") {
+							 			tempURIforXUL = value['path'];
+							 		} else {
+							 			tempURIforXUL = 'file://'+value['path'];
+							 		}
 							 		framekiller = true;
 								    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
 							 	} 
@@ -431,7 +437,7 @@ function drawTICElements() {
 						"font-size": "12px"
 					}
 				}).adopt(
-					new Element("a", {
+					new Element("a#namelink" + key, {
 						href : "#open",
 						html : name,
 						title : "Open",
@@ -1212,6 +1218,7 @@ function drawTICElementsPastStates(pastStatesId) {
 
 			//### Preview
 			var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
+			var htmlTypes = ['htm', 'html'];
 			var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
 							 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 			 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
@@ -1223,6 +1230,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			if ((value["type"] == "URL") 
 				|| sourceTypes.contains(value["type"])
 				|| imageTypes.contains(fileExt.toLowerCase())
+				|| htmlTypes.contains(fileExt.toLowerCase())
 				|| textTypes.contains(fileExt.toLowerCase())) {		
 				$("item" + key).adopt( //span#move" + key
 					new Element("span#prev" + key).adopt(
@@ -1251,7 +1259,7 @@ function drawTICElementsPastStates(pastStatesId) {
 											]
 										}).open();
 									//images
-								 	} else if (imageTypes.contains(fileExt.toLowerCase())) {
+								 	} else if (value["type"] == "FILE" && imageTypes.contains(fileExt.toLowerCase())) {
 										var images = ['file://'+value["path"]];
 										var light = new LightFace.Image({
 											title: 'Image',
@@ -1263,11 +1271,16 @@ function drawTICElementsPastStates(pastStatesId) {
 											}
 										}).addButton('Close', function() { light.close(); },true).load(images[0],'Image 1').open();
 								 	//plain text	
-								 	} else if (textTypes.contains(fileExt.toLowerCase())) {
+								 	} else if (value["type"] == "FILE" && textTypes.contains(fileExt.toLowerCase())) {
 								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'view-source:file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();						
-								 	//external URLs in XUL for security reasons
-								 	} else if (value["type"] == "URL") {
-								 		tempURIforXUL = value['path'];
+								 	//HTML or URLs opened in XUL for security reasons
+								 	} else if (value["type"] == "URL" || value["type"] == "FILE" && htmlTypes.contains(fileExt.toLowerCase())) {
+								 		if (value["type"] == "URL") {
+								 			tempURIforXUL = value['path'];
+								 		} else {
+								 			tempURIforXUL = 'file://'+value['path'];
+								 		}
+								 		framekiller = true;
 									    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
 								 	} 
 								}
@@ -1298,7 +1311,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							"font-size": "12px"
 						}
 					}).adopt(
-						new Element("a", {
+						new Element("a#namelink" + key, {
 							href : "#open",//value["path"],
 							html : name,
 							title : "Open",
@@ -3499,13 +3512,14 @@ function doDrop(event) { //add new information items to the page and variable da
 		} else if (types[0] == "text/x-moz-url") {
 			var urlDragged = event.dataTransfer.mozGetDataAt(types[0], i).trim();
 			var url = event.dataTransfer.mozGetDataAt(types[1], i).trim();
-			//split data into URL and title
+			//set the global nexKey variable to the next highest index
+			var nextKey = findNextKey(data);			
+			//split dragged data into URL and title
 			var title = urlDragged.split("\n");	 
 			if (!title[1]) {
 				title[1] = url;
-			}	
-			//set the global nexKey variable to the next highest index
-			var nextKey = findNextKey(data);			
+				getTitle(url,nextKey);
+			}			
 			data[nextKey] = {
 					type : "URL",
 					path : url,
@@ -3520,54 +3534,108 @@ function doDrop(event) { //add new information items to the page and variable da
 		} else if (types[0] == "text/html") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[1], i).trim();	
 			//set the global nexKey variable to the next highest index
-			var nextKey = findNextKey(data);					 	
-			data[nextKey] = {
-					type : "TEXT",
-					path : "",
-					name : textDragged,
-					coordinatex : coorX,
-					coordinatey : coorY,
-					timestamp : getTimestamp(),
-					width: "150",
-					height: "140",
-					vote : "0",
-					arrow : "no-no"
-			};
+			var nextKey = findNextKey(data);	
+			//check if dragged text is just URL (for pages from other browsers and text)
+			if (validURL(textDragged) == true) {
+				//set the temporary title
+				var title = getDomain(textDragged);
+				//get the real page title and change it eventually
+				getTitle(textDragged, nextKey);
+				data[nextKey] = {
+						type : "URL",
+						path : textDragged,
+						name : title,
+						coordinatex : coorX,
+						coordinatey : coorY,
+						timestamp : getTimestamp(),
+						vote : "0",
+						arrow : "no-no"
+				};	
+			} else {							 	
+				data[nextKey] = {
+						type : "TEXT",
+						path : "",
+						name : textDragged,
+						coordinatex : coorX,
+						coordinatey : coorY,
+						timestamp : getTimestamp(),
+						width: "150",
+						height: "140",
+						vote : "0",
+						arrow : "no-no"
+				};
+			}
 		//Text from editors - plain
 		} else if (types[0] == "text/plain") {
 			var textDragged = event.dataTransfer.getData("text/plain");	
 			//set the global nexKey variable to the next highest index
-			var nextKey = findNextKey(data);					 	
-			data[nextKey] = {
-					type : "TEXT",
-					path : "",
-					name : textDragged,
-					coordinatex : coorX,
-					coordinatey : coorY,
-					timestamp : getTimestamp(),
-					width: "150",
-					height: "140",					
-					vote : "0",
-					arrow : "no-no"
-			};						 									 	
+			var nextKey = findNextKey(data);	
+			//check if dragged text is just URL (for pages from other browsers and text)
+			if (validURL(textDragged) == true) {
+				//set the temporary title
+				var title = getDomain(textDragged);
+				//get the real page title and change it eventually
+				getTitle(textDragged, nextKey);
+				data[nextKey] = {
+						type : "URL",
+						path : textDragged,
+						name : title,
+						coordinatex : coorX,
+						coordinatey : coorY,
+						timestamp : getTimestamp(),
+						vote : "0",
+						arrow : "no-no"
+				};	
+			} else {					 	
+				data[nextKey] = {
+						type : "TEXT",
+						path : "",
+						name : textDragged,
+						coordinatex : coorX,
+						coordinatey : coorY,
+						timestamp : getTimestamp(),
+						width: "150",
+						height: "140",					
+						vote : "0",
+						arrow : "no-no"
+				};
+			}						 									 	
 		//Text from WEB - HTML 
 		} else if (types[0] == "text/_moz_htmlcontext") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[2], i);
 			textDragged = cleanHtml(textDragged);
 			//set the global nexKey variable to the next highest index
-			var nextKey = findNextKey(data);		
-			data[nextKey] = {
-					type : "HTML",
-					path : "",
-					name : textDragged,
-					coordinatex : coorX,
-					coordinatey : coorY,
-					timestamp : getTimestamp(),
-					width: "150",
-					height: "140",					
-					vote : "0",
-					arrow : "no-no"
-			};		
+			var nextKey = findNextKey(data);	
+			//check if dragged text is just URL (for pages from other browsers and text)
+			if (validURL(textDragged) == true) {
+				//set the temporary title
+				var title = getDomain(textDragged);
+				//get the real page title and change it eventually
+				getTitle(textDragged, nextKey);
+				data[nextKey] = {
+						type : "URL",
+						path : textDragged,
+						name : title,
+						coordinatex : coorX,
+						coordinatey : coorY,
+						timestamp : getTimestamp(),
+						vote : "0",
+						arrow : "no-no"
+				};	
+			} else {		
+				data[nextKey] = {
+						type : "HTML",
+						path : "",
+						name : textDragged,
+						coordinatex : coorX,
+						coordinatey : coorY,
+						timestamp : getTimestamp(),
+						width: "150",
+						height: "140",					
+						vote : "0",
+						arrow : "no-no"
+				};	
+			}	
 		}
 	}
 	//save to DB and draw the collection
@@ -3882,6 +3950,39 @@ function cleanHtml(str) {
  	return str.trim();
 }
 
+/***************************************************************************
+Cheks if the note contains just URL and gets the tiel of this URL
+The function is called:
+	- doDrop(event): to check whether dragged text is URL and convert it
+****************************************************************************/
+function validURL(str) {
+  var pattern = new RegExp('[a-zA-Z\d]+://(\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?'); 
+  if(!pattern.test(str)) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function getDomain(externalUrl){
+    var arr = externalUrl.split("/");
+    return arr[2];
+}
+
+function getTitle(externalUrl,key){
+    var req = new Request({
+		method: 'get',
+		data: { 'url' : externalUrl },
+		url: "http://pim.famnit.upr.si/tic/getTitleOfUrl.php",
+		onComplete: function(response) { 
+			//the response is very slow, so we save the title only when it arrives			
+			if (typeof response != 'undefined' && response != "") {
+				data[key]["name"] = response;
+				$("namelink" + key).set('html' , response);
+			}
+		}
+    }).send();
+}
 /***************************************************************************
 Returns a random date between two other dates
 var randomDateTmp = randomDate('1999-06-08 16:34:52', new Date()); 
