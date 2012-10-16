@@ -351,7 +351,7 @@ function drawTICElements() {
 						 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
 						 'asp','vbs','vbe','wsf','wsc',
 						 'tex','bib','enl','ris', 'py','pyc','pyo' ,
-						 'm3u']; 	
+						 'm3u', "1st", "asc", "bbs", "cpz", "dos", "faq", "inf", "me", "msg", "toc", "vim"]; 	
 		var sourceTypes = ['NOTE', 'TEXT', 'HTML']; //these are tye types added when pieces of text are dropped or a note created
 		if ((value["type"] == "URL") 
 			|| sourceTypes.contains(value["type"])
@@ -437,7 +437,7 @@ function drawTICElements() {
 						"font-size": "12px"
 					}
 				}).adopt(
-					new Element("a#namelink" + key, {
+					new Element("a#nametext" + key, {
 						href : "#open",
 						html : name,
 						title : "Open",
@@ -456,7 +456,7 @@ function drawTICElements() {
 								return false;
 							}
 						}
-					})
+					})	
 				)
 			);	
 		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
@@ -464,7 +464,7 @@ function drawTICElements() {
 			value["name"] = cleanHtml(value["name"]);
 			data[key]["name"] = value["name"];
 			if (value["type"] == "TEXT" || value["type"] == "NOTE") {
-				value["name"] = value["name"].replace( /\n/gi, "<br />");	
+				value["name"] = editNLwithBR(value["name"]);	
 			}
 			if (value["width"] && value["height"]) {
 				var xleft = value["width"]-10;
@@ -644,6 +644,7 @@ function drawTICElements() {
 			)
 		);
 
+		//ADDITINAL ICONS: calendar, person, email, note, url, delete
 		$("item" + key).adopt( //"div#information" + key
 			new Element("div#information" + key,  {
 				styles : {
@@ -670,7 +671,8 @@ function drawTICElements() {
 					src : "images/icons_general/Calendar.png",
 					alt : "Add a due date",
 					title : "Add a due date",
-					styles : {					
+					styles : {		
+					    "margin-left" : "2px",
 						width : "23",
 						height : "23",						
 						opacity : "0.8"
@@ -705,7 +707,8 @@ function drawTICElements() {
 					src : "images/icons_general/User.png",
 					alt : "Add a person's name to the item",
 					title : "Add a person",					
-					styles : {						
+					styles : {		
+						"margin-left" : "1px",				
 						width : "23",
 						height : "23",						
 						opacity : "0.8"
@@ -727,37 +730,6 @@ function drawTICElements() {
 					}					
 				})
 			)	
-		);
-		$("information" + key).adopt ( //"a#email" + key
-			new Element("a#email" + key, {
-				href : "#email"
-			}).adopt(
-				new Element("img", {
-					src : "images/icons_general/Address_Book.png",
-					alt : "Add an email address",
-					title : "Add an email address",
-					styles : {						
-						width : "23",
-						height : "23",		 				
-						opacity : "0.8"
-					},
-					events : {
-						click : function(){
-							var emailtmp;
-							if (value["email"]) {
-								emailtmp = value["email"];
-							} else {
-								emailtmp = "Add an email address";
-							}								
-							//call function that saves the changed text
-							var email = prompt("Please enter the email address of a person associated with this information",emailtmp);
-							if (email != null) {
-  								addElementValue(key,"email",email);
-							}
-						}
-					}					
-				})
-			)	
 		);	
 		$("information" + key).adopt ( //"a#url" + key
 			new Element("a#url" + key, {
@@ -767,7 +739,8 @@ function drawTICElements() {
 					src : "images/icons_general/Internet.png",
 					alt : "Add an URL",
 					title : "Add an URL",
-					styles : {						
+					styles : {	
+						"margin-left" : "1px",					
 						width : "23",
 						height : "23",		 				
 						opacity : "0.8"
@@ -795,10 +768,11 @@ function drawTICElements() {
 				href : "#note"
 			}).adopt(
 				new Element("img", {
-					src : "images/icons_general/Notepad2.png",
+					src : "images/icons_content/notes.png",
 					alt : "Add a note",
 					title : "Add a note",
-					styles : {						
+					styles : {	
+						"margin-left" : "1px",					
 						width : "23",
 						height : "23",		 				
 						opacity : "0.8"
@@ -820,7 +794,29 @@ function drawTICElements() {
 					}					
 				})
 			)	
-		);						
+		);	
+		$("information" + key).adopt ( //"a#editname" + key
+			new Element("a#editname" + key, {
+				href : "#editname"
+			}).adopt(
+				new Element("img", {
+					src : "images/icons_general/edit-icon.png",
+					alt : "Rename an item",
+					title : "Remane an item",
+					styles : {
+						"margin-left" : "1px",						
+						width : "23",
+						height : "23",		 				
+						opacity : "0.8"
+					},
+					events : {
+						click : function(){
+							editElementName(key);
+						}
+					}					
+				})
+			)	
+		);								
 		$("information" + key).adopt ( //"a#delete" + key
 			new Element("a#delete" + key, {
 				href : "#delete"
@@ -864,7 +860,7 @@ function drawTICElements() {
 			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
 				&& (index != "vote") && (index != "timestamp") && (index != "width")
-				&& (index != "height")) {
+				&& (index != "height") && (index != "stats")) {
 
 				var indivElement  = new Element("div#list" + index + key);
 
@@ -1012,6 +1008,13 @@ function drawTICElements() {
    				}   				
 			});
 		}
+
+		//add stats for files and folders:
+		if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+			var stats = getFolderStats(value["path"]);
+			data[key]["stats"] = JSON.stringify(stats);
+		}
+
 	});
 }
 
@@ -1225,7 +1228,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
 							 'asp','vbs','vbe','wsf','wsc',
 							 'tex','bib','enl','ris', 'py','pyc','pyo' ,
-							 'm3u']; 	
+							 'm3u', "1st", "asc", "bbs", "cpz", "dos", "faq", "inf", "me", "msg", "toc", "vim"]; 	
 			var sourceTypes = ['NOTE', 'TEXT', 'HTML']; //these are tye types added when pieces of text are dropped or a note created
 			if ((value["type"] == "URL") 
 				|| sourceTypes.contains(value["type"])
@@ -1311,7 +1314,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							"font-size": "12px"
 						}
 					}).adopt(
-						new Element("a#namelink" + key, {
+						new Element("a#nametext" + key, {
 							href : "#open",//value["path"],
 							html : name,
 							title : "Open",
@@ -1337,7 +1340,7 @@ function drawTICElementsPastStates(pastStatesId) {
 				$("item" + key).setStyle("z-index","0");
 				value["name"] = cleanHtml(value["name"]);
 				if (value["type"] == "TEXT" || value["type"] == "NOTE") {
-					value["name"] = value["name"].replace( /\n/gi, "<br />");	
+					value["name"] = editNLwithBR(value["name"]);	
 				}
 				if (value["width"] && value["height"]) {
 					var xleft = value["width"]-10;
@@ -1480,78 +1483,7 @@ function drawTICElementsPastStates(pastStatesId) {
 					}
 				})							
 			);
-			$("information" + key).adopt ( //"a#date" + key
-					new Element("img", {
-						src : "images/icons_general/Calendar.png",
-						alt : "Add a due date",
-						title : "Add a due date",
-						styles : {					
-							width : "23",
-							height : "23",						
-							opacity : "0.8"
-						}					
-					})
-			);
-			$("information" + key).adopt ( //"a#user" + key
-					new Element("img", {
-						src : "images/icons_general/User.png",
-						alt : "Add a person's name to the item",
-						title : "Add a person",					
-						styles : {						
-							width : "23",
-							height : "23",						
-							opacity : "0.8"
-						}					
-					})
-			);
-			$("information" + key).adopt ( //"a#email" + key
-					new Element("img", {
-						src : "images/icons_general/Address_Book.png",
-						alt : "Add an email address",
-						title : "Add an email address",
-						styles : {						
-							width : "23",
-							height : "23",		 				
-							opacity : "0.8"
-						}					
-					})
-			);	
-			$("information" + key).adopt ( //"a#url" + key
-					new Element("img", {
-						src : "images/icons_general/Internet.png",
-						alt : "Add an URL",
-						title : "Add an URL",
-						styles : {						
-							width : "23",
-							height : "23",		 				
-							opacity : "0.8"
-						}					
-					})
-			);
-			$("information" + key).adopt ( //"a#note" + key
-					new Element("img", {
-						src : "images/icons_general/Notepad2.png",
-						alt : "Add a note",
-						title : "Add a note",
-						styles : {						
-							width : "23",
-							height : "23",		 				
-							opacity : "0.8"
-						}					
-					})
-			);						
-			$("information" + key).adopt ( //"a#delete" + key
-					new Element("img", {
-						src : "images/icons_general/RecycleBin_Empty.png",
-						alt : "Remove item",
-						title : "Remove from here",
-						styles : {					
-							width : "23",
-							height : "23",
-							opacity : "0.8"
-						}					
-					})
-			);	
+
 			//move this extra info box more down for notes
 			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				if (value["height"]) {
@@ -1567,7 +1499,7 @@ function drawTICElementsPastStates(pastStatesId) {
 				if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 					&& (index != "extension") && (index != "type")  && (index != "arrow")
 					&& (index != "vote") && (index != "timestamp") && (index != "width")
-					&& (index != "height")) {
+					&& (index != "height") && (index != "stats")) {
 
 					var indivElement  = new Element("div#list" + index + key);
 
@@ -1698,8 +1630,9 @@ deleteElementValue(key,tag,value):
 	- not used anywhere yet
 editElementName(key):
 	- drawTICElements(): edit content of notes by doubleclicking on it
-editElementNameSave(text, key):
-	- editElementName(key): autosaving every 3 seconds when in fucus or when focus is gone
+editNLwithBR(text): change new lines with break HTML tag
+	- drawTICElements(): print notes and text
+	- drawTICElementsPastStates(pastStatesId): print notes and text
 deleteElement(key, name): deleting the information item
 	- drawTICElements(): append to delete icon of every item/element on the page
 checkDateElement(date,key): check if the due date is approaching and emphasize the value	
@@ -1709,28 +1642,31 @@ checkDateElement(date,key): check if the due date is approaching and emphasize t
 ****************************************************************************/
 
 function addElementValue(key,tag,value) { //adding a value/tag of the information item
+	//change new line with break
+	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+		value = editNLwithBR(value);	
+	}
+
 	data[key][tag] = value;
 	//we can't just draw because we don't save the new value in DB so the nev value is lost
 	//databaseDrawTaskCollection(currentTaskId);
 
-	//add or change the existng valuein th DOM
-	if ($("information" + key).contains($("list" + tag + key))) {
-		$("list" + tag + key).dispose();
+	//add or change the existng valuein the DOM
+	if (data[key]["type"] != "TEXT" && data[key]["type"] != "NOTE" && data[key]["type"] != "HTML") {
+		if ($("information" + key).contains($("list" + tag + key))) {
+			$("list" + tag + key).dispose();
+		}
+		$("information" + key).adopt ( //"span#content_" + key
+			new Element("div#list" + tag + key, {
+				html : "<strong>" + tag + "</strong>: " + value
+			})
+		);	
 	}
-	$("information" + key).adopt ( //"span#content_" + key
-		new Element("div#list" + tag + key, {
-			html : "<strong>" + tag + "</strong>: " + value
-		})
-	);	
 
 	//if the date has been changed ... emphasize the border
     if (tag == "date") {
     	checkDateElement(value,key);
     }
-}
-
-function deleteElementValue(key,tag,value) { //deleting a value/tag of the information item
-	//data[key].tag = value;
 }
 
 function editElementName(key) { //edit the name=content of notes
@@ -1752,7 +1688,7 @@ function editElementName(key) { //edit the name=content of notes
 	var textarea = new Element("textarea#namearea" + key, {
 					value : name, 
 					styles : {
-						position : "absolute",
+						//position : "absolute",
 						top : "2px",
 						"font-size" : "11px",
 						"color" : "#666666",
@@ -1770,14 +1706,19 @@ function editElementName(key) { //edit the name=content of notes
 						},
 						focus : function() {
 							var element = this;
-                            autosave = (function() {editElementNameSave(element.get("value"),key);}).periodical(2500);  							
+                            autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
 							//autosave = editElementNameSave.periodical(1700, [this.get("value"),key]);
 						},
 						blur : function() {
 							clearInterval(autosave);
-							str = editElementNameSave(this.get("value"),key);							
-							copy.setProperty("html", str); 
-							$("listname" + key).setProperty("html", str);
+							var text = this.get("value");
+							addElementValue(key,"name",text);
+							//str = editElementNameSave(text,key);	
+							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+								text = editNLwithBR(text);	
+							}						
+							copy.setProperty("html", text); 
+							//$("listname" + key).setProperty("html", str);
 							copy.replaces(this);
 						}					
 					}
@@ -1785,14 +1726,14 @@ function editElementName(key) { //edit the name=content of notes
 	$("namearea" + key).focus();
 }
 
-function editElementNameSave(text, key) {
-	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
-		text = text.replace( /\n/gi, "<br />");	
-	}
-	data[key]["name"] = text;
-	return text;
+function editNLwithBR(text) {
+	text = text.replace( /\n/gi, "<br />");	
+    return text;
 }
 
+function deleteElementValue(key,tag,value) { //deleting a value/tag of the information item
+	//data[key].tag = value;
+}
 
 function deleteElement(key, name) { //deleting the information item
 	//delete the element from data with the key
@@ -2573,10 +2514,10 @@ function databaseShowTasks() {
 							}
 						}),
 						new Element("img", {
-							"src" : "images/icons_general/Prorgrams.png",
+							"src" : "images/icons_general/edit-icon.png",
 							"id" : "taskEdit" + taskid,
-							"alt" : "Edit",
-							"title" : "Edit task name",
+							"alt" : "Rename",
+							"title" : "Reaname project",
 							"width" : "17px",
 							"height" : "20px",
 							styles : {
@@ -2593,8 +2534,8 @@ function databaseShowTasks() {
 						new Element("img", {
 							"src" : "images/icons_general/RecycleBin_Empty.png",
 							"id" : "taskDelete" + taskid,
-							"alt" : "Delete",
-							"title" : "Remove task",
+							"alt" : "Remove",
+							"title" : "Remove project",
 							"width" : "17px",
 							"height" : "20px",							
 							styles : {
@@ -2713,7 +2654,7 @@ function databaseShowArchivedTasks() {
 							}
 						}),
 						new Element("img", {
-							"src" : "images/icons_general/Prorgrams.png",
+							"src" : "images/icons_general/edit-icon.png",
 							"id" : "taskEdit" + taskid,
 							"alt" : "Edit",
 							"title" : "Edit task name",
@@ -3305,7 +3246,7 @@ function databaseSaveTaskCollection(callback, param) {
 			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 			if (statement.state == 1) {
 				statement.executeStep();	
-				var dataTMP = statement.row.coll_items;
+				dataTMP = statement.row.coll_items;
 				var previousStageId = statement.row.coll_id;
 				//finalize the statement as we got the last state of the task from the database
 				statement.finalize();
@@ -3488,6 +3429,7 @@ function doDrop(event) { //add new information items to the page and variable da
 				var fullPath = fileDragged.path;
 				var fileType = fullPath.split(".");
 				var extension = fileType.getLast();
+				var stats = JSON.stringify(getFolderStats(fullPath));								
 				if(fileDragged.isDirectory()) { 
 					fileType = "FOLDER";
 				} else {
@@ -3504,6 +3446,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						size : fileDragged.fileSize,
 						modified : fileDragged.lastModifiedTime,
 						timestamp : getTimestamp(),
+						stats : stats,
 						vote : "0",
 						arrow : "no-no"
 				};		
@@ -3790,8 +3733,133 @@ function folderOpen(filetmp){
 			printOut("The folder you selected does not exists on your local hard drive!");
 		}
 	} catch(e) { 
-		printOut("The folder you selected is probably on another comouter!");
+		printOut("The folder you selected is probably on another computer!");
 	}		
+}
+
+/***************************************************************************
+Functions that collect some folder statistics - how many files and sub-
+folders are in each folder dragged on a particular project space (without 
+folder or file names).
+The functions are called:
+getFolderStats (dirtmp) dirtmp = local file path
+	- drawTICElements(): to update statistics
+getRecursiveFolderData1 (dir, NUMBER): dir = nsIFile, NUMBER is a level to
+    recursively traverse the tree (0 is all levels, 2 is up to the second level)
+	- getFolderData (dirtmp): depends how deep we want the stats to be
+****************************************************************************/
+
+function getFolderStats (dirtmp) {
+	var dir = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
+	try {
+		dir.initWithPath(dirtmp); 
+		var recursiveFolderData = {};
+		if ( dir.isDirectory() ) { 	
+			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  
+			recursiveFolderData["depth"] = getRecursiveFolderDepth (dir, 0);  
+			recursiveFolderData["Folders"] = getRecursiveFolderCount (dir, 0); 
+			recursiveFolderData["Files"] = getRecursiveFilesCount (dir, 0);
+			//$("msg").innerHTML += "<br />" + JSON.stringify(recursiveFolderData);
+		} else if ( dir.isFile()) {
+			dir.initWithPath(dir.parent.path);
+			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  
+			recursiveFolderData["depth"] = getRecursiveFolderDepth (dir, 0);  
+			recursiveFolderData["Folders"] = getRecursiveFolderCount (dir, 0); 
+			recursiveFolderData["Files"] = getRecursiveFilesCount (dir, 0);
+			//$("msg").innerHTML += "<br />" + JSON.stringify(recursiveFolderData);
+		} else {
+			printOut("The folder you selected does not exists on your local hard drive!");
+		} 
+		return recursiveFolderData;
+	} catch(e) { 
+		//printOut("The folder you selected is probably on another comouter!");
+	}			
+}
+
+//Count # files and # folders in each folder recursively
+function getRecursiveFolderStats (dir, level) {
+	try {
+		var recursiveFolderData = {};
+		recursiveFolderData["dirs"] = 0;
+		recursiveFolderData["files"] = 0;
+		var entries = dir.directoryEntries;
+		while (entries.hasMoreElements()) {
+	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+		    if (file.exists() && !file.isHidden()) {
+		      if (file.isDirectory()) {
+		      	recursiveFolderData["dirs"]++;
+		      	if (level != 0) {
+		      		//anonymise folder names
+		      		var dirName2 = file.leafName.toMD5().substring(1,4);	
+		      		recursiveFolderData[dirName2] = getRecursiveFolderStats(file, level-1);      				      	
+		      	}
+		      } else {
+	      		recursiveFolderData["files"]++;
+		      }
+		    }
+		}
+		return recursiveFolderData;
+	} catch (ex) {
+	    // do nothing
+	}
+}
+
+//Count # of all folders
+function getRecursiveFolderCount (dir, folders) {
+	try {
+		var entries = dir.directoryEntries;
+		while (entries.hasMoreElements()) {
+	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+		    if (file.exists() && !file.isHidden()) {
+		      if (file.isDirectory()) {
+	      		folders = getRecursiveFolderCount(file, folders+1);
+		      }
+		    }
+		}
+		return folders;
+	} catch (ex) {
+	    // do nothing
+	}
+}
+
+
+//Count # of all files
+function getRecursiveFilesCount (dir, files) {
+	try {
+		var entries = dir.directoryEntries;
+		while (entries.hasMoreElements()) {
+	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+		    if (file.exists() && !file.isHidden()) {
+		      if (file.isDirectory()) {
+	      		files = getRecursiveFilesCount(file, files);
+		      } else {
+	      		files++;
+		      }
+		    }
+		}
+		return files;
+	} catch (ex) {
+	    // do nothing
+	}
+}
+
+//get the depth of the hierarchy
+function getRecursiveFolderDepth (dir, depth) {
+   try {
+       var maxDepth = 0;
+       var entries = dir.directoryEntries;
+       while (entries.hasMoreElements()) {
+           var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+           if (file.exists() && !file.isHidden()) {
+             if (file.isDirectory()) {
+                 maxDepth = Math.max(getRecursiveFolderDepth(file, depth+1), maxDepth);
+             }
+           }
+       }
+       return 1 + maxDepth;
+   } catch (ex) {
+       // do nothing
+   }
 }
 
 /***************************************************************************
@@ -3978,7 +4046,7 @@ function getTitle(externalUrl,key){
 			//the response is very slow, so we save the title only when it arrives			
 			if (typeof response != 'undefined' && response != "") {
 				data[key]["name"] = response;
-				$("namelink" + key).set('html' , response);
+				$("nametext" + key).set('html' , response);
 			}
 		}
     }).send();
