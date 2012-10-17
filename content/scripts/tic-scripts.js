@@ -3772,7 +3772,6 @@ function getFolderStats (dirtmp) {
 			dir.initWithPath(dir.parent.path);
 			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  
 			recursiveFolderData["stat"] = getRecursiveFolderCount2 (dir, 5); 
-			$("msg").innerHTML += "<br />E -" + JSON.stringify(recursiveFolderData);
 		} else {
 			printOut("The folder you selected does not exists on your local hard drive!");
 		} 
