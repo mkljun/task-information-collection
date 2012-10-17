@@ -859,7 +859,7 @@ function drawTICElements() {
 		Object.each(value, function(item,index){
 			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
-				&& (index != "vote") && (index != "timestamp") && (index != "width")
+				&& (index != "vote") && (index != "width") //&& (index != "timestamp")
 				&& (index != "height") && (index != "stats")) {
 
 				var indivElement  = new Element("div#list" + index + key);
@@ -1010,9 +1010,20 @@ function drawTICElements() {
 		}
 
 		//add stats for files and folders:
-		if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-			var stats = getFolderStats(value["path"]);
-			data[key]["stats"] = JSON.stringify(stats);
+		if (((value["type"] == "FILE") || (value["type"] == "FOLDER"))) {
+			//update statistics only if it is more than a month old
+			if (data[key]["timestamp"] == "") {
+				data[key]["timestamp"] == new Date().decrement('day', -31).format('db');
+			}	
+
+			var today = new Date();	
+			var timestamp = new Date().parse(data[key]["timestamp"]);	
+			var difference = today.diff(timestamp);
+			if (difference <= -30){
+				var stats = getFolderStats(value["path"]);
+				data[key]["stats"] = JSON.stringify(stats);
+				data[key]["timestamp"] = getTimestamp();
+			}
 		}
 
 	});
@@ -3755,18 +3766,13 @@ function getFolderStats (dirtmp) {
 		dir.initWithPath(dirtmp); 
 		var recursiveFolderData = {};
 		if ( dir.isDirectory() ) { 	
-			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  
-			recursiveFolderData["depth"] = getRecursiveFolderDepth (dir, 0);  
-			recursiveFolderData["Folders"] = getRecursiveFolderCount (dir, 0); 
-			recursiveFolderData["Files"] = getRecursiveFilesCount (dir, 0);
-			//$("msg").innerHTML += "<br />" + JSON.stringify(recursiveFolderData);
+			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  		 
+			recursiveFolderData["stat"] = getRecursiveFolderCount2 (dir, 5); 
 		} else if ( dir.isFile()) {
 			dir.initWithPath(dir.parent.path);
 			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  
-			recursiveFolderData["depth"] = getRecursiveFolderDepth (dir, 0);  
-			recursiveFolderData["Folders"] = getRecursiveFolderCount (dir, 0); 
-			recursiveFolderData["Files"] = getRecursiveFilesCount (dir, 0);
-			//$("msg").innerHTML += "<br />" + JSON.stringify(recursiveFolderData);
+			recursiveFolderData["stat"] = getRecursiveFolderCount2 (dir, 5); 
+			$("msg").innerHTML += "<br />E -" + JSON.stringify(recursiveFolderData);
 		} else {
 			printOut("The folder you selected does not exists on your local hard drive!");
 		} 
@@ -3805,62 +3811,95 @@ function getRecursiveFolderStats (dir, level) {
 }
 
 //Count # of all folders
-function getRecursiveFolderCount (dir, folders) {
-	try {
-		var entries = dir.directoryEntries;
-		while (entries.hasMoreElements()) {
-	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-		    if (file.exists() && !file.isHidden()) {
-		      if (file.isDirectory()) {
-	      		folders = getRecursiveFolderCount(file, folders+1);
-		      }
-		    }
-		}
-		return folders;
+function getRecursiveFolderCount2 (dir, level) {
+	try {	
+	   //$("msg").innerHTML += "<br />S-";// + JSON.stringify(obj);
+	   var maxDepth = 0;
+	   var folders = 0;
+	   var files = 0;
+	   
+	   var entries = dir.directoryEntries;
+	   while (entries.hasMoreElements()) {
+	       var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+	       if (file.exists() && !file.isHidden()) {
+	           if (file.isDirectory()) {
+	 			   if (level != 0) {
+		               var tempObj = getRecursiveFolderCount2(file, level-1);
+		               files += tempObj.files;
+		               folders += tempObj.folders + 1;
+		               maxDepth = Math.max(tempObj.depth, maxDepth);
+	 			   }
+	           } else {
+	               files++;
+	           }
+	       }
+	   }
+	   return {
+	       folders : folders,
+	       files : files,
+	       depth : maxDepth + 1
+	   };
 	} catch (ex) {
 	    // do nothing
-	}
+	}	 
 }
 
+// //Count # of all folders
+// function getRecursiveFolderCount (dir, folders) {
+// 	try {
+// 		var entries = dir.directoryEntries;
+// 		while (entries.hasMoreElements()) {
+// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+// 		    if (file.exists() && !file.isHidden()) {
+// 		      if (file.isDirectory()) {
+// 	      		folders = getRecursiveFolderCount(file, folders+1);
+// 		      }
+// 		    }
+// 		}
+// 		return folders;
+// 	} catch (ex) {
+// 	    // do nothing
+// 	}
+// }
 
-//Count # of all files
-function getRecursiveFilesCount (dir, files) {
-	try {
-		var entries = dir.directoryEntries;
-		while (entries.hasMoreElements()) {
-	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-		    if (file.exists() && !file.isHidden()) {
-		      if (file.isDirectory()) {
-	      		files = getRecursiveFilesCount(file, files);
-		      } else {
-	      		files++;
-		      }
-		    }
-		}
-		return files;
-	} catch (ex) {
-	    // do nothing
-	}
-}
+// //Count # of all files
+// function getRecursiveFilesCount (dir, files) {
+// 	try {
+// 		var entries = dir.directoryEntries;
+// 		while (entries.hasMoreElements()) {
+// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+// 		    if (file.exists() && !file.isHidden()) {
+// 		      if (file.isDirectory()) {
+// 	      		files = getRecursiveFilesCount(file, files);
+// 		      } else {
+// 	      		files++;
+// 		      }
+// 		    }
+// 		}
+// 		return files;
+// 	} catch (ex) {
+// 	    // do nothing
+// 	}
+// }
 
-//get the depth of the hierarchy
-function getRecursiveFolderDepth (dir, depth) {
-   try {
-       var maxDepth = 0;
-       var entries = dir.directoryEntries;
-       while (entries.hasMoreElements()) {
-           var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-           if (file.exists() && !file.isHidden()) {
-             if (file.isDirectory()) {
-                 maxDepth = Math.max(getRecursiveFolderDepth(file, depth+1), maxDepth);
-             }
-           }
-       }
-       return 1 + maxDepth;
-   } catch (ex) {
-       // do nothing
-   }
-}
+// //get the depth of the hierarchy
+// function getRecursiveFolderDepth (dir, depth) {
+//    try {
+//        var maxDepth = 0;
+//        var entries = dir.directoryEntries;
+//        while (entries.hasMoreElements()) {
+//            var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+//            if (file.exists() && !file.isHidden()) {
+//              if (file.isDirectory()) {
+//                  maxDepth = Math.max(getRecursiveFolderDepth(file, depth+1), maxDepth);
+//              }
+//            }
+//        }
+//        return 1 + maxDepth;
+//    } catch (ex) {
+//        // do nothing
+//    }
+// }
 
 /***************************************************************************
 Get a file size from the given file
