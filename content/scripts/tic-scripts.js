@@ -23,7 +23,8 @@ var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
 var pastTICStatesInterval; //interval for each state to be visible in a playback
 var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
 var framekiller = false; //for checking if previewed page prevents opening in iframe and warn user
-var elements = [];//for detaching dragging when elements are edited or resized
+var elements = []; //for detaching dragging when elements are edited or resized
+var dragged = false; //for checking if an item got moved in case of clicking on a link and moving
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -169,6 +170,14 @@ function drawTICElements() {
 					border : "0.1em solid",
 					"border-radius": 5,
 					"border-color": "rgba(112,138,144,0.2)",
+				},
+				events : {
+					click : function(){
+						if (dragged == true) {
+							//set dragged on false after dragging the item around
+							dragged = false;
+						}															
+					}
 				}
 			})
 		);
@@ -208,15 +217,6 @@ function drawTICElements() {
 							top: "2px", 
 							left: "0px",
 							float: "left"
-						},
-						events : {
-							click : function(){
-								if ($("information" + key).getStyle("display") == "none") {
-									$("information" + key).setStyle('display','block');
-								} else {
-									$("information" + key).setStyle('display','none');
-								}							
-							}
 						}					
 					})
 				)
@@ -244,16 +244,7 @@ function drawTICElements() {
 							top: "41px", 
 							left: xleft,
 							float: "left"
-						},
-						events : {
-							click : function(){
-								if ($("information" + key).getStyle("display") == "none") {
-									$("information" + key).setStyle('display','block');
-								} else {
-									$("information" + key).setStyle('display','none');
-								}							
-							}
-						}					
+						}				
 					})
 				)
 			);	
@@ -285,37 +276,43 @@ function drawTICElements() {
 							top: "13px", 
 							left: "13px",
 							"font-size": "10px"
-						},
-						events : {
-							click : function(){
-								if ($("information" + key).getStyle("display") == "none") {
-									$("information" + key).setStyle('display','block');
-								} else {
-									$("information" + key).setStyle('display','none');
-								}							
-							}
 						}
 					})
 			);		
 		}
-		//### MOVE
+		//### REVEAL MORE
 		$("item" + key).adopt( //span#move" + key
 			new Element("span#move" + key).adopt(
 				new Element("img#moveimg" + key, {
-					src : "images/move-icon.png",
+					src : "images/icons_general/green-arrow-down.png",
 					alt : "Move",
 					title : "Move",
 					styles : {
-						cursor: "move",						
-						width : "23",
+						cursor: "pointer",						
+						width : "18",
 						position: "absolute",
-						top: "28px", 
+						top: "30px", 
 						left: "-5px"
+					},
+					events : {
+						click : function(){
+							if (dragged == false) {
+								if ($("information" + key).getStyle("display") == "none") {
+									$("information" + key).setStyle('display','block');
+									$("moveimg" + key).set('src', "images/icons_general/green-arrow-up.png");
+								} else {
+									$("information" + key).setStyle('display','none');
+									$("moveimg" + key).set('src', "images/icons_general/green-arrow-down.png");
+								}	
+							} else {
+								dragged = false;
+							}															
+						}
 					}
 				})
 			)
 		);
-		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {	
 			$("moveimg" + key).setStyle("left","-13px");
 			$("moveimg" + key).setStyle("top","25px");
 		}
@@ -376,42 +373,46 @@ function drawTICElements() {
 						},
 						events : {
 							click : function(){
-								//notes
-								if (sourceTypes.contains(value["type"])) {
-							 		var profileBox = new LightFace({
-										width: 800, 
-										draggable: true,
-										title: '',
-										content: value["name"],
-										buttons: [
-											{ title: 'Close', event: function() { this.close(); }, color: 'blue' }
-										]
-									}).open();
-								//images
-							 	} else if (value["type"] == "FILE" && imageTypes.contains(fileExt.toLowerCase())) {
-									var images = ['file://'+value["path"]];
-									var light = new LightFace.Image({
-										title: 'Image',
-										fadeDuration: 100,
-										keys: {
-											esc: function() {
-												this.close();
+								if (dragged == false) {
+									//notes
+									if (sourceTypes.contains(value["type"])) {
+								 		var profileBox = new LightFace({
+											width: 800, 
+											draggable: true,
+											title: '',
+											content: value["name"],
+											buttons: [
+												{ title: 'Close', event: function() { this.close(); }, color: 'blue' }
+											]
+										}).open();
+									//images
+								 	} else if (value["type"] == "FILE" && imageTypes.contains(fileExt.toLowerCase())) {
+										var images = ['file://'+value["path"]];
+										var light = new LightFace.Image({
+											title: 'Image',
+											fadeDuration: 100,
+											keys: {
+												esc: function() {
+													this.close();
+												}
 											}
-										}
-									}).addButton('Close', function() { light.close(); },true).load(images[0],'Image 1').open();
-							 	//plain text	
-							 	} else if (value["type"] == "FILE" && textTypes.contains(fileExt.toLowerCase())) {
-							 		var light = new LightFace.IFrame({ height:500, width:800, url: 'view-source:file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();						
-							 	//HTML or URLs opened in XUL for security reasons
-							 	} else if (value["type"] == "URL" || value["type"] == "FILE" && htmlTypes.contains(fileExt.toLowerCase())) {
-							 		if (value["type"] == "URL") {
-							 			tempURIforXUL = value['path'];
-							 		} else {
-							 			tempURIforXUL = 'file://'+value['path'];
-							 		}
-							 		framekiller = true;
-								    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
-							 	} 
+										}).addButton('Close', function() { light.close(); },true).load(images[0],'Image 1').open();
+								 	//plain text	
+								 	} else if (value["type"] == "FILE" && textTypes.contains(fileExt.toLowerCase())) {
+								 		var light = new LightFace.IFrame({ height:500, width:800, url: 'view-source:file://'+value["path"], title: value["name"] }).addButton('Close', function() { light.close(); },true).open();						
+								 	//HTML or URLs opened in XUL for security reasons
+								 	} else if (value["type"] == "URL" || value["type"] == "FILE" && htmlTypes.contains(fileExt.toLowerCase())) {
+								 		if (value["type"] == "URL") {
+								 			tempURIforXUL = value['path'];
+								 		} else {
+								 			tempURIforXUL = 'file://'+value['path'];
+								 		}
+								 		framekiller = true;
+									    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
+								 	} 
+								} else {
+									dragged = false;
+								}								
 							}
 						}
 					})
@@ -446,22 +447,26 @@ function drawTICElements() {
 						title : "Open",
 						events : {
 							click : function(){
-								if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-									//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-									//execute scripts 
-									var scriptFiles = ["sh", "bash", "bat", "ps1"];
-									if (scriptFiles.contains(fileExt.toLowerCase())) {
-										fileRunShScript(value["path"]);
-									} else {
-										fileOpen(value["path"]);	
+								if (dragged == false) {
+									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
+										//execute scripts 
+										var scriptFiles = ["sh", "bash", "bat", "ps1"];
+										if (scriptFiles.contains(fileExt.toLowerCase())) {
+											fileRunShScript(value["path"]);
+										} else {
+											fileOpen(value["path"]);	
+										}
+									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
+										//do nothing								 		
+									} else if (value["type"] == "URL") {
+										//URL's are opened in a window
+										window.open(value["path"]);
 									}
-								} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
-									//do nothing								 		
-								} else if (value["type"] == "URL") {
-									//URL's are opened in a window
-									window.open(value["path"]);
-								}
-								return false;
+									return false;
+								} else {
+									dragged = false;
+								}								
 							},
 							onComplete : function(){
 								//$("item" + key) = myClone.clone(true, true).cloneEvents(myClone); // clones the element and its events
@@ -547,13 +552,17 @@ function drawTICElements() {
 					},
 					events : {
 						click : function(){
-							if (value["vote"] < 10 && value["vote"] >= 0) {
-								value["vote"]++;
-								$("vote" + key).set('html' , value["vote"]);
-								data[key]["vote"] = value["vote"];
-								$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
-							} 
-							return false;
+							if (dragged == false) {
+								if (value["vote"] < 10 && value["vote"] >= 0) {
+									value["vote"]++;
+									$("vote" + key).set('html' , value["vote"]);
+									data[key]["vote"] = value["vote"];
+									$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
+								} 
+								return false;
+							} else {
+								dragged = false;
+							}							
 						}
 					}					
 				})
@@ -589,12 +598,16 @@ function drawTICElements() {
 					events : {
 						click : function(){
 							if (value["vote"]>0 && value["vote"] <= 10) {
-								value["vote"]--;
-								$("vote" + key).set('html' , value["vote"]);
-								data[key]["vote"] = value["vote"];
-								$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
+								if (dragged == false) {
+									value["vote"]--;
+									$("vote" + key).set('html' , value["vote"]);
+									data[key]["vote"] = value["vote"];
+									$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
+									return false;
+								} else {
+									dragged = false;
+								}								
 							} 
-							return false;
 						}
 					}
 				})
@@ -619,24 +632,28 @@ function drawTICElements() {
 				href : "#inout",
 				events : {
 					click : function(){
-						if ((value["arrow"] == "no-no")) {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_in-no.png');
-							data[key]["arrow"] = "in-no";
-						} else if ((value["arrow"] == "in-no")) {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_no-out.png');
-							data[key]["arrow"] = "no-out";
-						} else if ((value["arrow"] == "no-out")) {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_in-out.png');	
-							data[key]["arrow"] = "in-out";
-						} else if ((value["arrow"] == "in-out"))  {
-							$("arrow" + key).erase('src');
-							$("arrow" + key).set('src','images/arrow_no-no.png');
-							data[key]["arrow"] = "no-no";
-						} 
-						return false;
+						if (dragged == false) {
+							if ((value["arrow"] == "no-no")) {
+								$("arrow" + key).erase('src');
+								$("arrow" + key).set('src','images/arrow_in-no.png');
+								data[key]["arrow"] = "in-no";
+							} else if ((value["arrow"] == "in-no")) {
+								$("arrow" + key).erase('src');
+								$("arrow" + key).set('src','images/arrow_no-out.png');
+								data[key]["arrow"] = "no-out";
+							} else if ((value["arrow"] == "no-out")) {
+								$("arrow" + key).erase('src');
+								$("arrow" + key).set('src','images/arrow_in-out.png');	
+								data[key]["arrow"] = "in-out";
+							} else if ((value["arrow"] == "in-out"))  {
+								$("arrow" + key).erase('src');
+								$("arrow" + key).set('src','images/arrow_no-no.png');
+								data[key]["arrow"] = "no-no";
+							} 
+							return false;
+						} else {
+							dragged = false;
+						}						
 					}
 				}		
 			}).adopt( 
@@ -1787,7 +1804,10 @@ function elementMoveEnable(key){
 	elements[key] = new Drag.Move($("item" + key), {
 		//handle : $("item" + key),//$("move" + key), //make the move arrows the handle to move elements
 		container : $("body"), //limit the moves within the window
-		onDrop: function(){			
+		onBeforeStart: function () {
+			//
+		},
+		onDrop: function(){		
 			//change the X coordinates of the new element to the default width 1000px
 			//we need this to position the elements right if the window is resized			
 			data[key].coordinatex = ($("item" + key).offsetLeft/(window.innerWidth/1000)).toFixed(parseInt(0));
@@ -1802,7 +1822,7 @@ function elementMoveEnable(key){
 			$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");				
 		},
 		onComplete: function(event) {
-			//
+			dragged = true;
 		}			
 	}); 
 }
