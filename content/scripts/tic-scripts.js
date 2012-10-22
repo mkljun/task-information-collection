@@ -23,6 +23,7 @@ var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
 var pastTICStatesInterval; //interval for each state to be visible in a playback
 var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
 var framekiller = false; //for checking if previewed page prevents opening in iframe and warn user
+var elements = [];//for detaching dragging when elements are edited or resized
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -65,6 +66,7 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 		drawTICElements();
 		drawPICCircles();
 	}
+
 });
 
 //save the state of a task every X mili seconds - 3000000 ms is 5 minutes
@@ -107,6 +109,7 @@ function drawTICElements() {
 	$("itemsList").empty();
 	//print a task name in the centre (see also printTaskNameCentre and databaseGetTaskName)
 	//needed in case someone comes from old states where the name includes date.
+	$("taskName").setStyles({"background-color" : "rgba(112,138,144,0.6)"});	
 	$("tasknametext").set('html', currentTaskName);
 	// draw all elements from the data object
 	Object.each (data, function(value, key){
@@ -345,7 +348,7 @@ function drawTICElements() {
 		//### Preview
 		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
 		var htmlTypes = ['htm', 'html'];
-		var textTypes = ['css','txt',''   ,'xml','csv','asc','bat' ,'log',
+		var textTypes = ['css','txt','inf' ,'xml','csv','asc','bat' ,'log', 'ps1', 
 						 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 		 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
 						 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
@@ -445,8 +448,13 @@ function drawTICElements() {
 							click : function(){
 								if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 									//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-									//NO NEED FOR SPECIAL LINUX FILE MANAGER PROCESS RUN 
-									fileOpen(value["path"]);
+									//execute scripts 
+									var scriptFiles = ["sh", "bash", "bat", "ps1"];
+									if (scriptFiles.contains(fileExt.toLowerCase())) {
+										fileRunShScript(value["path"]);
+									} else {
+										fileOpen(value["path"]);	
+									}
 								} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
 									//do nothing								 		
 								} else if (value["type"] == "URL") {
@@ -454,6 +462,9 @@ function drawTICElements() {
 									window.open(value["path"]);
 								}
 								return false;
+							},
+							onComplete : function(){
+								//$("item" + key) = myClone.clone(true, true).cloneEvents(myClone); // clones the element and its events
 							}
 						}
 					})	
@@ -667,7 +678,7 @@ function drawTICElements() {
 			new Element("a#date" + key, {
 				href : "#date"
 			}).adopt(
-				new Element("img", {
+				new Element("img#dateImg" + key, {
 					src : "images/icons_general/Calendar.png",
 					alt : "Add a due date",
 					title : "Add a due date",
@@ -676,29 +687,19 @@ function drawTICElements() {
 						width : "23",
 						height : "23",						
 						opacity : "0.8"
-					},
-					events : {
-						click : function(){
-							var datetmp;
-							if (value["date"]) {
-								datetmp = value["date"];
-							} else {
-								datetmp = "YYYY-MM-DD";
-							}
-							//fire up a prompt message
-							var duedate = prompt("Please enter the due date for this information",datetmp);
-							var regDate = new RegExp("^(19|20)[0-9][0-9]-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$");
-							var valid = new Date(duedate).isValid();
-							if ((duedate.test(regDate) == true) && (valid == true)) {
-  								addElementValue(key,"date",duedate);
-							} else {
-								alert("Date format is wrong: " + duedate + "!");
-							}
-						}
 					}					
 				})
 			)	
 		);
+		Calendar.setup({
+	        inputField : "duedate",
+	        trigger    : "dateImg" + key,
+		    onSelect   : function() {
+		    	var duedate = Calendar.intToDate(this.selection.get());
+		    	duedate = Calendar.printDate(duedate, "%Y-%m-%d");
+	            addElementValue(key,"date",duedate);
+		    }	        
+    	});
 		$("information" + key).adopt ( //"a#user" + key
 			new Element("a#user" + key, {
 				href : "#user"
@@ -859,7 +860,7 @@ function drawTICElements() {
 		Object.each(value, function(item,index){
 			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
-				&& (index != "vote") && (index != "width") //&& (index != "timestamp")
+				&& (index != "vote") && (index != "width") && (index != "timestamp")
 				&& (index != "height") && (index != "stats")) {
 
 				var indivElement  = new Element("div#list" + index + key);
@@ -957,56 +958,11 @@ function drawTICElements() {
 		} 
 		
 		//make elements movable
-		new Drag.Move($("item" + key), {
-			handle : $("move" + key), //make the move arrows the handle to move elements
-			container : $("body"), //limit the moves within the window
-			onDrop: function(){
-				//change the X coordinates of the new element to the default width 1000px
-				//we need this to position the elements right if the window is resized			
-				data[key].coordinatex = ($("item" + key).offsetLeft/(window.innerWidth/1000)).toFixed(parseInt(0));
-				data[key].coordinatey = ($("item" + key).offsetTop/(window.innerHeight/1000)).toFixed(parseInt(0));
-				//if x goes under tabs (projects & timeline), move it to the right
-				if (data[key].coordinatex < 40) {
-					data[key].coordinatex = 40;
-					$("item" + key).setStyle('left' , data[key].coordinatex);
-				}
-				//ARROW pointing to the CENTRE
-				var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
-				$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");
-			}
-		}); 
+		elementMoveEnable(key);
 
 		//make notes resizable
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			$("item" + key).makeResizable({
-				limit: {x: [150, 600], y: [90, 500]},
-				handle : $("resizeimg" + key),
-				onComplete: function(){
-					if ($("item" + key).contains($("nametext" + key))) {
-	    			    $("nametext" + key).set('html', value["name"]);
-	    			}
-					data[key].width = ($("item" + key).getSize().x - 6);
-					data[key].height = ($("item" + key).getSize().y - 6);
-   				},
-				onDrag: function(){
-					var newWidth = $("item" + key).getSize().x - 12;
-					var newHeight = $("item" + key).getSize().y - 12;
-					$("iconimg" + key).setStyle('left', newWidth);
-					$("previmg" + key).setStyle('left', newWidth+2);
-					$("upvoteimg" + key).setStyle('left', newWidth);
-					$("downvoteimg" + key).setStyle('left', newWidth);					
-					$("vote" + key).setStyle('left', newWidth+1);
-					$("textbox" + key).setStyles({'width': newWidth, 'height': newHeight});
-					if ($("item" + key).contains($("nametext" + key))) {
-						$("nametext" + key).setStyles({'width': newWidth, 'height': newHeight});
-					}
-					$("resizeimg" + key).setStyles({'left': newWidth-4, 'top': newHeight-4});
-					$("information" + key).setStyle('top', newHeight+15);
-					if ($("item" + key).contains($("emphasizedate" + key))) {
-						$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25, 'top': newHeight+7});
-					}					
-   				}   				
-			});
+			elementResizeEnable(key);
 		}
 
 		//add stats for files and folders:
@@ -1029,6 +985,7 @@ function drawTICElements() {
 	});
 }
 
+
 function drawTICElementsPastStates(pastStatesId) {
 
 	var coordinatexPastStates = "";
@@ -1043,6 +1000,7 @@ function drawTICElementsPastStates(pastStatesId) {
 		statement.executeStep();
 		var dataPastStates = JSON.decode(statement.row.coll_items);
 		var timestamp = statement.row.coll_timestamp;
+		$("taskName").setStyles({"background-color" : "rgba(112,138,144,0.2)"});	
 		$("tasknametext").set('html' , currentTaskName + "<br/>" + timestamp);
 
 		// draw all elements from the data object
@@ -1663,7 +1621,7 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	//databaseDrawTaskCollection(currentTaskId);
 
 	//add or change the existng valuein the DOM
-	if (data[key]["type"] != "TEXT" && data[key]["type"] != "NOTE" && data[key]["type"] != "HTML") {
+	//if (data[key]["type"] != "TEXT" && data[key]["type"] != "NOTE" && data[key]["type"] != "HTML") {
 		if ($("information" + key).contains($("list" + tag + key))) {
 			$("list" + tag + key).dispose();
 		}
@@ -1672,7 +1630,7 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 				html : "<strong>" + tag + "</strong>: " + value
 			})
 		);	
-	}
+	//}
 
 	//if the date has been changed ... emphasize the border
     if (tag == "date") {
@@ -1716,6 +1674,7 @@ function editElementName(key) { //edit the name=content of notes
 							this.focus();
 						},
 						focus : function() {
+							elementMoveDisable(key);
 							var element = this;
                             autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
 							//autosave = editElementNameSave.periodical(1700, [this.get("value"),key]);
@@ -1727,10 +1686,16 @@ function editElementName(key) { //edit the name=content of notes
 							//str = editElementNameSave(text,key);	
 							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 								text = editNLwithBR(text);	
+							}				
+							if (text.length > 33 && (data[key]["type"] == "FILE" || data[key]["type"] == "FOLDER" || data[key]["type"] == "URL")) {
+								name = text.substring(0,33) + "...";
+							} else {			
+								name = text;
 							}						
-							copy.setProperty("html", text); 
+							copy.setProperty("html", name); 
 							//$("listname" + key).setProperty("html", str);
 							copy.replaces(this);
+							elementMoveEnable(key);
 						}					
 					}
 				}).replaces($("nametext" + key));	
@@ -1755,22 +1720,21 @@ function deleteElement(key, name) { //deleting the information item
 }
 
 function checkDateElement(date,key) { //check if the due date is approaching and emphasize the value
+	if (data[key]["width"] && data[key]["height"]) {
+		var xleft = ((parseInt(data[key]["width"])-10)/2-25) + "px";
+		var ytop = (parseInt(data[key]["height"])+1) + "px";
+	} else {
+		var xleft = "50px";
+		if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
+			var ytop  = "141px";
+		} else { 
+			var ytop  = "47px";
+		}
+	}
 	var today = new Date();
 	if ((today.diff(date) > -3) && (today.diff(date) < 7)) {
 		$("item" + key).setStyle('border','0.2em solid rgba(204, 0, 0, 0.5)');
-		//remove the old date from DOM if it exist
-		if (data[key]["width"] && data[key]["height"]) {
-			var xleft = ((data[key]["width"]-10)/2-25) + "px";
-			var ytop = (data[key]["height"]+1) + "px";
-		} else {
-			var xleft = "50px";
-			if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
-				var ytop  = "141px";
-			} else { 
-				var ytop  = "47px";
-			}
-		}			
-
+		//remove the old date from DOM if it exist			
 		if ($("item" + key).contains($("emphasizedate" + key))) {
 			$("emphasizedate" + key).dispose();
 		}		
@@ -1791,8 +1755,102 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 		$("item" + key).setStyle('border','0.1em solid rgba(112,138,144,0.2)');
 		if ($("item" + key).contains($("emphasizedate" + key))) {
 			$("emphasizedate" + key).dispose();
-		}							
+		}
+		$("item" + key).adopt(
+			new Element("span#emphasizedate" + key, {
+				text : date ,
+				styles : {
+					position : "absolute",
+				 	top : ytop,
+				 	"font-size" : "11px",
+				 	"z-index" : "3",
+				 	left : xleft,
+				 	color : "rgba(112,138,144,0.6)"
+				} 
+			})
+		);									
 	}
+}
+
+/***************************************************************************
+Functions to enable and disable movability of elements. The functions are called:
+elementMoveEnable(key)
+	- editElementName(key): when elements are stopped being edited
+	- drawTICElements(): when elements are dragged
+	- drawTICElements(): when elements are finished being resized
+elementMoveDisable(key)
+	- editElementName(key): when elements are being edited
+	- drawTICElements(): when elements are being resized
+****************************************************************************/
+function elementMoveEnable(key){
+	//make elements movable
+	elements[key] = new Drag.Move($("item" + key), {
+		//handle : $("item" + key),//$("move" + key), //make the move arrows the handle to move elements
+		container : $("body"), //limit the moves within the window
+		onDrop: function(){			
+			//change the X coordinates of the new element to the default width 1000px
+			//we need this to position the elements right if the window is resized			
+			data[key].coordinatex = ($("item" + key).offsetLeft/(window.innerWidth/1000)).toFixed(parseInt(0));
+			data[key].coordinatey = ($("item" + key).offsetTop/(window.innerHeight/1000)).toFixed(parseInt(0));
+			//if x goes under tabs (projects & timeline), move it to the right
+			if (data[key].coordinatex < 40) {
+				data[key].coordinatex = 40;
+				$("item" + key).setStyle('left' , data[key].coordinatex);
+			}
+			//ARROW pointing to the CENTRE
+			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
+			$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");				
+		},
+		onComplete: function(event) {
+			//
+		}			
+	}); 
+}
+
+function elementMoveDisable(key){
+	//make elements movable
+	elements[key].detach(); 
+}
+
+/***************************************************************************
+Function that enables element resize. The functions are called:
+	- drawTICElements(): when elements are drawn
+****************************************************************************/
+function elementResizeEnable(key){
+	var value = $("nametext" + key).get('html');
+	$("item" + key).makeResizable({
+		limit: {x: [150, 600], y: [90, 500]},
+		handle : $("resizeimg" + key),
+		onBeforeStart : function (){
+			elementMoveDisable(key);
+		},
+		onComplete: function(){
+			if ($("item" + key).contains($("nametext" + key))) {
+			    $("nametext" + key).set('html', value);
+			}
+			data[key].width = ($("item" + key).getSize().x - 6);
+			data[key].height = ($("item" + key).getSize().y - 6);
+			elementMoveEnable(key);
+			},
+		onDrag: function(){
+			var newWidth = $("item" + key).getSize().x - 12;
+			var newHeight = $("item" + key).getSize().y - 12;
+			$("iconimg" + key).setStyle('left', newWidth);
+			$("previmg" + key).setStyle('left', newWidth+2);
+			$("upvoteimg" + key).setStyle('left', newWidth);
+			$("downvoteimg" + key).setStyle('left', newWidth);					
+			$("vote" + key).setStyle('left', newWidth+1);
+			$("textbox" + key).setStyles({'width': newWidth, 'height': newHeight});
+			if ($("item" + key).contains($("nametext" + key))) {
+				$("nametext" + key).setStyles({'width': newWidth, 'height': newHeight});
+			}
+			$("resizeimg" + key).setStyles({'left': newWidth-4, 'top': newHeight-4});
+			$("information" + key).setStyle('top', newHeight+15);
+			if ($("item" + key).contains($("emphasizedate" + key))) {
+				$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25, 'top': newHeight+7});
+			}					
+			}   				
+	});
 }
 
 /***************************************************************************
@@ -2013,15 +2071,20 @@ function databaseConnect() {
    		dbConn = Services.storage.openDatabase(file);
    		printAboutHide();
 
-		//update tables - add task_archived
+		//update tables
 		var aRows = [];
 		var statement = dbConn.createStatement("PRAGMA table_info(tasks)");
 		while (statement.executeStep()) {
 			aRows.push(statement.row.name);
 		}
 		statement.finalize(); 
+		//add task_archived
 		if (aRows.contains('task_archived') == false) {
 			dbConn.executeSimpleSQL("ALTER TABLE tasks ADD COLUMN task_archived BOOL DEFAULT 0");
+		}
+		//add task_order		
+		if (aRows.contains('task_order') == false) {
+			dbConn.executeSimpleSQL("ALTER TABLE tasks ADD COLUMN task_order INTEGER DEFAULT 0");		
 		}
 
         return dbConn;
@@ -2029,11 +2092,11 @@ function databaseConnect() {
    		//Will also create the file if it does not exist			
    		dbConn = Services.storage.openDatabase(file);
 		//create tables: 
-   		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT, task_archived BOOL DEFAULT 0)");
+   		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT, task_archived BOOL DEFAULT 0, task_order INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id INTEGER, coll_timestamp TEXT, coll_items TEXT)");
    		dbConn.executeSimpleSQL("CREATE INDEX collections_task_id ON tasks_collections (coll_id DESC, task_id DESC)");
-   		dbConn.executeSimpleSQL("INSERT INTO tasks (task_id, task_name) VALUES('1', 'My first task')");
+   		dbConn.executeSimpleSQL("INSERT INTO tasks (task_id, task_name, task_order) VALUES('1', 'My first task', '1')");
    		dbConn.executeSimpleSQL("INSERT INTO tasks_last (last_id, last_task) VALUES('1','1')");
    		dbConn.executeSimpleSQL("CREATE TABLE user (data_id INTEGER PRIMARY KEY, data_userid TEXT, data_last_sent TEXT, data_last_mantained TEXT, data_user_email TEXT, data_user_password TEXT)");
    		//Create an unique id for the user and set the date to the current one ... so we can send the dump
@@ -2463,18 +2526,34 @@ databaseShowArchivedTasks()
 function databaseShowTasks() {	   	  
 	//clear the tasks from DOM
 	$("tasksList").empty(); 
+	$("tasksList").adopt(
+		new Element ("ul#taskOrderList", {
+			styles : {
+				"list-style": "none",
+				"text-decoration": "none",				
+				"margin" : "0px",
+				padding: "0px",
+				width : "199px",
+				display : "block"
+			}
+		})				
+	);	
 	//select from DB
-	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=0 ORDER BY task_id DESC");  
+	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=0 ORDER BY task_order DESC, task_id DESC");  
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) { 
 		while (statement.executeStep()) { 
 			(function(){  
 				var taskname = statement.row.task_name;
 				var taskid = statement.row.task_id;
-				$("tasksList").adopt(
-					new Element ("div#task" + taskid, {
+				$("taskOrderList").adopt(
+					new Element ("li#task" + taskid, {
 						styles : {
-							width : "195",
+							"list-style": "none",
+							"text-decoration": "none",
+							"margin" : "0px",
+							padding: "0px",
+							width : "195px",
 							display : "block"
 						}
 					})				
@@ -2866,18 +2945,9 @@ function databaseDeleteTask(taskid,name){
 	}
 	//if the current task is the one that has just been deleted change it to the last one in the DB
 	if (currentTaskId == taskid) {
-		//var statement = connection.createStatement("SELECT last_insert_rowid() AS lid FROM tasks");
-		var statement = connection.createStatement("SELECT * FROM tasks ORDER BY task_id DESC");
-		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-		if (statement.state == 1) {
-			statement.executeStep();
-			currentTaskId = statement.row.task_id;
-			statement.finalize();
-			databaseSetLastTask();
-			databaseDrawTaskCollection(currentTaskId);
-		} else {
-			printOut("Not a valid SQL statement: SELECT last_insert_rowid() FROM tasks");
-		}	
+		currentTaskId = getLastEnteredTask();
+		databaseSetLastTask();
+		databaseDrawTaskCollection(currentTaskId);
 	}	
 }
 
@@ -3308,9 +3378,17 @@ function databaseSaveTaskCollection(callback, param) {
 }
 
 /***************************************************************************
-Enters a new task to the database from the form and calls a function that 
-prints new task list
+databaseEnterNewTask() Enters a new task to the database from the form and 
+calls a function that prints new task list. Function is called:
 	- append to the form on the Projects/Tasks panel 
+databaseEnterNewTaskOrder() Enters the order of a task which is the same as 
+the task ID at the beginning. Function is called:
+	- databaseEnterNewTask()
+	- somewhere else when I'll sort out the 
+getLastEnteredTask(): gets the last inserted task id
+	- databaseEnterNewTask(): to set the task_order the same as task_id
+	- databaseDeleteTask(taskid,name): if the current task is the one that 
+	  has just been deleted change it to the last one in the DB
 ****************************************************************************/
 function databaseEnterNewTask() {
 	var statement = connection.createStatement("INSERT INTO tasks (task_name) VALUES(:tn)");
@@ -3325,6 +3403,8 @@ function databaseEnterNewTask() {
 					printOut("New project \"" + $("createName").value + "\" was successfully created!");
 					$('createName').set('value', 'Enter a new project name');
 					$('createName').setStyle('color', '#888');
+					var taskId = getLastEnteredTask();
+					databaseEnterNewTaskOrder(taskId, taskId);					
 					databaseShowTasks();
 					//open (draw) the last inserted project
 					var rowid = connection.lastInsertRowID;
@@ -3340,6 +3420,44 @@ function databaseEnterNewTask() {
 	} else {
 		printOut("Not a valid SQL statement: INSERT INTO tasks (task_name) VALUES(:tn)");
 	}
+}
+
+function databaseEnterNewTaskOrder(taskId, taskOrder) {
+	var statement = connection.createStatement("UPDATE tasks SET task_order = :tor WHERE task_id = :tid");
+	statement.params.tid = taskId;
+	statement.params.tor = taskOrder;
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+	if (statement.state == 1) {
+		connection.executeAsync([statement], 1, {
+			handleCompletion : function(aReason) { 
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+					printOut("Query canceled or aborted!");
+				} else {
+				    // do nothing				
+				} 
+	  			statement.finalize();   				
+			},
+			handleError : function(aError) {printOut(aError.message);},
+			handleResult : function() {
+		}
+		});		
+
+	} else {
+		printOut("Not a valid SQL statement: UPDATE tasks SET task_order = :tor WHERE task_id = :tid");
+	}
+}
+
+function getLastEnteredTask() {
+	var statement = connection.createStatement("SELECT * FROM tasks ORDER BY task_id DESC");
+	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
+	if (statement.state == 1) {
+		statement.executeStep();
+		lastTaskId = statement.row.task_id;
+		statement.finalize();
+		return lastTaskId;
+	} else {
+		printOut("Not a valid SQL statement: SELECT last_insert_rowid() FROM tasks");
+	}	
 }
 
 /***************************************************************************
@@ -3381,7 +3499,7 @@ Dragged types:
 	text/uri-list 4: (string) : [http://mootorial.com/wiki/]
 	text/plain 4: (string) : [http://mootorial.com/wiki/]
 	text/html 4: (string) : [http://mootorial.com/wiki/]  
-* FILE
+* FILE & FOLDER
 	application/x-moz-file 1: (object) : [[xpconnect wrapped nsISupports]]
 * TEXT - (texmaker, OOo, Word)
 	text/html 2: (string) : [Pay particular interest ...]
@@ -3446,6 +3564,13 @@ function doDrop(event) { //add new information items to the page and variable da
 				} else {
 					fileType = "FILE";
 				}
+				//check if this is a duplicate item
+				if (checkIfDuplicate(fullPath) == true){
+					var question = confirm("The project space already contains this item. Do you want to add another one?");
+					if (question == false){
+						return false;
+					} 
+				}
 				//set the global nexKey variable to the next highest index
 				var nextKey = findNextKey(data);
 				data[nextKey] = {
@@ -3466,6 +3591,13 @@ function doDrop(event) { //add new information items to the page and variable da
 		} else if (types[0] == "text/x-moz-url") {
 			var urlDragged = event.dataTransfer.mozGetDataAt(types[0], i).trim();
 			var url = event.dataTransfer.mozGetDataAt(types[1], i).trim();
+			//check if this is a duplicate item
+			if (checkIfDuplicate(url) == true){
+				var question = confirm("The project space already contains this item. Do you want to add another one?");
+				if (question == false){
+					return false;
+				} 
+			}			
 			//set the global nexKey variable to the next highest index
 			var nextKey = findNextKey(data);			
 			//split dragged data into URL and title
@@ -3491,13 +3623,20 @@ function doDrop(event) { //add new information items to the page and variable da
 			var nextKey = findNextKey(data);	
 			//check if dragged text is just URL (for pages from other browsers and text)
 			if (validURL(textDragged) == true) {
-				//set the temporary title
+				//check if this is a duplicate item
+				if (checkIfDuplicate(textDragged.trim()) == true){
+					var question = confirm("The project space already contains this item. Do you want to add another one?");
+					if (question == false){
+						return false;
+					} 
+				}		
+				//set the temporary title						
 				var title = getDomain(textDragged);
 				//get the real page title and change it eventually
 				getTitle(textDragged, nextKey);
 				data[nextKey] = {
 						type : "URL",
-						path : textDragged,
+						path : textDragged.trim(),
 						name : title,
 						coordinatex : coorX,
 						coordinatey : coorY,
@@ -3526,13 +3665,20 @@ function doDrop(event) { //add new information items to the page and variable da
 			var nextKey = findNextKey(data);	
 			//check if dragged text is just URL (for pages from other browsers and text)
 			if (validURL(textDragged) == true) {
+				//check if this is a duplicate item
+				if (checkIfDuplicate(textDragged.trim()) == true){
+					var question = confirm("The project space already contains this item. Do you want to add another one?");
+					if (question == false){
+						return false;
+					} 
+				}				
 				//set the temporary title
 				var title = getDomain(textDragged);
 				//get the real page title and change it eventually
 				getTitle(textDragged, nextKey);
 				data[nextKey] = {
 						type : "URL",
-						path : textDragged,
+						path : textDragged.trim(),
 						name : title,
 						coordinatex : coorX,
 						coordinatey : coorY,
@@ -3562,13 +3708,20 @@ function doDrop(event) { //add new information items to the page and variable da
 			var nextKey = findNextKey(data);	
 			//check if dragged text is just URL (for pages from other browsers and text)
 			if (validURL(textDragged) == true) {
+				//check if this is a duplicate item
+				if (checkIfDuplicate(textDragged.trim()) == true){
+					var question = confirm("The project space already contains this item. Do you want to add another one?");
+					if (question == false){
+						return false;
+					} 
+				}				
 				//set the temporary title
 				var title = getDomain(textDragged);
 				//get the real page title and change it eventually
 				getTitle(textDragged, nextKey);
 				data[nextKey] = {
 						type : "URL",
-						path : textDragged,
+						path : textDragged.trim(),
 						name : title,
 						coordinatex : coorX,
 						coordinatey : coorY,
@@ -3705,7 +3858,7 @@ function bytesToSize(bytes) {
 }
 
 /***************************************************************************
-Function that open applications or file manager
+Function that open applications or file manager or run processes
 The functions are called:
 fileOpen(filetmp) Open files with local applications
 	- drawTICElements(): when clicked on an element/item name (files)
@@ -3716,6 +3869,7 @@ folderOpen(filetmp) and folderOpenLinux(filetmp) Open folder of a selected
 	  more information box for files and folders
 	- drawTICElementsPastStates(pastStatesId): the same as above
 	- drawGeneralIcons(): opening a home folder or desktop
+fileRunShScript(filetmp)	
 ****************************************************************************/
 function fileOpen(filetmp){
 	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
@@ -3745,6 +3899,22 @@ function folderOpen(filetmp){
 		}
 	} catch(e) { 
 		printOut("The folder you selected is probably on another computer!");
+	}		
+}
+
+function fileRunShScript (filetmp) {
+	//var shell = "/bin/sh";
+    var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	try {
+    	file.initWithPath(filetmp);
+		var process = Components.classes["@mozilla.org/process/util;1"]
+                        .createInstance(Components.interfaces.nsIProcess);
+		process.init(file);
+        //var args = ["path/to/script","arg1","arg2","etc"];       
+        var args = [];       
+		process.run(false, args, args.length);
+	} catch(e) { 
+		printOut("The script cannot be opened as it cannot be found or run on this computer!");
 	}		
 }
 
@@ -3844,61 +4014,61 @@ function getRecursiveFolderCount2 (dir, level) {
 }
 
 // //Count # of all folders
-// function getRecursiveFolderCount (dir, folders) {
-// 	try {
-// 		var entries = dir.directoryEntries;
-// 		while (entries.hasMoreElements()) {
-// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-// 		    if (file.exists() && !file.isHidden()) {
-// 		      if (file.isDirectory()) {
-// 	      		folders = getRecursiveFolderCount(file, folders+1);
-// 		      }
-// 		    }
-// 		}
-// 		return folders;
-// 	} catch (ex) {
-// 	    // do nothing
-// 	}
-// }
+	// function getRecursiveFolderCount (dir, folders) {
+	// 	try {
+	// 		var entries = dir.directoryEntries;
+	// 		while (entries.hasMoreElements()) {
+	// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+	// 		    if (file.exists() && !file.isHidden()) {
+	// 		      if (file.isDirectory()) {
+	// 	      		folders = getRecursiveFolderCount(file, folders+1);
+	// 		      }
+	// 		    }
+	// 		}
+	// 		return folders;
+	// 	} catch (ex) {
+	// 	    // do nothing
+	// 	}
+	// }
 
 // //Count # of all files
-// function getRecursiveFilesCount (dir, files) {
-// 	try {
-// 		var entries = dir.directoryEntries;
-// 		while (entries.hasMoreElements()) {
-// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-// 		    if (file.exists() && !file.isHidden()) {
-// 		      if (file.isDirectory()) {
-// 	      		files = getRecursiveFilesCount(file, files);
-// 		      } else {
-// 	      		files++;
-// 		      }
-// 		    }
-// 		}
-// 		return files;
-// 	} catch (ex) {
-// 	    // do nothing
-// 	}
-// }
+	// function getRecursiveFilesCount (dir, files) {
+	// 	try {
+	// 		var entries = dir.directoryEntries;
+	// 		while (entries.hasMoreElements()) {
+	// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+	// 		    if (file.exists() && !file.isHidden()) {
+	// 		      if (file.isDirectory()) {
+	// 	      		files = getRecursiveFilesCount(file, files);
+	// 		      } else {
+	// 	      		files++;
+	// 		      }
+	// 		    }
+	// 		}
+	// 		return files;
+	// 	} catch (ex) {
+	// 	    // do nothing
+	// 	}
+	// }
 
 // //get the depth of the hierarchy
-// function getRecursiveFolderDepth (dir, depth) {
-//    try {
-//        var maxDepth = 0;
-//        var entries = dir.directoryEntries;
-//        while (entries.hasMoreElements()) {
-//            var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-//            if (file.exists() && !file.isHidden()) {
-//              if (file.isDirectory()) {
-//                  maxDepth = Math.max(getRecursiveFolderDepth(file, depth+1), maxDepth);
-//              }
-//            }
-//        }
-//        return 1 + maxDepth;
-//    } catch (ex) {
-//        // do nothing
-//    }
-// }
+	// function getRecursiveFolderDepth (dir, depth) {
+	//    try {
+	//        var maxDepth = 0;
+	//        var entries = dir.directoryEntries;
+	//        while (entries.hasMoreElements()) {
+	//            var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
+	//            if (file.exists() && !file.isHidden()) {
+	//              if (file.isDirectory()) {
+	//                  maxDepth = Math.max(getRecursiveFolderDepth(file, depth+1), maxDepth);
+	//              }
+	//            }
+	//        }
+	//        return 1 + maxDepth;
+	//    } catch (ex) {
+	//        // do nothing
+	//    }
+	// }
 
 /***************************************************************************
 Get a file size from the given file
@@ -4057,13 +4227,13 @@ function cleanHtml(str) {
 }
 
 /***************************************************************************
-Cheks if the note contains just URL and gets the tiel of this URL
+Cheks if the note contains just URL and gets the title of this URL
 The function is called:
 	- doDrop(event): to check whether dragged text is URL and convert it
 ****************************************************************************/
 function validURL(str) {
-  var pattern = new RegExp('[a-zA-Z\d]+://(\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?'); 
-  if(!pattern.test(str)) {
+  var pattern = new RegExp('^[a-zA-Z\d]+://(\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?$'); 
+  if(!pattern.test(str.trim())) {
     return false;
   } else {
     return true;
@@ -4082,13 +4252,35 @@ function getTitle(externalUrl,key){
 		url: "http://pim.famnit.upr.si/tic/getTitleOfUrl.php",
 		onComplete: function(response) { 
 			//the response is very slow, so we save the title only when it arrives			
-			if (typeof response != 'undefined' && response != "") {
+			if (typeof response != 'undefined' && response != "" && response != "302 Moved" 
+				&& response != "Moved Temporarily") {
 				data[key]["name"] = response;
 				$("nametext" + key).set('html' , response);
 			}
 		}
     }).send();
 }
+
+/***************************************************************************
+Cheks if the dragged item is a duplicate and asks user what to do
+The function is called:
+	- doDrop(event): to check whether dragged item is a dupilicate
+****************************************************************************/
+function checkIfDuplicate(pathTmp) {
+	var beenHere = 0;
+	Array.each(Object.keys(data), function(key, index){
+	    if(data[key]["path"] == pathTmp) {
+	    	beenHere = 1;
+	    }
+	}); 
+	if (beenHere == 1) { 
+		return true;
+	} else {
+		return false;
+	}
+
+}
+
 /***************************************************************************
 Returns a random date between two other dates
 var randomDateTmp = randomDate('1999-06-08 16:34:52', new Date()); 
@@ -4257,5 +4449,6 @@ function getPreferences(){
 	var share4research2 = branch.getIntPref("share4research2");
 	var fileManager = branch.getCharPref("fileManager");
 }
+
 
 
