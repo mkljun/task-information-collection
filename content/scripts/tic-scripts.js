@@ -71,7 +71,15 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 });
 
 //save the state of a task every X mili seconds - 3000000 ms is 5 minutes
-(function() { databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId) }).periodical(300000);
+(function() { 
+	//check if a note is edited
+    Object.each (data, function(value, key){
+    	var editedElement = $("namearea" + key); // or document.id in 1.2.4+ for compatibility
+		if (editedElement) {
+		    editedElement.blur();
+		}
+    });
+	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId)}).periodical(3000000);
 //set the last task to the currently selected
 (function() { databaseSetLastTask() }).periodical(180000);
 //try to send the dump of the database every hour ... at sends it every 7 days based on the date in DB
@@ -518,7 +526,7 @@ function drawTICElements() {
 						events: {
 							dblclick : function(){
 								editElementName(key);
-							}				
+							}	
 						}
 					})
 				)
@@ -1001,7 +1009,6 @@ function drawTICElements() {
 
 	});
 }
-
 
 function drawTICElementsPastStates(pastStatesId) {
 
@@ -1638,16 +1645,18 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	//databaseDrawTaskCollection(currentTaskId);
 
 	//add or change the existng valuein the DOM
-	//if (data[key]["type"] != "TEXT" && data[key]["type"] != "NOTE" && data[key]["type"] != "HTML") {
-		if ($("information" + key).contains($("list" + tag + key))) {
-			$("list" + tag + key).dispose();
-		}
+	if ($("information" + key).contains($("list" + tag + key))) {
+		$("list" + tag + key).dispose();
+	}
+	if (tag == "name" && (data[key]["type"] != "NOTE" && data[key]["type"] != "TEXT" && data[key]["type"] != "HTML")) { 
 		$("information" + key).adopt ( //"span#content_" + key
 			new Element("div#list" + tag + key, {
 				html : "<strong>" + tag + "</strong>: " + value
 			})
 		);	
-	//}
+	} else {
+		item = "A note";
+	}
 
 	//if the date has been changed ... emphasize the border
     if (tag == "date") {
@@ -1656,10 +1665,11 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 }
 
 function editElementName(key) { //edit the name=content of notes
-	var name = data[key]["name"];
+	//if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+	var name = $("nametext" + key).get('html');	
 	var autosave;
 	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
-		name = name.replace( /<br \/>/gi, "\n");	
+		name = name.replace( /<[Bb][Rr]\s*[^>]*[\/]?>/gi, "\n");	
 	}
 	//get the width and height of the element	
 	if (data[key]["width"] && data[key]["height"]) {
@@ -1674,7 +1684,6 @@ function editElementName(key) { //edit the name=content of notes
 	var textarea = new Element("textarea#namearea" + key, {
 					value : name, 
 					styles : {
-						//position : "absolute",
 						top : "2px",
 						"font-size" : "11px",
 						"color" : "#666666",
@@ -1693,14 +1702,12 @@ function editElementName(key) { //edit the name=content of notes
 						focus : function() {
 							elementMoveDisable(key);
 							var element = this;
-                            autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
-							//autosave = editElementNameSave.periodical(1700, [this.get("value"),key]);
+							autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
 						},
 						blur : function() {
 							clearInterval(autosave);
 							var text = this.get("value");
 							addElementValue(key,"name",text);
-							//str = editElementNameSave(text,key);	
 							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
 								text = editNLwithBR(text);	
 							}				
@@ -1710,7 +1717,6 @@ function editElementName(key) { //edit the name=content of notes
 								name = text;
 							}						
 							copy.setProperty("html", name); 
-							//$("listname" + key).setProperty("html", str);
 							copy.replaces(this);
 							elementMoveEnable(key);
 						}					
@@ -1720,6 +1726,11 @@ function editElementName(key) { //edit the name=content of notes
 }
 
 function editNLwithBR(text) {
+	text = text.replace( /\n/gi, "<br />");	
+    return text;
+}
+
+function editNLwithBR2(text) {
 	text = text.replace( /\n/gi, "<br />");	
     return text;
 }
@@ -1837,7 +1848,6 @@ Function that enables element resize. The functions are called:
 	- drawTICElements(): when elements are drawn
 ****************************************************************************/
 function elementResizeEnable(key){
-	var value = $("nametext" + key).get('html');
 	$("item" + key).makeResizable({
 		limit: {x: [150, 600], y: [90, 500]},
 		handle : $("resizeimg" + key),
@@ -1846,7 +1856,7 @@ function elementResizeEnable(key){
 		},
 		onComplete: function(){
 			if ($("item" + key).contains($("nametext" + key))) {
-			    $("nametext" + key).set('html', value);
+			    $("nametext" + key).set('html', data[key]["name"]);
 			}
 			data[key].width = ($("item" + key).getSize().x - 6);
 			data[key].height = ($("item" + key).getSize().y - 6);
