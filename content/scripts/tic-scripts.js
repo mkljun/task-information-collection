@@ -31,6 +31,9 @@ Functions strated and events added to DOM elements when the page loads up
 The function is called: after DOM loads
 ****************************************************************************/
 window.addEvent('domready', function() { //adding different events to DOM elements
+
+	Locale.use('en-US');
+
 	//create empty object
 	data = {};
 	//create DB handle
@@ -1715,7 +1718,7 @@ function editElementName(key) { //edit the name=content of notes
 								name = text.substring(0,33) + "...";
 							} else {			
 								name = text;
-							}						
+							}		
 							copy.setProperty("html", name); 
 							copy.replaces(this);
 							elementMoveEnable(key);
@@ -1726,11 +1729,6 @@ function editElementName(key) { //edit the name=content of notes
 }
 
 function editNLwithBR(text) {
-	text = text.replace( /\n/gi, "<br />");	
-    return text;
-}
-
-function editNLwithBR2(text) {
 	text = text.replace( /\n/gi, "<br />");	
     return text;
 }
@@ -2116,6 +2114,8 @@ function databaseConnect() {
 		if (aRows.contains('task_order') == false) {
 			dbConn.executeSimpleSQL("ALTER TABLE tasks ADD COLUMN task_order INTEGER DEFAULT 0");		
 		}
+		//check if index exists
+		//SELECT count(*) FROM sqlite_master WHERE type='index' AND name='collections_task_id';
 
         return dbConn;
    	} else {
