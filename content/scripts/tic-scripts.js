@@ -220,9 +220,7 @@ function drawTICElements() {
 					new Element("img#iconimg" + key, {
 						src : icon,
 						alt : "Icon",
-						title : "Expand information",				
 						styles : {
-							cursor : "pointer",
 							width : "42px",
 							position: "relative",
 							top: "2px", 
@@ -247,9 +245,7 @@ function drawTICElements() {
 					new Element("img#iconimg" + key, {
 						src : icon,
 						alt : "Icon",
-						title : "Expand information",				
 						styles : {
-							cursor: "pointer",
 							width : "20px",
 							position: "absolute",
 							top: "41px", 
@@ -296,8 +292,8 @@ function drawTICElements() {
 			new Element("span#move" + key).adopt(
 				new Element("img#moveimg" + key, {
 					src : "images/icons_general/green-arrow-down.png",
-					alt : "Move",
-					title : "Move",
+					alt : "Expand",
+					title : "Expand information",
 					styles : {
 						cursor: "pointer",						
 						width : "18",
