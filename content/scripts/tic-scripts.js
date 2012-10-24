@@ -389,7 +389,7 @@ function drawTICElements() {
 											title: '',
 											content: value["name"],
 											buttons: [
-												{ title: 'Close', event: function() { this.close(); }, color: 'blue' }
+												{ title: 'Close', event: function() { this.close(); }}
 											]
 										}).open();
 									//images

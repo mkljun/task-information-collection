@@ -387,7 +387,8 @@
 					.lightface .lightfaceContent .lightfaceTitle {
 						font-size: 14px;
 						color: #fff;
-						background-color: #6d84b4;
+						/*background-color: #6d84b4;*/
+						background-color: rgba(112,138,144,1.0);
 						border: 1px solid #3b5998;
 						font-weight: bold;
 						margin: -1px;
@@ -415,7 +416,8 @@
 					}
 
 					.lightface .lightfaceContent .lightfaceFooter {
-						background-color: #f2f2f2;
+						/*background-color: #f2f2f2;*/
+						background-color: rgba(112,138,144,0.8);
 						border-top: 1px solid #ccc;
 						padding: 6px 10px;
 						text-align: right;
@@ -465,13 +467,17 @@
 						border-color: #29447E #29447E #1A356E;
 						background-position:0 -48px;
 					}
-					.lightface .lightfaceFooter label.lightfaceblue.lightfacefocusblue { background-color: #5b74a8; background-image:none; }
+					.lightface .lightfaceFooter label.lightfaceblue.lightfacefocusblue { 
+						/*background-color: #5b74a8; */
+						background-image:none; }
 
 					.lightface .lightfaceFooter label.lightfacegreen {
 						border-color: #3B6E22 #3B6E22 #2C5115;
 						background-position:0 -96px;
 					}
-					.lightface .lightfaceFooter label.lightfacegreen.lightfacefocusgreen { background-color: #69A74E; background-image:none; }
+					.lightface .lightfaceFooter label.lightfacegreen.lightfacefocusgreen { background-color: #69A74E; 
+						background-image:none; 
+					}
 
 					.lightface .lightfaceFooter label.lightfaceblue input,
 					.lightface .lightfaceFooter label.lightfacegreen input {
@@ -516,7 +522,7 @@
 					}
 /******* LIGHTFACE ********/
 
-/******* MOODATEPICKER ********/
+/******* DATEPICKER ********/
 			.DynarchCalendar {
 			  border: 1px solid rgba(112,138,144,1.0);
 			  -moz-border-radius: 5px 5px 5px 5px;
@@ -860,4 +866,4 @@
 			    margin: 0 !important;
 			  }
 			}
-/******* MOODATEPICKER ********/
+/******* DATEPICKER ********/
