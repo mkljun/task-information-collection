@@ -24,6 +24,7 @@ var pastTICStatesInterval; //interval for each state to be visible in a playback
 var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
 var framekiller = false; //for checking if previewed page prevents opening in iframe and warn user
 var elements = []; //for detaching dragging when elements are edited or resized
+var elementsR = []; //for detaching resizing when elements are edited
 var dragged = false; //for checking if an item got moved in case of clicking on a link and moving
 
 /***************************************************************************
@@ -75,13 +76,21 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 
 //save the state of a task every X mili seconds - 3000000 ms is 5 minutes
 (function() { 
-	//check if a note is edited
+	var editedElement
+	//check if a name is edited
     Object.each (data, function(value, key){
-    	var editedElement = $("namearea" + key); // or document.id in 1.2.4+ for compatibility
+    	//check if a name is edited
+    	editedElement = $("namearea" + key); 
 		if (editedElement) {
 		    editedElement.blur();
 		}
-    });
+		//check if a note is edited
+    	editedElement = $("toolbar" + key); 
+		if (editedElement) {
+			$("nametext" + key).fireEvent('blur');
+		    $('saveNote' + key).fireEvent('click');
+		}		
+    });   
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId)}).periodical(3000000);
 //set the last task to the currently selected
 (function() { databaseSetLastTask() }).periodical(180000);
@@ -241,19 +250,7 @@ function drawTICElements() {
 					styles : {
 						height : "60px",
 					}
-				}).adopt(
-					new Element("img#iconimg" + key, {
-						src : icon,
-						alt : "Icon",
-						styles : {
-							width : "20px",
-							position: "absolute",
-							top: "41px", 
-							left: xleft,
-							float: "left"
-						}				
-					})
-				)
+				})
 			);	
 		}
 		if (value["type"] == "FILE") {
@@ -275,9 +272,7 @@ function drawTICElements() {
 					new Element("img", {
 						src : iconUrl,
 						alt : "Icon",
-						title : "Expand information",
 						styles : {
-							cursor: "pointer",
 							width : "18px",
 							position: "absolute",
 							top: "13px", 
@@ -291,25 +286,25 @@ function drawTICElements() {
 		$("item" + key).adopt( //span#move" + key
 			new Element("span#move" + key).adopt(
 				new Element("img#moveimg" + key, {
-					src : "images/icons_general/green-arrow-down.png",
+					src : "images/icons_general/reveal-open.png",
 					alt : "Expand",
 					title : "Expand information",
 					styles : {
 						cursor: "pointer",						
-						width : "18",
+						width : "20",
 						position: "absolute",
-						top: "30px", 
-						left: "-5px"
+						top: "27px", 
+						left: "-6px"
 					},
 					events : {
 						click : function(){
 							if (dragged == false) {
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
-									$("moveimg" + key).set('src', "images/icons_general/green-arrow-up.png");
+									$("moveimg" + key).set('src', "images/icons_general/reveal-close.png");
 								} else {
 									$("information" + key).setStyle('display','none');
-									$("moveimg" + key).set('src', "images/icons_general/green-arrow-down.png");
+									$("moveimg" + key).set('src', "images/icons_general/reveal-open.png");
 								}	
 							} else {
 								dragged = false;
@@ -376,7 +371,7 @@ function drawTICElements() {
 							width : "20",
 							position: "absolute",
 							top: "30px", 
-							left: "28px"
+							left: "30px"
 						},
 						events : {
 							click : function(){
@@ -432,8 +427,8 @@ function drawTICElements() {
 			} else {
 				var xleft = "139px";
 			}			
-			$("previmg" + key).setStyle("left",xleft);
-			$("previmg" + key).setStyle("top","62px");		
+			$("previmg" + key).setStyle("left",xleft+1);
+			$("previmg" + key).setStyle("top","42px");		
 		}						
 		//### TEXT/NAME
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
@@ -484,7 +479,6 @@ function drawTICElements() {
 			);	
 		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 			$("item" + key).setStyle("z-index","0");
-			value["name"] = cleanHtml(value["name"]);
 			data[key]["name"] = value["name"];
 			if (value["type"] == "TEXT" || value["type"] == "NOTE") {
 				value["name"] = editNLwithBR(value["name"]);	
@@ -513,7 +507,7 @@ function drawTICElements() {
 							position : "absolute",
 							top: "2px",
 							"font-size": "11px",
-							"color": "#666666",
+							"color": "#9B999E",
 							padding : "5px 10px 10px 10px",
 							"background": "rgba(0, 0, 0, 0)", /* transparent background */
 							width: xleft-10,
@@ -524,7 +518,7 @@ function drawTICElements() {
 						},
 						events: {
 							dblclick : function(){
-								editElementName(key);
+								editElementNameNotes(key);
 							}	
 						}
 					})
@@ -715,15 +709,14 @@ function drawTICElements() {
 				})
 			)	
 		);
-		Calendar.setup({
-	        inputField : "duedate",
-	        trigger    : "dateImg" + key,
-		    onSelect   : function() {
-		    	var duedate = Calendar.intToDate(this.selection.get());
-		    	duedate = Calendar.printDate(duedate, "%Y-%m-%d");
-	            addElementValue(key,"date",duedate);
-		    }	        
-    	});
+		new Picker.Date($('duedate'), {
+			toggle: $('dateImg' + key),
+			pickerClass: 'datepicker_dashboard',
+			format: "%Y-%m-%d",
+			onSelect: function(date, input){
+				addElementValue(key,"date",date.format("%Y-%m-%d"));
+			}
+		});
 		$("information" + key).adopt ( //"a#user" + key
 			new Element("a#user" + key, {
 				href : "#user"
@@ -1330,7 +1323,6 @@ function drawTICElementsPastStates(pastStatesId) {
 				);	
 			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				$("item" + key).setStyle("z-index","0");
-				value["name"] = cleanHtml(value["name"]);
 				if (value["type"] == "TEXT" || value["type"] == "NOTE") {
 					value["name"] = editNLwithBR(value["name"]);	
 				}
@@ -1358,7 +1350,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								position : "absolute",
 								top: "2px",
 								"font-size": "11px",
-								"color": "#666666",
+								"color": "#9B999E",
 								padding : "5px 10px 10px 10px",
 								"background": "rgba(0, 0, 0, 0)", /* transparent background */
 								width: xleft-10,
@@ -1618,10 +1610,17 @@ Add, edit and delete elements and their values
 The function are called:
 addElementValue(key,tag,value): 
 	- drawTICElements(): append to buttons to add date, person, url, note
+	- editElementName(key): autosaving names on focus and on blur
+	- editElementNameNotes(key): autosaving names on focus and on blur
 deleteElementValue(key,tag,value):
 	- not used anywhere yet
-editElementName(key):
-	- drawTICElements(): edit content of notes by doubleclicking on it
+editElementName(key): editing of files, URLs and folders
+	- drawTICElements(): edit content of names by doubleclicking on them
+editElementNameNotes(key): editing names of notes, text and html
+	- drawTICElements(): edit content of notes by doubleclicking on them
+saveNoteOnBodyClick(event): this function looks wether there is a note edited
+    and if it is, if the mouse cclick is fired on the toolbar or edited text.
+    If it is note, save the note	
 editNLwithBR(text): change new lines with break HTML tag
 	- drawTICElements(): print notes and text
 	- drawTICElementsPastStates(pastStatesId): print notes and text
@@ -1634,20 +1633,13 @@ checkDateElement(date,key): check if the due date is approaching and emphasize t
 ****************************************************************************/
 
 function addElementValue(key,tag,value) { //adding a value/tag of the information item
-	//change new line with break
-	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
-		value = editNLwithBR(value);	
-	}
-
 	data[key][tag] = value;
-	//we can't just draw because we don't save the new value in DB so the nev value is lost
-	//databaseDrawTaskCollection(currentTaskId);
 
 	//add or change the existng valuein the DOM
 	if ($("information" + key).contains($("list" + tag + key))) {
 		$("list" + tag + key).dispose();
 	}
-	if (tag == "name" && (data[key]["type"] != "NOTE" && data[key]["type"] != "TEXT" && data[key]["type"] != "HTML")) { 
+	if (tag != "name" || (tag == "name" && data[key]["type"] != "NOTE" && data[key]["type"] != "TEXT" && data[key]["type"] != "HTML")) { 
 		$("information" + key).adopt ( //"span#content_" + key
 			new Element("div#list" + tag + key, {
 				html : "<strong>" + tag + "</strong>: " + value
@@ -1664,12 +1656,54 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 }
 
 function editElementName(key) { //edit the name=content of notes
-	//if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
+	var name = data[key]["name"];//$("nametext" + key).get('html');	
+	var autosave;	
+	var copy = $("nametext" + key).clone(true,true);
+	copy.cloneEvents($("nametext" + key));
+	var textarea = new Element("textarea#namearea" + key, {
+		value : name, 
+		styles : {
+			top : "2px",
+			"font-size" : "11px",
+			"color" : "#9B999E",
+			padding : "5px 10px 10px 10px",
+			"background" : "rgba(0, 0, 0, 0)", /* transparent background */
+			"resize" : "none",
+			"font-family" : "arial, sans-serif",
+			"border-style" : "none"
+		},
+		events : {
+			click : function(){
+				this.focus();
+			},
+			focus : function() {
+				elementMoveDisable(key);
+				var element = this;
+				autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
+			},
+			blur : function() {
+				clearInterval(autosave);
+				var text = this.get("value");
+				addElementValue(key,"name",text);
+				
+				if (text.length > 33) { 
+					name = text.substring(0,33) + "...";
+				} else {			
+					name = text;
+				}		
+				copy.setProperty("html", name); 
+				copy.replaces(this);
+				elementMoveEnable(key);
+			}					
+		}
+	}).replaces($("nametext" + key));	
+	$("namearea" + key).focus();
+}
+
+function editElementNameNotes(key) { //edit the name=content of notes
 	var name = $("nametext" + key).get('html');	
 	var autosave;
-	if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
-		name = name.replace( /<[Bb][Rr]\s*[^>]*[\/]?>/gi, "\n");	
-	}
+
 	//get the width and height of the element	
 	if (data[key]["width"] && data[key]["height"]) {
 		var xleft = data[key]["width"]-10;
@@ -1680,48 +1714,263 @@ function editElementName(key) { //edit the name=content of notes
 	}	
 	var copy = $("nametext" + key).clone(true,true);
 	copy.cloneEvents($("nametext" + key));
-	var textarea = new Element("textarea#namearea" + key, {
-					value : name, 
-					styles : {
-						top : "2px",
-						"font-size" : "11px",
-						"color" : "#666666",
-						padding : "5px 10px 10px 10px",
-						"background" : "rgba(0, 0, 0, 0)", /* transparent background */
-						"resize" : "none",
-						width : xleft,
-						height : ytop,
-						"font-family" : "arial, sans-serif",
-						"border-style" : "none"
-					},
-					events : {
-						click : function(){
-							this.focus();
-						},
-						focus : function() {
-							elementMoveDisable(key);
-							var element = this;
-							autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
-						},
-						blur : function() {
-							clearInterval(autosave);
-							var text = this.get("value");
-							addElementValue(key,"name",text);
-							if (data[key]["type"] == "TEXT" || data[key]["type"] == "NOTE") {
-								text = editNLwithBR(text);	
-							}				
-							if (text.length > 33 && (data[key]["type"] == "FILE" || data[key]["type"] == "FOLDER" || data[key]["type"] == "URL")) {
-								name = text.substring(0,33) + "...";
-							} else {			
-								name = text;
-							}		
-							copy.setProperty("html", name); 
-							copy.replaces(this);
-							elementMoveEnable(key);
-						}					
-					}
-				}).replaces($("nametext" + key));	
-	$("namearea" + key).focus();
+
+	elementMoveDisable(key);
+	elementResizeDisable(key)
+	var elementID = "nametext" + key;
+	$("nametext" + key).set('contenteditable', "true");
+	$("nametext" + key).addEvents({
+		focus : function() { 
+			autosave = (function() {addElementValue(key,"name",$("nametext" + key).get('html'));}).periodical(2500);  							
+		},
+		blur : function () {
+			clearInterval(autosave);
+		}
+	});
+
+	initDoc(elementID);
+	$("nametext" + key).focus();
+	$("item" + key).adopt( 
+		new Element("div#toolbar" + key,  {
+			styles : {
+				position : "absolute",
+				width : "144",
+				top : "-46px",
+				left : "-1px",
+				visibility : "visible",
+				"font-size" : "12px",
+				"z-index" : "5",
+				"padding" : "3px",
+				"background-color" : "white",
+				border : "0.5px solid",
+				"border-radius" : 5,
+				"border-color" : "rgba(112,138,144,0.2)"						
+			},
+			events: {
+				click : function(event){
+				}						
+			}			
+		}).adopt(
+			new Element("img#editorBold" + key, {
+				src: "images/icons_editor/bold.png",
+				title: "Bold",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('bold');
+					}						
+				}
+			})
+		).adopt(
+			new Element("img#editorItalic" + key, {
+				src: "images/icons_editor/italic.png",
+				title: "Italic",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('italic');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorUndo" + key, {
+				src: "images/icons_editor/undo.png",
+				title: "Undo",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('undo');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorRedo" + key, {
+				src: "images/icons_editor/redo.png",
+				title: "Redo",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('redo');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorLeft" + key, {
+				src: "images/icons_editor/left.png",
+				title: "Justify left",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('justifyleft');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorCenter" + key, {
+				src: "images/icons_editor/centre.png",
+				title: "Justify center",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('justifycenter');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorRight" + key, {
+				src: "images/icons_editor/right.png",
+				title: "Justify right",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('justifyright');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorEnu" + key, {
+				src: "images/icons_editor/enumerate.png",
+				title: "Insert ordered list",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('insertorderedlist');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorIte" + key, {
+				src: "images/icons_editor/itemize.png",
+				title: "Insert unordered list",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('insertunorderedlist');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorOutdent" + key, {
+				src: "images/icons_editor/outdent.png",
+				title: "Outdent",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('outdent');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorIndent" + key, {
+				src: "images/icons_editor/indent.png",
+				title: "Indent",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('indent');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorPara" + key, {
+				src: "images/icons_editor/p.png",
+				title: "Normal paragraph",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('formatblock','p');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorPre" + key, {
+				src: "images/icons_editor/pre.png",
+				title: "Preformated paragraph",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('formatblock','pre');
+					}						
+				}
+			})	
+		).adopt(
+			new Element("img#editorRed" + key, {
+				src: "images/icons_editor/red.png",
+				title: "Red color",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('forecolor','red');
+					}						
+				}
+			})
+		).adopt(
+			new Element("img#editorBlack" + key, {
+				src: "images/icons_editor/black.png",
+				title: "Black color",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('forecolor','#9B999E');
+					}						
+				}
+			})									
+		).adopt(
+			new Element("img#saveNote" + key, {
+				src: "images/icons_editor/save.png",
+				title: "Save",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						$("nametext" + key).fireEvent('blur');
+						clearInterval(autosave);
+						var text = $("nametext" + key).get('html');
+						addElementValue(key,"name",text);
+						$("toolbar" + key).dispose();
+						copy.setProperty("html", text); 
+						copy.replaces($("nametext" + key));
+						elementMoveEnable(key);							
+						elementResizeEnable(key);
+					}						
+				}
+
+			})	
+		)				
+	);   
+}
+
+//get the last click coordinates
+function saveNoteOnBodyClick(event) {
+	//save a note if it is clicked aoutside of it!!!!!!!!!
+    Object.each (data, function(value, key){
+		//check if a note is edited
+    	editedElement = $("toolbar" + key); 
+		if (editedElement) {
+			//check if the parent id is item's div and if not, save the note
+			if ($(event.target).getParents().contains($("item" + key)) == false ) { 
+					$("nametext" + key).fireEvent('blur');
+					$('saveNote' + key).fireEvent('click');
+			}
+
+			// //the note is edited and if the click event does not happen in toolbar 
+			// //or the edited text areas, save it and hide the toolbar
+			// if (event.pageX < $("toolbar" + key).getCoordinates().left ||
+			// 	event.pageX > $("toolbar" + key).getCoordinates().right ||
+			// 	event.pageY < $("toolbar" + key).getCoordinates().top ||
+			// 	event.pageY > $("toolbar" + key).getCoordinates().bottom) {
+				
+			// 	if (event.pageX < $("nametext" + key).getCoordinates().left ||
+			// 		event.pageX > $("nametext" + key).getCoordinates().right ||
+			// 		event.pageY < $("nametext" + key).getCoordinates().top ||
+			// 		event.pageY > $("nametext" + key).getCoordinates().bottom) {
+
+			// 		//$("msg").innerHTML += "I-";
+			// 		$("nametext" + key).fireEvent('blur');
+			// 	    $('saveNote' + key).fireEvent('click');
+			// 	} 
+			// } 
+		}		
+    }); 	
 }
 
 function editNLwithBR(text) {
@@ -1734,6 +1983,14 @@ function deleteElementValue(key,tag,value) { //deleting a value/tag of the infor
 }
 
 function deleteElement(key, name) { //deleting the information item
+	//check if a name is edited
+	if ($("namearea" + key)) { $("namearea" + key).blur(); }
+	//check if a note is edited
+	if ($("toolbar" + key)) { 
+		$("nametext" + key).fireEvent('blur');
+		$('saveNote' + key).fireEvent('click');
+	}	
+
 	//delete the element from data with the key
 	delete data[key];
 	//save the task collection
@@ -1838,11 +2095,15 @@ function elementMoveDisable(key){
 }
 
 /***************************************************************************
-Function that enables element resize. The functions are called:
+Function that enables/dasables element resize. The functions are called:
+elementResizeEnable(key)
 	- drawTICElements(): when elements are drawn
+	- editElementNameNote(key): when elements are stopedbeing edited	
+elementMoveDisable(key)
+	- editElementNameNote(key): when elements are being edited	
 ****************************************************************************/
 function elementResizeEnable(key){
-	$("item" + key).makeResizable({
+	elementsR[key] = $("item" + key).makeResizable({
 		limit: {x: [150, 600], y: [90, 500]},
 		handle : $("resizeimg" + key),
 		onBeforeStart : function (){
@@ -1859,7 +2120,7 @@ function elementResizeEnable(key){
 		onDrag: function(){
 			var newWidth = $("item" + key).getSize().x - 12;
 			var newHeight = $("item" + key).getSize().y - 12;
-			$("iconimg" + key).setStyle('left', newWidth);
+			//$("iconimg" + key).setStyle('left', newWidth);
 			$("previmg" + key).setStyle('left', newWidth+2);
 			$("upvoteimg" + key).setStyle('left', newWidth);
 			$("downvoteimg" + key).setStyle('left', newWidth);					
@@ -1875,6 +2136,10 @@ function elementResizeEnable(key){
 			}					
 			}   				
 	});
+}
+
+function elementResizeDisable(key){
+	elementsR[key].detach();
 }
 
 /***************************************************************************
@@ -4230,8 +4495,6 @@ function getAngle(coorX,coorY) {
 /***************************************************************************
 Clean html of all formating and empty tags
 The function is called:
-	- drawTICElements(): before showing notes
-	- drawTICElementsPastStates(pastStatesId): the same as above 
 	- doDrop(event): when text is dragged over it cleans it before saving
 ****************************************************************************/
 function cleanHtml(str) {

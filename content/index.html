@@ -23,8 +23,11 @@
 <script language="JavaScript" type="text/javascript" src="scripts/LightFace.Request.js"></script>
 <script language="JavaScript" type="text/javascript" src="scripts/LightFace.Static.js"></script>
 
-<script language="JavaScript" type="text/javascript" src="scripts/calendar.js"></script>
-<script language="JavaScript" type="text/javascript" src="scripts/lang/en.js"></script>
+<script language="JavaScript" type="text/javascript" src="scripts/Picker.js"></script>
+<script language="JavaScript" type="text/javascript" src="scripts/Picker.Attach.js"></script>
+<script language="JavaScript" type="text/javascript" src="scripts/Picker.Date.js"></script>
+
+<script language="JavaScript" type="text/javascript" src="scripts/Editor.js"></script>
 
 <link rel="shortcut icon" href="images/TIC.png"></link>
 
@@ -348,565 +351,486 @@
 /******* TIC ********/		
 
 /******* LIGHTFACE ********/
-					.lightface {
-						margin: 0;
-						padding: 0;
-						border-collapse: collapse;
-						position: absolute;
-						top: -9000px;
-						left: -9000px;
-					}
+	.lightface {
+		margin: 0;
+		padding: 0;
+		border-collapse: collapse;
+		position: absolute;
+		top: -9000px;
+		left: -9000px;
+	}
 
-					.lightface td {
-						padding: 0;
-						margin: 0;
-						background-color: transparent;
-						vertical-align: top;
-						font-family: 'Verdana';
-						font-size: 11px;
-					}
+	.lightface td {
+		padding: 0;
+		margin: 0;
+		background-color: transparent;
+		vertical-align: top;
+		font-family: 'Verdana';
+		font-size: 11px;
+	}
 
-					.lightface .centerLeft, .lightface .centerRight {
-						width: 10px;
-						height: auto;
-						background-image: url(images/lightface/b.png);
-						background-repeat: repeat-y;
-					}
+	.lightface .centerLeft, .lightface .centerRight {
+		width: 10px;
+		height: auto;
+		background-image: url(images/lightface/b.png);
+		background-repeat: repeat-y;
+	}
 
-					.lightface .topLeft, .lightface .topRight, .lightface .bottomLeft, .lightface .bottomRight {
-						width: 10px;
-						height: 10px;
-						background-repeat: no-repeat;
-					}
+	.lightface .topLeft, .lightface .topRight, .lightface .bottomLeft, .lightface .bottomRight {
+		width: 10px;
+		height: 10px;
+		background-repeat: no-repeat;
+	}
 
-					.lightface .topLeft {
-						background-image: url(images/lightface/tl.png);
-						background-position: top left;
-					}
+	.lightface .topLeft {
+		background-image: url(images/lightface/tl.png);
+		background-position: top left;
+	}
 
-					.lightface .topRight {
-						background-image: url(images/lightface/tr.png);
-						background-position: top right;
-					}
+	.lightface .topRight {
+		background-image: url(images/lightface/tr.png);
+		background-position: top right;
+	}
 
-					.lightface .bottomLeft {
-						background-image: url(images/lightface/bl.png);
-						background-position: bottom left;
-					}
+	.lightface .bottomLeft {
+		background-image: url(images/lightface/bl.png);
+		background-position: bottom left;
+	}
 
-					.lightface .bottomRight {
-						background-image: url(images/lightface/br.png);
-						background-position: bottom right;
-					}
+	.lightface .bottomRight {
+		background-image: url(images/lightface/br.png);
+		background-position: bottom right;
+	}
 
-					.lightface .topCenter, .lightface .bottomCenter {
-						width: auto;
-						height: 10px;
-						background-image: url(images/lightface/b.png);
-						background-repeat: repeat-x;
-					}
+	.lightface .topCenter, .lightface .bottomCenter {
+		width: auto;
+		height: 10px;
+		background-image: url(images/lightface/b.png);
+		background-repeat: repeat-x;
+	}
 
-					.lightface .lightfaceContent {
-						background-color: #fff;
-						border: 1px solid #555;
-						position: relative;
-					}
+	.lightface .lightfaceContent {
+		background-color: #fff;
+		border: 1px solid #555;
+		position: relative;
+	}
 
-					.lightface .loading {
-						display: block;
-						margin: 10px auto;
-					}
+	.lightface .loading {
+		display: block;
+		margin: 10px auto;
+	}
 
-					.lightface .lightfaceContent .lightfaceTitle {
-						font-size: 14px;
-						color: #fff;
-						/*background-color: #6d84b4;*/
-						background-color: rgba(112,138,144,1.0);
-						border: 1px solid #3b5998;
-						font-weight: bold;
-						margin: -1px;
-						margin-bottom: 0;
-						padding: 5px 10px;
-					}
+	.lightface .lightfaceContent .lightfaceTitle {
+		font-size: 14px;
+		color: #fff;
+		/*background-color: #6d84b4;*/
+		background-color: rgba(112,138,144,1.0);
+		border: 1px solid #3b5998;
+		font-weight: bold;
+		margin: -1px;
+		margin-bottom: 0;
+		padding: 5px 10px;
+	}
 
-					.lightface .lightfaceContent .lightfaceDraggable {
-						cursor:move;
-					}
+	.lightface .lightfaceContent .lightfaceDraggable {
+		cursor:move;
+	}
 
-					.lightface .lightfaceContent .lightfaceMessage {
-						overflow: auto;
-						margin: 0;
-						position: relative;
-						padding: 5px 10px;
-						border: 1px solid #fff;
-					}
+	.lightface .lightfaceContent .lightfaceMessage {
+		overflow: auto;
+		margin: 0;
+		position: relative;
+		padding: 5px 10px;
+		border: 1px solid #fff;
+	}
 
-					.lightface .lightfaceContent .lightfaceMessage h3,
-					.lightface .lightfaceContent .lightfaceMessage h4,
-					.lightface .lightfaceContent .lightfaceMessage h5,
-					.lightface .lightfaceContent .lightfaceMessage h6 {
-						margin-top: 6px;
-					}
+	.lightface .lightfaceContent .lightfaceMessage h3,
+	.lightface .lightfaceContent .lightfaceMessage h4,
+	.lightface .lightfaceContent .lightfaceMessage h5,
+	.lightface .lightfaceContent .lightfaceMessage h6 {
+		margin-top: 6px;
+	}
 
-					.lightface .lightfaceContent .lightfaceFooter {
-						/*background-color: #f2f2f2;*/
-						background-color: rgba(112,138,144,0.8);
-						border-top: 1px solid #ccc;
-						padding: 6px 10px;
-						text-align: right;
-					}
+	.lightface .lightfaceContent .lightfaceFooter {
+		/*background-color: #f2f2f2;*/
+		background-color: rgba(112,138,144,0.8);
+		border-top: 1px solid #ccc;
+		padding: 6px 10px;
+		text-align: right;
+	}
 
-					.lightface .lightfaceFooter label {
-						font-size: 13px;
-						border-style: solid;
-						background-image:url(images/lightface/button.png);
-						cursor:pointer;
-						font-weight:bold;
-						padding:2px 6px 2px 6px;
-						text-align:center;
-						vertical-align:top;
-						white-space:nowrap;
-						border-width:1px;
-						margin-left:3px;
-						background-position:0 0;
-						border-color:#999;
-						line-height:normal !important;
-						display:inline-block;
-					}
+	.lightface .lightfaceFooter label {
+		font-size: 13px;
+		border-style: solid;
+		background-image:url(images/lightface/button.png);
+		cursor:pointer;
+		font-weight:bold;
+		padding:2px 6px 2px 6px;
+		text-align:center;
+		vertical-align:top;
+		white-space:nowrap;
+		border-width:1px;
+		margin-left:3px;
+		background-position:0 0;
+		border-color:#999;
+		line-height:normal !important;
+		display:inline-block;
+	}
 
-					.lightface .lightfaceFooter label input {
-						background:none;
-						border:0 !important;
-						cursor:pointer;
-						font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
-						font-weight:bold;
-						margin:0;
-						padding:1px 0 2px;
-						white-space:nowrap;
-						text-align:center;
-						color:#fff;
-						font-size:13px;
-						border: 2px outset buttonface;
-						text-indent:0;
-						text-shadow:none;
-						display:inline-block;
-						color:#444;
-						font-size:13px;
-					}
-					/* ie6 hacks */
-					* html .lightface .lightfaceFooter label input { border:0; }
+	.lightface .lightfaceFooter label input {
+		background:none;
+		border:0 !important;
+		cursor:pointer;
+		font-family: 'Lucida Grande', Tahoma, Verdana, Arial, sans-serif;
+		font-weight:bold;
+		margin:0;
+		padding:1px 0 2px;
+		white-space:nowrap;
+		text-align:center;
+		color:#fff;
+		font-size:13px;
+		border: 2px outset buttonface;
+		text-indent:0;
+		text-shadow:none;
+		display:inline-block;
+		color:#444;
+		font-size:13px;
+	}
+	/* ie6 hacks */
+	* html .lightface .lightfaceFooter label input { border:0; }
 
-					.lightface .lightfaceFooter label.lightfaceblue {
-						border-color: #29447E #29447E #1A356E;
-						background-position:0 -48px;
-					}
-					.lightface .lightfaceFooter label.lightfaceblue.lightfacefocusblue { 
-						/*background-color: #5b74a8; */
-						background-image:none; }
+	.lightface .lightfaceFooter label.lightfaceblue {
+		border-color: #29447E #29447E #1A356E;
+		background-position:0 -48px;
+	}
+	.lightface .lightfaceFooter label.lightfaceblue.lightfacefocusblue { 
+		/*background-color: #5b74a8; */
+		background-image:none; }
 
-					.lightface .lightfaceFooter label.lightfacegreen {
-						border-color: #3B6E22 #3B6E22 #2C5115;
-						background-position:0 -96px;
-					}
-					.lightface .lightfaceFooter label.lightfacegreen.lightfacefocusgreen { background-color: #69A74E; 
-						background-image:none; 
-					}
+	.lightface .lightfaceFooter label.lightfacegreen {
+		border-color: #3B6E22 #3B6E22 #2C5115;
+		background-position:0 -96px;
+	}
+	.lightface .lightfaceFooter label.lightfacegreen.lightfacefocusgreen { background-color: #69A74E; 
+		background-image:none; 
+	}
 
-					.lightface .lightfaceFooter label.lightfaceblue input,
-					.lightface .lightfaceFooter label.lightfacegreen input {
-						color:#fff;
-					}
+	.lightface .lightfaceFooter label.lightfaceblue input,
+	.lightface .lightfaceFooter label.lightfacegreen input {
+		color:#fff;
+	}
 
 
-					.lightface .hiddenButton {
-						visibility: hidden;
-					}
+	.lightface .hiddenButton {
+		visibility: hidden;
+	}
 
-					.lightface .lightfaceOverlay {
-						position: absolute;
-						left: 0;
-						top: 0;
-						bottom: 0;
-						right: 0;
-						/*
-						background-image: url(fbloader.gif);
-						background-position: center center;
-						background-repeat: no-repeat;
-						background-color: #fff;
-						*/
-						background:url(images/lightface/fbloader.gif) center center no-repeat #fff;
-					}
+	.lightface .lightfaceOverlay {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		/*
+		background-image: url(fbloader.gif);
+		background-position: center center;
+		background-repeat: no-repeat;
+		background-color: #fff;
+		*/
+		background:url(images/lightface/fbloader.gif) center center no-repeat #fff;
+	}
 
-					.lightface .lightfaceMessageBox	{ 
-						overflow: auto;
-						padding: 10px 10px;
-						min-height: 20px;
-						position:relative;
-					}
+	.lightface .lightfaceMessageBox	{ 
+		overflow: auto;
+		padding: 10px 10px;
+		min-height: 20px;
+		position:relative;
+	}
 
-					.lightface .lightFaceMessageBoxImage {
-						overflow: hidden;
-						padding: 0;
-						background:url(images/lightface/fbloader.gif) center center no-repeat #fff;
-					}
+	.lightface .lightFaceMessageBoxImage {
+		overflow: hidden;
+		padding: 0;
+		background:url(images/lightface/fbloader.gif) center center no-repeat #fff;
+	}
 
-					.lightface .lightFaceMessageBoxImage img {
-						display: block;
-					}
+	.lightface .lightFaceMessageBoxImage img {
+		display: block;
+	}
 /******* LIGHTFACE ********/
 
 /******* DATEPICKER ********/
-			.DynarchCalendar {
-			  border: 1px solid rgba(112,138,144,1.0);
-			  -moz-border-radius: 5px 5px 5px 5px;
-			  border-radius: 5px 5px 5px 5px;	
-			  -moz-user-select: none;
-			  -webkit-user-select: none;
-			  user-select: none;
-			  background: #e8e8e8;
-			  font: 11px "lucida grande",tahoma,verdana,sans-serif;
-			  line-height: 14px;
-			  position: relative;
-			  cursor: default;
-			}
+	.datepicker_dashboard {
+		position: absolute;
+		font-size: 10px;
+		font-family: "Lucida Grande", LucidaGrande, "Lucida Sans", Geneva, Verdana, sans-serif;
+		color: #fff;
+		line-height: normal;
+		width: 172px;
+		height: 135px;
+		padding: 14px;
+		z-index: 60;
+		background: url(images/frame.png) no-repeat;
+	}
 
-			.DynarchCalendar table {
-			  border-collapse: collapse;
-			  font: 11px "lucida grande",tahoma,verdana,sans-serif;
-			  line-height: 14px;
-			}
+	/* header
+	********************************************************/
+	.datepicker_dashboard .header {
+		position: relative;
+		height: 15px;
+		margin-bottom: 5px;
+		padding-top: 1px;
+	}
 
-			.DynarchCalendar-topBar {
-			  border-bottom: 1px solid rgba(112,138,144,1.0);
-			  background: #ddd;
-			  padding: 5px 0 0 0;
-			}
+	.datepicker_dashboard .header .title {
+		text-align: center;
+		margin: 2px 18px 0 18px;
+	}
 
-			table.DynarchCalendar-titleCont {
-			  font-size: 130%; font-weight: bold;
-			  color: #444;
-			  text-align: center;
-			  z-index: 9;
-			  position: relative;
-			  margin-top: -6px;
-			}
+	.datepicker_dashboard .header .titleText {
+		color: #ccff00;
+	}
 
-			.DynarchCalendar-title div {
-			  padding: 5px 17px;
-			  text-shadow: 1px 1px 1px #777;
-			}
-			.DynarchCalendar-hover-title div {
-			  background-color:rgba(112,138,144,0.3);		  
-			  border: 1px solid rgba(112,138,144,0.3);
-			  -moz-border-radius: 0px 0px 5px 5px;
-			  border-radius: 0px 0px 5px 5px;				  
-			  padding: 4px 16px;
-			  background-repeat: no-repeat;
-			  background-position: 100% 50%;
-			}
-			.DynarchCalendar-pressed-title div {
-			  border: 1px solid rgba(112,138,144,1.0);
-			  background-color:rgba(112,138,144,0.4);
-			  -moz-border-radius: 0px 0px 5px 5px;
-			  border-radius: 0px 0px 5px 5px;			  
-			  padding: 4px 16px;
-			  /*background-color: #777;*/
-			  color: #fff;
-			  background-repeat: no-repeat;
-			  background-position: 100% 50%;
-			}
+	.datepicker_dashboard .header .previous,
+	.datepicker_dashboard .header .next,
+	.datepicker_dashboard .header .closeButton {
+		position: absolute;
+		cursor: pointer;
+		text-indent: -40px;
+		overflow: hidden;
+		width: 12px;
+		height: 12px;
+		top: 2px;
+		background-image: url(images/buttons.png);
+		background-position: left top;
+		background-repeat: no-repeat;
+	}
 
-			.DynarchCalendar-bottomBar {
-			  border-top: 1px solid rgba(112,138,144,0.3);	  
-			  background: #ddd;
-			  padding: 2px;
-			  position: relative;
-			  text-align: center;
-			}
+	.datepicker_dashboard .header .previous {
+		left: 4px;
+	}
+	.datepicker_dashboard .header .previous:hover {
+		background-position: left bottom;
+	}
+	.datepicker_dashboard .header .next {
+		right: 4px;
+		background-position: -13px top;
+	}
+	.datepicker_dashboard .header .next:hover {
+		background-position: -13px bottom;
+	}
+	.datepicker_dashboard .header .closeButton {
+		display: none;
+		right: 0px;
+		top: 0px;
+		background-position: right top;
+	}
+	.datepicker_dashboard .header .closeButton:hover {
+		background-position: right bottom;
+	}
 
-			.DynarchCalendar-bottomBar-today {
-			  padding: 2px 15px;
-			}
+	/* body
+	********************************************************/
+	.datepicker_dashboard .body {
+		position: relative;
+		top: 0px;
+		left: 2px;
+		width: 168px;
+		height: 112px;
+		overflow: hidden;
+	}
 
-			.DynarchCalendar-hover-bottomBar-today {
-			  border: 1px solid rgba(112,138,144,1.0);
-			  background-color: #fff;
-			  padding: 1px 14px;
-			}
-			.DynarchCalendar-pressed-bottomBar-today {
-			  border: 1px solid #000;
-			  background-color: #777;
-			  color: #fff;
-			  padding: 1px 14px;
-			}
+	/* time
+	********************************************************/
+	.datepicker_dashboard .time {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	}
 
-			.DynarchCalendar-body {
-			  position: relative;
-			  overflow: hidden;
-			  padding-top: 5px;
-			  padding-bottom: 5px;
-			}
+	.datepicker_dashboard .time .hour,
+	.datepicker_dashboard .time .separator,
+	.datepicker_dashboard .time .minutes {
+		background: #333;
+		border: 0px;
+		width: 50px;
+		font-size: 32px;
+		color: #fff;
+		position: absolute;
+		top: 10px;
+		text-align: center;
+		padding: 2px;
+	}
 
-			.DynarchCalendar-first-col { padding-left: 5px; }
-			.DynarchCalendar-last-col { padding-right: 5px; }
+	.datepicker_dashboard .time .hour {
+		left: 15px;
+	}
+	.datepicker_dashboard .time .separator {
+		background: transparent;
+		width: 10px;
+		left: 76px;
+	}
 
-			.DynarchCalendar-animBody-backYear {
-			  position: absolute;
-			  top: -100%;
-			  left: 0;
-			}
-			.DynarchCalendar-animBody-back {
-			  position: absolute;
-			  top: 5px;
-			  left: -100%;
-			}
-			.DynarchCalendar-animBody-fwd {
-			  position: absolute;
-			  top: 5px;
-			  left: 100%;
-			}
-			.DynarchCalendar-animBody-now {
-			  position: absolute;
-			  top: 5px;
-			  left: 0;
-			}
-			.DynarchCalendar-animBody-fwdYear {
-			  position: absolute;
-			  top: 100%;
-			  left: 0;
-			}
+	.datepicker_dashboard .time .minutes {
+		left: 95px;
+	}
+	.datepicker_dashboard .time .ok {
+		position: absolute;
+		top: 65px;
+		height: 32px;
+		width: 136px;
+		left: 15px;
+		font-size: 20px;
+	}
 
-			.DynarchCalendar-dayNames {
-			  padding-left: 5px;
-			  padding-right: 5px;
-			}
+	/* days-grid
+	********************************************************/
+	.datepicker_dashboard .days .day {
+		float: left;
+		text-align: center;
+		overflow: hidden;
+		width: 23px;
+		padding-top: 1px;
+		height: 14px;
+		margin: 0 1px 1px 0;
+		font-weight: normal;
+		color: #ccc;
+	}
+	.datepicker_dashboard .days .titles {
+		height: 15px;
+		margin-bottom: 2px;
+		text-transform: uppercase;
+		color: #aaa;
+	}
+	.datepicker_dashboard .days .day0 {
+		margin-right: 0;
+	}
 
-			.DynarchCalendar-dayNames div { font-weight: bold; color: #444; text-shadow: 1px 1px 1px #777; }
+	.datepicker_dashboard .days .week5 .day {
+		margin-bottom: 0;
+	}
 
-			.DynarchCalendar-navBtn {
-			  position: absolute;
-			  top: 5px;
-			  z-index: 10;
-			}
+	/* days-colors
+	********************************************************/
+	.datepicker_dashboard .days .week .day {
+		cursor: pointer;
+	}
+	.datepicker_dashboard .days .week .day:hover {
+		color: #ccff00;
+	}
 
-			.DynarchCalendar-navBtn div {
-			  background-repeat: no-repeat;
-			  background-position: 50% 50%;
-			  height: 15px;
-			  width: 16px;
-			  padding: 1px;
-			}
-			.DynarchCalendar-hover-navBtn div {
-			  border: 1px solid rgba(112,138,144,1.0);
-			  padding: 0;
-			  background-color: #fff;
-			}
-			.DynarchCalendar-navDisabled {
-			  opacity: 0.3;
-			  filter: alpha(opacity=30);
-			}
-			.DynarchCalendar-pressed-navBtn div {
-			  border: 1px solid #000;
-			  padding: 0;
-			  background-color: #777;
-			  color: #fff;
-			}
+	.datepicker_dashboard .days .otherMonth {
+		color: #444444;
+	}
 
-			.DynarchCalendar-prevMonth {
-			  left: 25px;
-			}
+	.datepicker_dashboard .days .selected {
+		color: #ccff00;
+	}
 
-			.DynarchCalendar-nextMonth {
-			  left: 100%;
-			  margin-left: -43px;
-			}
+	/* months-grid
+	********************************************************/
+	.datepicker_dashboard .months .month {
+		float: left;
+		cursor: pointer;
+		text-align: center;
+		padding-top: 6px;
+		width: 55px;
+		overflow: hidden;
+		height: 21px;
+		margin: 0 1px 1px 0;
+	}
 
-			.DynarchCalendar-prevYear {
-			  left: 5px;
-			}
+	.datepicker_dashboard .months .month3,
+	.datepicker_dashboard .months .month6,
+	.datepicker_dashboard .months .month9,
+	.datepicker_dashboard .months .month12 {
+		margin-right: 0;
+	}
 
-			.DynarchCalendar-nextYear {
-			  left: 100%;
-			  margin-left: -23px;
-			}
+	.datepicker_dashboard .months .month10,
+	.datepicker_dashboard .months .month11,
+	.datepicker_dashboard .months .month12 {
+		margin-bottom: 0;
+	}
 
-			.DynarchCalendar-prevMonth div {
-			  background-image: url("img/nav-left.gif");
-			}
+	/* months-colors
+	********************************************************/
+	.datepicker_dashboard .months .month:hover {
+		color: #ccff00;
+	}
 
-			.DynarchCalendar-nextMonth div {
-			  background-image: url("img/nav-right.gif");
-			}
+	.datepicker_dashboard .months .selected {
+		color: #ccff00;
+	}
 
-			.DynarchCalendar-prevYear div {
-			  background-image: url("img/nav-left-x2.gif");
-			}
+	/* years-grid
+	********************************************************/
+	.datepicker_dashboard .years .year {
+		float: left;
+		cursor: pointer;
+		text-align: center;
+		padding-top: 6px;
+		width: 32px;
+		overflow: hidden;
+		height: 21px;
+		margin: 0 1px 1px 0;
+	}
 
-			.DynarchCalendar-nextYear div {
-			  background-image: url("img/nav-right-x2.gif");
-			}
+	.datepicker_dashboard .years .year4,
+	.datepicker_dashboard .years .year9,
+	.datepicker_dashboard .years .year14,
+	.datepicker_dashboard .years .year19 {
+		margin-right: 0;
+	}
 
-			.DynarchCalendar-menu {
-			  position: absolute;
-			  left: 0;
-			  top: 0;
-			  width: 100%;
-			  height: 100%;
-			  background-color: #ddd;
-			  overflow: hidden;
-			  opacity: 0.85;
-			  filter: alpha(opacity=85);
-			}
+	.datepicker_dashboard .years .year15,
+	.datepicker_dashboard .years .year16,
+	.datepicker_dashboard .years .year17,
+	.datepicker_dashboard .years .year18,
+	.datepicker_dashboard .years .year19 {
+		margin-bottom: 0;
+	}
 
-			.DynarchCalendar-menu table td div {
-			  text-align: center;
-			  font-weight: bold;
-			  padding: 3px 5px;
-			}
-			.DynarchCalendar-menu table td div.DynarchCalendar-menu-month {
-			  width: 4em;
-			  text-align: center;
-			}
-			.DynarchCalendar-menu table td div.DynarchCalendar-hover-navBtn {
-			  border: 1px solid rgba(112,138,144,1.0);
-			  padding: 2px 4px;
-			  background-color: #fff;
-			  color: #000;
-			}
-			.DynarchCalendar-menu table td div.DynarchCalendar-pressed-navBtn {
-			  border: 1px solid rgba(112,138,144,1.0);			  
-			  padding: 2px 4px;
-			  background-color: #777;
-			  color: #fff !important;
-			}
+	/* years-colors
+	********************************************************/
+	.datepicker_dashboard .years .year:hover {
+		color: #ccff00;
+	}
 
-			.DynarchCalendar-menu-year {
-			  text-align: center;
-			  font: 16px "lucida grande",tahoma,verdana,sans-serif;
-			  font-weight: bold;
-			}
+	.datepicker_dashboard .years .selected {
+		color: #ccff00
+	}
 
-			.DynarchCalendar-menu-sep {
-			  height: 1px; font-size: 1px; line-height: 1px;
-			  overflow: hidden;
-			  border-top: 1px solid rgba(112,138,144,1.0);
-			  background: #fff;
-			  margin-top: 4px; margin-bottom: 3px;
-			}
+	/* global
+	********************************************************/
+	.datepicker_dashboard .unavailable {
+		color: #533 !important;
+		cursor: default !important;
+		text-decoration: line-through;
+	}
 
-			.DynarchCalendar-time td { font-weight: bold; font-size: 120%; }
-			.DynarchCalendar-time-hour, .DynarchCalendar-time-minute { padding: 1px 3px; }
-			.DynarchCalendar-time-down { background: url("img/time-down.png") no-repeat 50% 50%; width: 11px; height: 8px; opacity: 0.5; }
-			.DynarchCalendar-time-up { background: url("img/time-up.png") no-repeat 50% 50%; width: 11px; height: 8px; opacity: 0.5; }
-			.DynarchCalendar-time-sep { padding: 0 2px; }
-			.DynarchCalendar-hover-time { background-color: #444; color: #fff; opacity: 1; }
-			.DynarchCalendar-pressed-time { background-color: #000; color: #fff; opacity: 1; }
-			.DynarchCalendar-time-am { padding: 1px; width: 2.5em; text-align: center; }
+	.datepicker_dashboard table {
+		border-spacing: 0;
+	}
 
-			/* body */
-
-			.DynarchCalendar-hover-week { background-color: #ddd; }
-
-			.DynarchCalendar-dayNames div, .DynarchCalendar-day, .DynarchCalendar-weekNumber {
-			  width: 1.7em;
-			  padding: 3px 4px;
-			  text-align: center;
-			}
-			.DynarchCalendar-weekNumber {
-			  border-right: 1px solid rgba(112,138,144,1.0);
-			  margin-right: 4px;
-			  width: 2em !important;
-			  padding-right: 8px !important;
-			}
-
-			.DynarchCalendar-day {
-			  text-align: right; color: #222;
-			}
-			.DynarchCalendar-day-othermonth { color: #888; }
-			.DynarchCalendar-weekend { color: #c22; }
-			.DynarchCalendar-day-today { color: #00f; font-weight: bold; }
-
-			.DynarchCalendar-day-disabled {
-			  opacity: 0.5;
-			  text-shadow: 2px 1px 1px #fff;
-			}
-
-			.DynarchCalendar-hover-date {
-			  padding: 2px 3px;
-			  background-color: #eef;
-			  border: 1px solid #88c;
-			  margin: 0 !important;
-			  color: #000;
-			}
-
-			.DynarchCalendar-day-othermonth.DynarchCalendar-hover-date { border-color: #aaa; color: #888; }
-
-			.DynarchCalendar-dayNames .DynarchCalendar-weekend { color: #c22; }
-			.DynarchCalendar-day-othermonth.DynarchCalendar-weekend { color: #d88; }
-
-			.DynarchCalendar-day-selected {
-			  padding: 2px 3px;
-			  margin: 1px;
-			  background-color: #aaa;
-			  color: #000 !important;
-			}
-			.DynarchCalendar-day-today.DynarchCalendar-day-selected { background-color: #999; }
-
-			/* focus */
-
-			.DynarchCalendar-focusLink {
-			  position: absolute;
-			  opacity: 0;
-			  filter: alpha(opacity=0);
-			}
-
-			.DynarchCalendar-focused {
-			  border-color: rgba(112,138,144,1.0);
-			}
-
-			.DynarchCalendar-focused .DynarchCalendar-topBar, .DynarchCalendar-focused .DynarchCalendar-bottomBar {
-			  background-color: #ccc;
-			  border-color: rgba(112,138,144,1.0);
-			}
-
-			.DynarchCalendar-focused .DynarchCalendar-hover-week {
-			  background-color: #ccc;
-			}
-
-			.DynarchCalendar-tooltip {
-			  position: absolute;
-			  top: 100%;
-			  width: 100%;
-			}
-
-			.DynarchCalendar-tooltipCont {
-			  margin: 0 5px 0 5px;
-			  border: 1px solid rgba(112,138,144,1.0);
-			  border-top: 0;
-			  padding: 3px 6px;
-			  background: #ddd;
-			}
-
-			.DynarchCalendar-focused .DynarchCalendar-tooltipCont {
-			  background: #ccc;
-			  border-color: #000;
-			}
-
-			@media print {
-			  .DynarchCalendar-day-selected {
-			    padding: 2px 3px;
-			    border: 1px solid rgba(112,138,144,1.0);
-			    margin: 0 !important;
-			  }
-			}
+	.datepicker_dashboard th,
+	.datepicker_dashboard td {
+		padding: 0;
+	}
 /******* DATEPICKER ********/
+
+/******* TextEditor ********/	
+	.editorButtons { 
+		margin: 2px 2px 2px 2px; 
+		width: 14px;
+	}
+/******* TextEditor ********/		
 
 
 </style>
 
 </head>
 
-<body id="body" ondrop="doDrop(event);">
+<body id="body" ondrop="doDrop(event);" onclick="saveNoteOnBodyClick(event);">
 
 <div id="msg" style="position: absolute; left: 20; top: 40;" class="tips" title="bla"></div>
 
@@ -1016,8 +940,7 @@
 </div>
 </div>
 
-
-<input type="text" value="" id="duedate" hidden />
+<input type="text" value="" id="duedate" style="visibility:hidden;"/>
 
 
 </body>
