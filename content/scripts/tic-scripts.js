@@ -71,7 +71,6 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 		drawTICElements();
 		drawPICCircles();
 	}
-
 });
 
 //save the state of a task every X mili seconds - 3000000 ms is 5 minutes
@@ -119,7 +118,7 @@ pastTICStatesCurrentIndex
       and to the past states of the task on the mase timeline
 startDrawTICElementsPastStates() : starts the timeline playback
 	- databaseDrawTaskCollection(taskid) appended to the play button
-stopDrawTICElementsPastStates(pastStatesId): stops the timeleni playback
+stopDrawTICElementsPastStates(): stops the timeleni playback
 	- databaseDrawTaskCollection(taskid): appended to the stop and playnext button
 ****************************************************************************/
 function drawTICElements() {
@@ -171,12 +170,6 @@ function drawTICElements() {
 		//set the X coordinate relative to the window width (it is stored in DB for the width 1000px)
 		coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
 		coordinatey = (value["coordinatey"]*(window.innerHeight/1000)).toFixed(parseInt(0));	
-
-		if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
-			name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
-		} else {
-			name = value["name"].replace(/_/gm, ' ');
-		}
 
 		//### BACKGROUND
 		$("itemsList").adopt(
@@ -239,19 +232,6 @@ function drawTICElements() {
 					})
 				)
 			);		
-		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-			if (value["width"]) {
-				var xleft = value["width"]-10;
-			} else {
-				var xleft = "140px";
-			}
-			$("item" + key).adopt( //"div#icon"
-				new Element("div#icon" + key, {
-					styles : {
-						height : "60px",
-					}
-				})
-			);	
 		}
 		if (value["type"] == "FILE") {
 			$("iconimg" + key).setStyles({width: 35, top: 5, left: 3 });
@@ -432,6 +412,12 @@ function drawTICElements() {
 		}						
 		//### TEXT/NAME
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
+			//shorten long names
+			if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
+				name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
+			} else {
+				name = value["name"].replace(/_/gm, ' ');
+			}	
 			$("item" + key).adopt( //"span#name" + key
 				new Element("span#name" + key,  {
 					styles : {
@@ -458,9 +444,7 @@ function drawTICElements() {
 											fileRunShScript(value["path"]);
 										} else {
 											fileOpen(value["path"]);	
-										}
-									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
-										//do nothing								 		
+										}								 		
 									} else if (value["type"] == "URL") {
 										//URL's are opened in a window
 										window.open(value["path"]);
@@ -480,9 +464,6 @@ function drawTICElements() {
 		} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 			$("item" + key).setStyle("z-index","0");
 			data[key]["name"] = value["name"];
-			if (value["type"] == "TEXT" || value["type"] == "NOTE") {
-				value["name"] = editNLwithBR(value["name"]);	
-			}
 			if (value["width"] && value["height"]) {
 				var xleft = value["width"]-10;
 				var ytop = value["height"]-10;
@@ -673,7 +654,7 @@ function drawTICElements() {
 			)
 		);
 
-		//ADDITINAL ICONS: calendar, person, email, note, url, delete
+		//ADDITINAL INFO
 		$("item" + key).adopt( //"div#information" + key
 			new Element("div#information" + key,  {
 				styles : {
@@ -686,12 +667,15 @@ function drawTICElements() {
 					"z-index" : "3",
 					"padding" : "3px",
 					"background-color" : "white",
+					"overflow-y":"hidden",
+					"overflow-x":"hidden",					
 					border : "0.5px solid",
 					"border-radius" : 5,
 					"border-color" : "rgba(112,138,144,0.2)"						
 				}
 			})							
 		);
+		//ICONS: calendar, person, email, note, url, delete
 		$("information" + key).adopt ( //"a#date" + key
 			new Element("a#date" + key, {
 				href : "#date"
@@ -817,7 +801,7 @@ function drawTICElements() {
 			new Element("a#editname" + key, {
 				href : "#editname"
 			}).adopt(
-				new Element("img", {
+				new Element("img#editnameImg" + key, {
 					src : "images/icons_general/edit-icon.png",
 					alt : "Rename an item",
 					title : "Remane an item",
@@ -829,7 +813,13 @@ function drawTICElements() {
 					},
 					events : {
 						click : function(){
-							editElementName(key);
+							if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
+								editElementName(key);
+							}
+							//if we allow html editing ...
+							if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
+								editElementNameNotes(key);
+							}							
 						}
 					}					
 				})
@@ -891,30 +881,39 @@ function drawTICElements() {
 					delete data[key]["size"];
 				}
 				//make paths and links clickable
-				if (index == "path" && (value["type"] == "FILE" || value["type"] == "FOLDER")) {
-					indivElement.set({
-						html: "<a href=\"#openfolder\">" + item + "</a>",
-					    events: {
-					        click: function(){ folderOpen(value["path"]) }
-					    }
-					});								
-				} else if (index == "email") {
+				if (index == "path") {
+					if (value["type"] == "FILE" || value["type"] == "FOLDER") {
+						indivElement.set({
+							html: "<strong>Open folder</strong>: <a href=\"#openfolder\">" + item + "</a>",
+						    events: {
+						        click: function(){ folderOpen(value["path"]) }
+						    }
+						});
+					} else if (value["type"] == "URL") {
+						indivElement.set({
+						    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
+						});							 
+					} 					
+				} 
+
+				if (index == "email") {
 					indivElement.set({
 					    html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
 					});							 
-				} else if (index == "url") {
-					indivElement.set({
-					    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
-					});							 
 				} 
+
 				//get current modificaion time and make it human readable
 				if (index == "modified"){
-					var updatedModified = fileModified(data[key]["path"]);
-					data[key]["modified"] = updatedModified;
-					if (updatedModified == "not available") {
-						item = updatedModified;					
+					if (value["type"] == "FILE" || value["type"] == "FOLDER") {
+						var updatedModified = fileModified(data[key]["path"]);
+						data[key]["modified"] = updatedModified;
+						if (updatedModified == "not available") {
+							item = updatedModified;					
+						} else {
+							item = unixToTime(updatedModified);						
+						}						
 					} else {
-						item = unixToTime(updatedModified);						
+						//do nothing ... the date should be in the normal format for Notes						
 					}						
 				}
 				//emphasize the item if the due date is approaching and is in less than 7 days
@@ -1059,12 +1058,6 @@ function drawTICElementsPastStates(pastStatesId) {
 			coordinatex = (value["coordinatex"]*(window.innerWidth/1000)).toFixed(parseInt(0));	
 			coordinatey = (value["coordinatey"]*(window.innerHeight/1000)).toFixed(parseInt(0));	
 
-			if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
-				name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
-			} else {
-				name = value["name"].replace(/_/gm, ' ');
-			}
-
 			//### BACKGROUND
 			$("itemsList").adopt(
 				new Element("div#item" + key, {
@@ -1107,61 +1100,15 @@ function drawTICElementsPastStates(pastStatesId) {
 							alt : "Icon",
 							title : "Expand information",				
 							styles : {
-								cursor : "pointer",
 								width : "42px",
 								position: "relative",
 								top: "2px", 
 								left: "0px",
 								float: "left"
-							},
-							events : {
-								click : function(){
-									if ($("information" + key).getStyle("display") == "none") {
-										$("information" + key).setStyle('display','block');
-									} else {
-										$("information" + key).setStyle('display','none');
-									}							
-								}
 							}					
 						})
 					)
 				);		
-			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
-				if (value["width"]) {
-					var xleft = value["width"]-10;
-				} else {
-					var xleft = "140px";
-				}
-				$("item" + key).adopt( //"div#icon"
-					new Element("div#icon" + key, {
-						styles : {
-							height : "60px",
-						}
-					}).adopt(
-						new Element("img#iconimg" + key, {
-							src : icon,
-							alt : "Icon",
-							title : "Expand information",				
-							styles : {
-								cursor: "pointer",
-								width : "20px",
-								position: "absolute",
-								top: "41px", 
-								left: xleft,
-								float: "left"
-							},
-							events : {
-								click : function(){
-									if ($("information" + key).getStyle("display") == "none") {
-										$("information" + key).setStyle('display','block');
-									} else {
-										$("information" + key).setStyle('display','none');
-									}							
-								}
-							}					
-						})
-					)
-				);	
 			}
 			if (value["type"] == "FILE") {
 				$("iconimg" + key).setStyles({width: 35, top: 5, left: 3 });
@@ -1184,25 +1131,47 @@ function drawTICElementsPastStates(pastStatesId) {
 							alt : "Icon",
 							title : "Expand information",
 							styles : {
-								cursor: "pointer",
 								width : "18px",
 								position: "absolute",
 								top: "13px", 
 								left: "13px",
 								"font-size": "10px"
-							},
-							events : {
-								click : function(){
-									if ($("information" + key).getStyle("display") == "none") {
-										$("information" + key).setStyle('display','block');
-									} else {
-										$("information" + key).setStyle('display','none');
-									}							
-								}
 							}
 						})
 				);		
-			}		
+			}	
+			//### REVEAL MORE
+			$("item" + key).adopt( //span#move" + key
+				new Element("span#move" + key).adopt(
+					new Element("img#moveimg" + key, {
+						src : "images/icons_general/reveal-open.png",
+						alt : "Expand",
+						title : "Expand information",
+						styles : {
+							cursor: "pointer",						
+							width : "20",
+							position: "absolute",
+							top: "27px", 
+							left: "-6px"
+						},
+						events : {
+							click : function(){
+								if ($("information" + key).getStyle("display") == "none") {
+									$("information" + key).setStyle('display','block');
+									$("moveimg" + key).set('src', "images/icons_general/reveal-close.png");
+								} else {
+									$("information" + key).setStyle('display','none');
+									$("moveimg" + key).set('src', "images/icons_general/reveal-open.png");
+								}																
+							}
+						}
+					})
+				)
+			);
+			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {	
+				$("moveimg" + key).setStyle("left","-13px");
+				$("moveimg" + key).setStyle("top","25px");
+			}			
 
 			//### Preview
 			var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
@@ -1288,6 +1257,12 @@ function drawTICElementsPastStates(pastStatesId) {
 			}						
 			//### TEXT/NAME
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
+				//shorten long names
+				if (value["name"].replace(/<[^>]*>?/gm, '').length > 33) {
+					name = value["name"].replace(/<[^>]*>?/gm, '').substring(0,33) + "...";
+				} else {
+					name = value["name"].replace(/_/gm, ' ');
+				}
 				$("item" + key).adopt( //"span#name" + key
 					new Element("span#name" + key,  {
 						styles : {
@@ -1307,10 +1282,13 @@ function drawTICElementsPastStates(pastStatesId) {
 								click : function(){
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-										//NO NEED FOR SPECIAL LINUX FILE MANAGER PROCESS RUN 
-										fileOpen(value["path"]);
-									} else if ((value["type"] == "TEXT") || (value["type"] == "HTML")) {
-										//do nothing								 		
+										//execute scripts 
+										var scriptFiles = ["sh", "bash", "bat", "ps1"];
+										if (scriptFiles.contains(fileExt.toLowerCase())) {
+											fileRunShScript(value["path"]);
+										} else {
+											fileOpen(value["path"]);	
+										}															 		
 									} else if (value["type"] == "URL") {
 										//URL's are opened in a window
 										window.open(value["path"]);
@@ -1323,9 +1301,7 @@ function drawTICElementsPastStates(pastStatesId) {
 				);	
 			} else if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				$("item" + key).setStyle("z-index","0");
-				if (value["type"] == "TEXT" || value["type"] == "NOTE") {
-					value["name"] = editNLwithBR(value["name"]);	
-				}
+
 				if (value["width"] && value["height"]) {
 					var xleft = value["width"]-10;
 					var ytop = value["height"]-10;
@@ -1449,6 +1425,7 @@ function drawTICElementsPastStates(pastStatesId) {
 					})
 			);
 
+			//ADDITINAL INFO
 			$("item" + key).adopt( //"div#information" + key
 				new Element("div#information" + key,  {
 					styles : {
@@ -1461,28 +1438,28 @@ function drawTICElementsPastStates(pastStatesId) {
 						"z-index" : "3",
 						"padding" : "3px",
 						"background-color" : "white",
+						"overflow-y":"hidden",
+						"overflow-x":"hidden",					
 						border : "0.5px solid",
 						"border-radius" : 5,
 						"border-color" : "rgba(112,138,144,0.2)"						
 					}
 				})							
 			);
-
 			//move this extra info box more down for notes
 			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
 				if (value["height"]) {
-					var ytop = value["height"]+5;
+					var ytop = parseInt(value["height"])+5;
 				} else {
 					var ytop = "150px";
 				}	
-				$("information" + key).setStyle('top', ytop);						
-			}	
-
+				$("information" + key).setStyle('top', ytop);
+			}			
 			//print more information about the information item
 			Object.each(value, function(item,index){
 				if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
 					&& (index != "extension") && (index != "type")  && (index != "arrow")
-					&& (index != "vote") && (index != "timestamp") && (index != "width")
+					&& (index != "vote") && (index != "width") && (index != "timestamp")
 					&& (index != "height") && (index != "stats")) {
 
 					var indivElement  = new Element("div#list" + index + key);
@@ -1493,31 +1470,44 @@ function drawTICElementsPastStates(pastStatesId) {
 					} else if (index == "size"  && value["type"] != "FILE") {
 						delete value["size"];
 					}
+
 					//make paths and links clickable
-					if (index == "path" && (value["type"] == "FILE" || value["type"] == "FOLDER")) {
-						indivElement.set({
-							html: "<a href=\"#openfolder\">" + item + "</a>",
-						    events: {
-						        click: function(){ folderOpen(value["path"]) }
-						    }
-						});								
-					} else if (index == "email") {
+					if (index == "path") {
+						if (value["type"] == "FILE" || value["type"] == "FOLDER") {
+							indivElement.set({
+								html: "<strong>Open folder</strong>: <a href=\"#openfolder\">" + item + "</a>",
+							    events: {
+							        click: function(){ folderOpen(value["path"]) }
+							    }
+							});
+						} else if (value["type"] == "URL") {
+							indivElement.set({
+							    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
+							});							 
+						} 					
+					} 
+
+					if (index == "email") {
 						indivElement.set({
 						    html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
 						});							 
-					} else if (index == "url") {
-						indivElement.set({
-						    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
-						});							 
 					} 
+
 					//get current modificaion time and make it human readable
 					if (index == "modified"){
-						item = unixToTime(value["modified"]);											
+						if (value["type"] == "FILE" || value["type"] == "FOLDER") {
+							var updatedModified = fileModified(data[key]["path"]);
+							data[key]["modified"] = updatedModified;
+							if (updatedModified == "not available") {
+								item = updatedModified;					
+							} else {
+								item = unixToTime(updatedModified);						
+							}						
+						} else {
+							//do nothing ... the date should be in the normal format for Notes						
+						}						
 					}
-					//emphasize the item if the due date is approaching and is in less than 7 days
-					if (index == "date"){
-	    				checkDateElement(item,key);
-					}	
+
 					//don't print names for notes
 					if (index == "name" && ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML"))) {
 						item = "A note";						
@@ -1601,7 +1591,7 @@ function startDrawTICElementsPastStates() {
 	pastTICStatesInterval = playDrawTICElementsPastStates.periodical(1000);
 }
 
-function stopDrawTICElementsPastStates(pastStatesId) {
+function stopDrawTICElementsPastStates() {
 	$clear(pastTICStatesInterval);
 }
 
@@ -1622,8 +1612,6 @@ saveNoteOnBodyClick(event): this function looks wether there is a note edited
     and if it is, if the mouse cclick is fired on the toolbar or edited text.
     If it is note, save the note	
 editNLwithBR(text): change new lines with break HTML tag
-	- drawTICElements(): print notes and text
-	- drawTICElementsPastStates(pastStatesId): print notes and text
 deleteElement(key, name): deleting the information item
 	- drawTICElements(): append to delete icon of every item/element on the page
 checkDateElement(date,key): check if the due date is approaching and emphasize the value	
@@ -1646,7 +1634,22 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 			})
 		);	
 	} else {
-		item = "A note";
+		$("information" + key).adopt ( //"span#content_" + key
+			new Element("div#list" + tag + key, {
+				html : "<strong>" + tag + "</strong>: A note"
+			})
+		);							
+	}
+
+	//change modification time for notes
+	if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") { 
+		$("list" + "modified" + key).dispose();
+		data[key]["modified"]= getTimestamp();
+		$("information" + key).adopt (
+			new Element("div#list" + "modified" + key, {
+				html : "<strong>modified</strong>: " + data[key]["modified"]
+			})	
+		);	
 	}
 
 	//if the date has been changed ... emphasize the border
@@ -1657,18 +1660,29 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 
 function editElementName(key) { //edit the name=content of notes
 	var name = data[key]["name"];//$("nametext" + key).get('html');	
-	var autosave;	
+	var autosave;
+	// LEAVE THE NOTES EDITITNG HERE IF THERE WILL BE A NEED TO EDIT HTML
+	//get the width and height of the element
+	if (data[key]["width"] && data[key]["height"]) {
+		var xleft = data[key]["width"]-10;
+		var ytop = data[key]["height"]-10;
+	} else {
+		var xleft = "145px";
+		var ytop = "130px";
+	}
 	var copy = $("nametext" + key).clone(true,true);
 	copy.cloneEvents($("nametext" + key));
 	var textarea = new Element("textarea#namearea" + key, {
-		value : name, 
+		value : name,
 		styles : {
 			top : "2px",
 			"font-size" : "11px",
-			"color" : "#9B999E",
+			"color" : "#666666",
 			padding : "5px 10px 10px 10px",
 			"background" : "rgba(0, 0, 0, 0)", /* transparent background */
 			"resize" : "none",
+			width : xleft,
+			height : ytop,
 			"font-family" : "arial, sans-serif",
 			"border-style" : "none"
 		},
@@ -1679,24 +1693,24 @@ function editElementName(key) { //edit the name=content of notes
 			focus : function() {
 				elementMoveDisable(key);
 				var element = this;
-				autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  							
+				autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  
 			},
 			blur : function() {
 				clearInterval(autosave);
 				var text = this.get("value");
 				addElementValue(key,"name",text);
-				
-				if (text.length > 33) { 
+
+				if (text.length > 33 && (data[key]["type"] == "FILE" || data[key]["type"] == "FOLDER" || data[key]["type"] == "URL")) {
 					name = text.substring(0,33) + "...";
-				} else {			
+				} else {
 					name = text;
-				}		
-				copy.setProperty("html", name); 
+				}
+				copy.setProperty("html", name);
 				copy.replaces(this);
 				elementMoveEnable(key);
-			}					
+			}
 		}
-	}).replaces($("nametext" + key));	
+	}).replaces($("nametext" + key));
 	$("namearea" + key).focus();
 }
 
@@ -1939,9 +1953,8 @@ function editElementNameNotes(key) { //edit the name=content of notes
 	);   
 }
 
-//get the last click coordinates
 function saveNoteOnBodyClick(event) {
-	//save a note if it is clicked aoutside of it!!!!!!!!!
+	//save a note if it is clicked outside of it!!!!!!!!!
     Object.each (data, function(value, key){
 		//check if a note is edited
     	editedElement = $("toolbar" + key); 
@@ -1951,24 +1964,8 @@ function saveNoteOnBodyClick(event) {
 					$("nametext" + key).fireEvent('blur');
 					$('saveNote' + key).fireEvent('click');
 			}
-
-			// //the note is edited and if the click event does not happen in toolbar 
-			// //or the edited text areas, save it and hide the toolbar
-			// if (event.pageX < $("toolbar" + key).getCoordinates().left ||
-			// 	event.pageX > $("toolbar" + key).getCoordinates().right ||
-			// 	event.pageY < $("toolbar" + key).getCoordinates().top ||
-			// 	event.pageY > $("toolbar" + key).getCoordinates().bottom) {
-				
-			// 	if (event.pageX < $("nametext" + key).getCoordinates().left ||
-			// 		event.pageX > $("nametext" + key).getCoordinates().right ||
-			// 		event.pageY < $("nametext" + key).getCoordinates().top ||
-			// 		event.pageY > $("nametext" + key).getCoordinates().bottom) {
-
-			// 		//$("msg").innerHTML += "I-";
-			// 		$("nametext" + key).fireEvent('blur');
-			// 	    $('saveNote' + key).fireEvent('click');
-			// 	} 
-			// } 
+			//get the last click coordinates .. check e.g.:
+			// 	event.pageX > $("toolbar" + key).getCoordinates().right 
 		}		
     }); 	
 }
@@ -2867,6 +2864,7 @@ function databaseShowTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;									
 								}
@@ -2889,6 +2887,7 @@ function databaseShowTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;
 								}
@@ -2907,6 +2906,7 @@ function databaseShowTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									//call function that replaces the above a with input
 									changeEditTaskName(taskid);
 								}
@@ -2925,6 +2925,7 @@ function databaseShowTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									//fire up the confirmation box
 									var question = confirm("PERMANENTLY delete the task " + taskname + "?")
 									if (question == true){
@@ -2947,6 +2948,7 @@ function databaseShowTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									databaseArchiveTask(taskid, taskname);
 								}
 							}							
@@ -3007,6 +3009,7 @@ function databaseShowArchivedTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;									
 								}
@@ -3029,6 +3032,7 @@ function databaseShowArchivedTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;
 								}
@@ -3047,6 +3051,7 @@ function databaseShowArchivedTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									//call function that replaces the above a with input
 									changeEditTaskName(taskid);
 								}
@@ -3065,6 +3070,7 @@ function databaseShowArchivedTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									//fire up the confirmation box
 									var question = confirm("PERMANENTLY delete the task " + taskname + "?")
 									if (question == true){
@@ -3089,6 +3095,7 @@ function databaseShowArchivedTasks() {
 							},
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									databaseRetrieveTask(taskid,taskname);
 								}
 							}							
@@ -3349,6 +3356,7 @@ function databaseDrawTaskCollection(taskid) {
 					},							
 					events : {
 						click : function(){
+							stopDrawTICElementsPastStates();
 							drawTICElements(); 
 						}
 					}
@@ -3390,6 +3398,7 @@ function databaseDrawTaskCollection(taskid) {
 							},							
 							events : {
 								click : function(){
+									stopDrawTICElementsPastStates();
 									drawTICElements(); 
 								}
 							}
@@ -3448,6 +3457,7 @@ function databaseDrawTaskCollection(taskid) {
 								click : function(){
 									clearBackgroundTimelineItems();
 									pastTICStatesCurrentIndex = 0; //clear the current id of the past states
+									stopDrawTICElementsPastStates();
 									drawTICElements(); 
 								}
 							}
@@ -3848,7 +3858,6 @@ function doDrop(event) { //add new information items to the page and variable da
 			if (fileDragged instanceof Components.interfaces.nsIFile){
 				var fullPath = fileDragged.path;
 				var fileType = fullPath.split(".");
-				var extension = fileType.getLast();
 				var stats = JSON.stringify(getFolderStats(fullPath));								
 				if(fileDragged.isDirectory()) { 
 					fileType = "FOLDER";
@@ -3943,6 +3952,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						modified : getTimestamp(),
 						width: "150",
 						height: "140",
 						vote : "0",
@@ -3985,6 +3995,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						modified : getTimestamp(),
 						width: "150",
 						height: "140",					
 						vote : "0",
@@ -4028,6 +4039,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						modified : getTimestamp(),
 						width: "150",
 						height: "140",					
 						vote : "0",
@@ -4049,15 +4061,15 @@ function addNewNote() {
 	var nextKey = findNextKey(data);			
 	data[nextKey] = {
 			type : "NOTE",
-			name : "Double click on the text to edit note.\nClick elsewhere to save.\n\nPossible to use HTML tags",
+			name : "Double click on the text to edit note.<br><br>Click elsewhere to save.",
 			coordinatex : "75",
 			coordinatey : "60",
 			timestamp : getTimestamp(),
+			modified : getTimestamp(),
 			width: "150",
 			height: "140",			
 			vote : "0",
 			arrow : "no-no",
-			extension : "icons_content/TEXT.png"
 	};
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId);		
 }
@@ -4227,14 +4239,12 @@ function getFolderStats (dirtmp) {
 		dir.initWithPath(dirtmp); 
 		var recursiveFolderData = {};
 		if ( dir.isDirectory() ) { 	
-			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  		 
-			recursiveFolderData["stat"] = getRecursiveFolderCount2 (dir, 5); 
+			recursiveFolderData = getRecursiveFolderCount (dir, 0); 
 		} else if ( dir.isFile()) {
 			dir.initWithPath(dir.parent.path);
-			recursiveFolderData["stLevel"] = getRecursiveFolderStats (dir, 0);  
-			recursiveFolderData["stat"] = getRecursiveFolderCount2 (dir, 5); 
+			recursiveFolderData = getRecursiveFolderCount (dir, 0); 
 		} else {
-			printOut("The folder you selected does not exists on your local hard drive!");
+			recursiveFolderData = {"stat": "na"};
 		} 
 		return recursiveFolderData;
 	} catch(e) { 
@@ -4242,38 +4252,9 @@ function getFolderStats (dirtmp) {
 	}			
 }
 
-//Count # files and # folders in each folder recursively
-function getRecursiveFolderStats (dir, level) {
-	try {
-		var recursiveFolderData = {};
-		recursiveFolderData["dirs"] = 0;
-		recursiveFolderData["files"] = 0;
-		var entries = dir.directoryEntries;
-		while (entries.hasMoreElements()) {
-	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-		    if (file.exists() && !file.isHidden()) {
-		      if (file.isDirectory()) {
-		      	recursiveFolderData["dirs"]++;
-		      	if (level != 0) {
-		      		//anonymise folder names
-		      		var dirName2 = file.leafName.toMD5().substring(1,4);	
-		      		recursiveFolderData[dirName2] = getRecursiveFolderStats(file, level-1);      				      	
-		      	}
-		      } else {
-	      		recursiveFolderData["files"]++;
-		      }
-		    }
-		}
-		return recursiveFolderData;
-	} catch (ex) {
-	    // do nothing
-	}
-}
-
-//Count # of all folders
-function getRecursiveFolderCount2 (dir, level) {
+//Count # of folders, files and depth of hierarchy
+function getRecursiveFolderCount (dir, level) {
 	try {	
-	   //$("msg").innerHTML += "<br />S-";// + JSON.stringify(obj);
 	   var maxDepth = 0;
 	   var folders = 0;
 	   var files = 0;
@@ -4283,6 +4264,9 @@ function getRecursiveFolderCount2 (dir, level) {
 	       var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
 	       if (file.exists() && !file.isHidden()) {
 	           if (file.isDirectory()) {
+	 			   if (level == 0){
+	 			   	 folders ++;
+	 			   }
 	 			   if (level != 0) {
 		               var tempObj = getRecursiveFolderCount2(file, level-1);
 		               files += tempObj.files;
@@ -4303,63 +4287,6 @@ function getRecursiveFolderCount2 (dir, level) {
 	    // do nothing
 	}	 
 }
-
-// //Count # of all folders
-	// function getRecursiveFolderCount (dir, folders) {
-	// 	try {
-	// 		var entries = dir.directoryEntries;
-	// 		while (entries.hasMoreElements()) {
-	// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-	// 		    if (file.exists() && !file.isHidden()) {
-	// 		      if (file.isDirectory()) {
-	// 	      		folders = getRecursiveFolderCount(file, folders+1);
-	// 		      }
-	// 		    }
-	// 		}
-	// 		return folders;
-	// 	} catch (ex) {
-	// 	    // do nothing
-	// 	}
-	// }
-
-// //Count # of all files
-	// function getRecursiveFilesCount (dir, files) {
-	// 	try {
-	// 		var entries = dir.directoryEntries;
-	// 		while (entries.hasMoreElements()) {
-	// 	    	var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-	// 		    if (file.exists() && !file.isHidden()) {
-	// 		      if (file.isDirectory()) {
-	// 	      		files = getRecursiveFilesCount(file, files);
-	// 		      } else {
-	// 	      		files++;
-	// 		      }
-	// 		    }
-	// 		}
-	// 		return files;
-	// 	} catch (ex) {
-	// 	    // do nothing
-	// 	}
-	// }
-
-// //get the depth of the hierarchy
-	// function getRecursiveFolderDepth (dir, depth) {
-	//    try {
-	//        var maxDepth = 0;
-	//        var entries = dir.directoryEntries;
-	//        while (entries.hasMoreElements()) {
-	//            var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
-	//            if (file.exists() && !file.isHidden()) {
-	//              if (file.isDirectory()) {
-	//                  maxDepth = Math.max(getRecursiveFolderDepth(file, depth+1), maxDepth);
-	//              }
-	//            }
-	//        }
-	//        return 1 + maxDepth;
-	//    } catch (ex) {
-	//        // do nothing
-	//    }
-	// }
 
 /***************************************************************************
 Get a file size from the given file
@@ -4424,6 +4351,11 @@ The function is called:
 ****************************************************************************/
 function getTimestamp(){
 	var time = new Date().format('db');
+	return time;
+}
+
+function getTimestampUnix(){
+	var time = new Date().format('%s');
 	return time;
 }
 
@@ -4632,7 +4564,6 @@ function compareDataObjectSizeMod(data1, data2) {
 			//and check which one does not exist in the shorter one and which one changed				
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
-					//$("msg").innerHTML += "-y-";		
 					if (dataInner[index] != item) { //check if he value has changed
 		    			if (index == "modified" || index == "size") {
 		    				countChangesT = countChangesT + 1;
@@ -4643,7 +4574,7 @@ function compareDataObjectSizeMod(data1, data2) {
 	    					countChangesF = countChangesF + 1;
 	    				}
     				}
-				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
+				} else { //find out which index (tag of an element) exist in the longer array and not in shorter
 		    			if (index == "modified" || index == "size") {
 		    				countChangesT = countChangesT + 1;
 	    				} 
