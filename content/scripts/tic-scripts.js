@@ -26,6 +26,7 @@ var framekiller = false; //for checking if previewed page prevents opening in if
 var elements = []; //for detaching dragging when elements are edited or resized
 var elementsR = []; //for detaching resizing when elements are edited
 var dragged = false; //for checking if an item got moved in case of clicking on a link and moving
+var autosave = []; //for clearing autosave ... bug when dragging text from a note to the same note
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -263,9 +264,9 @@ function drawTICElements() {
 			);		
 		}
 		//### REVEAL MORE
-		$("item" + key).adopt( //span#move" + key
-			new Element("span#move" + key).adopt(
-				new Element("img#moveimg" + key, {
+		$("item" + key).adopt( //span#reveal" + key
+			new Element("span#reveal" + key).adopt(
+				new Element("img#revealimg" + key, {
 					src : "images/icons_general/reveal-open.png",
 					alt : "Expand",
 					title : "Expand information",
@@ -281,10 +282,10 @@ function drawTICElements() {
 							if (dragged == false) {
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
-									$("moveimg" + key).set('src', "images/icons_general/reveal-close.png");
+									$("revealimg" + key).set('src', "images/icons_general/reveal-close.png");
 								} else {
 									$("information" + key).setStyle('display','none');
-									$("moveimg" + key).set('src', "images/icons_general/reveal-open.png");
+									$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
 								}	
 							} else {
 								dragged = false;
@@ -295,8 +296,8 @@ function drawTICElements() {
 			)
 		);
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {	
-			$("moveimg" + key).setStyle("left","-13px");
-			$("moveimg" + key).setStyle("top","25px");
+			$("revealimg" + key).setStyle("left","-13px");
+			$("revealimg" + key).setStyle("top","25px");
 		}
 		//### RESIZE NOTES
 		if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {
@@ -1142,8 +1143,8 @@ function drawTICElementsPastStates(pastStatesId) {
 			}	
 			//### REVEAL MORE
 			$("item" + key).adopt( //span#move" + key
-				new Element("span#move" + key).adopt(
-					new Element("img#moveimg" + key, {
+				new Element("span#reveal" + key).adopt(
+					new Element("img#revealimg" + key, {
 						src : "images/icons_general/reveal-open.png",
 						alt : "Expand",
 						title : "Expand information",
@@ -1158,10 +1159,10 @@ function drawTICElementsPastStates(pastStatesId) {
 							click : function(){
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
-									$("moveimg" + key).set('src', "images/icons_general/reveal-close.png");
+									$("revealimg" + key).set('src', "images/icons_general/reveal-close.png");
 								} else {
 									$("information" + key).setStyle('display','none');
-									$("moveimg" + key).set('src', "images/icons_general/reveal-open.png");
+									$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
 								}																
 							}
 						}
@@ -1169,8 +1170,8 @@ function drawTICElementsPastStates(pastStatesId) {
 				)
 			);
 			if ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML")) {	
-				$("moveimg" + key).setStyle("left","-13px");
-				$("moveimg" + key).setStyle("top","25px");
+				$("revealimg" + key).setStyle("left","-13px");
+				$("revealimg" + key).setStyle("top","25px");
 			}			
 
 			//### Preview
@@ -1621,6 +1622,7 @@ checkDateElement(date,key): check if the due date is approaching and emphasize t
 ****************************************************************************/
 
 function addElementValue(key,tag,value) { //adding a value/tag of the information item
+	//save the value
 	data[key][tag] = value;
 
 	//add or change the existng valuein the DOM
@@ -1643,7 +1645,9 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 
 	//change modification time for notes
 	if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") { 
-		$("list" + "modified" + key).dispose();
+		if ($("information" + key).contains($("list" + "modified" + key))) {		
+			$("list" + "modified" + key).dispose();
+		}	
 		data[key]["modified"]= getTimestamp();
 		$("information" + key).adopt (
 			new Element("div#list" + "modified" + key, {
@@ -1715,35 +1719,34 @@ function editElementName(key) { //edit the name=content of notes
 }
 
 function editElementNameNotes(key) { //edit the name=content of notes
-	var name = $("nametext" + key).get('html');	
-	var autosave;
+	//disable moving and resizing of this item
+	elementMoveDisable(key); 
+	elementResizeDisable(key);
 
-	//get the width and height of the element	
-	if (data[key]["width"] && data[key]["height"]) {
-		var xleft = data[key]["width"]-10;
-		var ytop = data[key]["height"]-10;
-	} else {
-		var xleft = "145px";
-		var ytop  = "130px";
-	}	
-	var copy = $("nametext" + key).clone(true,true);
+	var copy = new Element('div#copynametext' + key);
+	copy = $("nametext" + key).clone(true,true);
 	copy.cloneEvents($("nametext" + key));
 
-	elementMoveDisable(key);
-	elementResizeDisable(key)
-	var elementID = "nametext" + key;
-	$("nametext" + key).set('contenteditable', "true");
-	$("nametext" + key).addEvents({
-		focus : function() { 
-			autosave = (function() {addElementValue(key,"name",$("nametext" + key).get('html'));}).periodical(2500);  							
-		},
-		blur : function () {
-			clearInterval(autosave);
-		}
-	});
+	var edit = $("nametext" + key).clone(true,false);
 
+	edit.set({ 
+		id: 'editnametext' + key,
+		contenteditable: "true",
+		events: {
+			focus : function() { 
+				autosave[key] = (function() {
+					addElementValue(key,"name",edit.get('html')); 
+				}).periodical(2500);  							
+			},
+			blur : function () {
+				clearInterval(autosave[key]);
+			}
+		}
+	}).replaces($("nametext" + key)) ;
+
+	var elementID = "editnametext" + key;
 	initDoc(elementID);
-	$("nametext" + key).focus();
+	$("editnametext" + key).focus();
 	$("item" + key).adopt( 
 		new Element("div#toolbar" + key,  {
 			styles : {
@@ -1759,11 +1762,7 @@ function editElementNameNotes(key) { //edit the name=content of notes
 				border : "0.5px solid",
 				"border-radius" : 5,
 				"border-color" : "rgba(112,138,144,0.2)"						
-			},
-			events: {
-				click : function(event){
-				}						
-			}			
+			}		
 		}).adopt(
 			new Element("img#editorBold" + key, {
 				src: "images/icons_editor/bold.png",
@@ -1936,13 +1935,15 @@ function editElementNameNotes(key) { //edit the name=content of notes
 				class: "editorButtons",
 				events: {
 					click : function(){
-						$("nametext" + key).fireEvent('blur');
-						clearInterval(autosave);
-						var text = $("nametext" + key).get('html');
+						edit.fireEvent('blur');
+						//clearInterval(autosave);
+						var text = edit.get('html');
 						addElementValue(key,"name",text);
 						$("toolbar" + key).dispose();
+
 						copy.setProperty("html", text); 
-						copy.replaces($("nametext" + key));
+						copy.replaces(edit);
+
 						elementMoveEnable(key);							
 						elementResizeEnable(key);
 					}						
@@ -1961,7 +1962,7 @@ function saveNoteOnBodyClick(event) {
 		if (editedElement) {
 			//check if the parent id is item's div and if not, save the note
 			if ($(event.target).getParents().contains($("item" + key)) == false ) { 
-					$("nametext" + key).fireEvent('blur');
+					$("editnametext" + key).fireEvent('blur');
 					$('saveNote' + key).fireEvent('click');
 			}
 			//get the last click coordinates .. check e.g.:
@@ -3817,6 +3818,12 @@ The function is called:
 	- when an item is dropped on the page		
 ****************************************************************************/
 function doDrop(event) { //add new information items to the page and variable data
+
+	//stop any autosaving going on 
+	autosave.each(function(item, index){
+     clearInterval(autosave[index]);
+	});
+
 	//do not propagate default actions when dragging over
 	event.stopPropagation();
 	event.preventDefault();
