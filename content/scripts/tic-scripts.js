@@ -176,13 +176,13 @@ function drawTICElements() {
 		$("itemsList").adopt(
 			new Element("div#item" + key, {
 				styles : {
-					width : "150",
-					height : "46",
+					width : "150px",
+					height : "46px",
 					position : "absolute",
-					left : coordinatex,
-					top : coordinatey,
+					left : coordinatex + "px",
+					top : coordinatey + "px",
 					border : "0.1em solid",
-					"border-radius": 5,
+					"border-radius" : "5px",
 					"border-color": "rgba(112,138,144,0.2)",
 				},
 				events : {
@@ -272,7 +272,7 @@ function drawTICElements() {
 					title : "Expand information",
 					styles : {
 						cursor: "pointer",						
-						width : "20",
+						width : "20px",
 						position: "absolute",
 						top: "27px", 
 						left: "-6px"
@@ -305,8 +305,8 @@ function drawTICElements() {
 				var xleft = value["width"]-10;
 				var ytop = value["height"]-10;
 			} else {
-				var xleft = "139px";
-				var ytop  = "129px";
+				var xleft = "139";
+				var ytop  = "129";
 			}
 			$("item" + key).adopt( //span#move" + key
 					new Element("img#resizeimg" + key, {
@@ -318,8 +318,8 @@ function drawTICElements() {
 							position : "absolute",
 							width : "11px",
 							height : "11px",
-							top : ytop, 
-							left : xleft
+							top : ytop + "px", 
+							left : xleft + "px"
 						}
 					})
 			);
@@ -329,7 +329,7 @@ function drawTICElements() {
 		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
 		var htmlTypes = ['htm', 'html'];
 		var textTypes = ['css','txt','inf' ,'xml','csv','asc','bat' ,'log', 'ps1', 
-						 'c'  ,'cpp','h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
+						 'c'  ,'cpp', 'in', 'conf', 'h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 		 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
 						 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
 						 'asp','vbs','vbe','wsf','wsc',
@@ -349,7 +349,7 @@ function drawTICElements() {
 						title : "Preview",
 						styles : {
 							cursor: "pointer",						
-							width : "20",
+							width : "20px",
 							position: "absolute",
 							top: "30px", 
 							left: "30px"
@@ -406,9 +406,9 @@ function drawTICElements() {
 			if (value["width"]) {
 				var xleft = value["width"]-8;
 			} else {
-				var xleft = "139px";
+				var xleft = "139";
 			}			
-			$("previmg" + key).setStyle("left",xleft+1);
+			$("previmg" + key).setStyle("left",xleft+1 + "px");
 			$("previmg" + key).setStyle("top","42px");		
 		}						
 		//### TEXT/NAME
@@ -423,9 +423,9 @@ function drawTICElements() {
 				new Element("span#name" + key,  {
 					styles : {
 						position: "absolute",
-						width : "100",
+						width : "100px",
 						top: "2px",
-						left : "45",
+						left : "45px",
 						"overflow": "hidden",
 						"font-size": "12px"
 					}
@@ -469,15 +469,15 @@ function drawTICElements() {
 				var xleft = value["width"]-10;
 				var ytop = value["height"]-10;
 			} else {
-				var xleft = "135px";
-				var ytop  = "130px";
+				var xleft = "135";
+				var ytop  = "130";
 			}							
 			$("item" + key).adopt(
 				new Element("div#textbox" + key, {
 					styles : {
 						top: "2px",
-						width: xleft,
-						height: ytop,
+						width: xleft + "px",
+						height: ytop + "px",
 						position : "absolute",
 						"overflow-y" : "hidden", 
 						"overflow-x" : "hidden"
@@ -492,8 +492,8 @@ function drawTICElements() {
 							"color": "#9B999E",
 							padding : "5px 10px 10px 10px",
 							"background": "rgba(0, 0, 0, 0)", /* transparent background */
-							width: xleft-10,
-							height: ytop,
+							width: xleft-10 + "px",
+							height: ytop + "px",
 							"text-overflow": "ellipsis",
 							"font-family": "arial, sans-serif",
 							"border-style": "none"						
@@ -518,7 +518,7 @@ function drawTICElements() {
 		if (value["width"]) {
 			var xleft = value["width"]-7;
 		} else {
-			var xleft = "143px";
+			var xleft = "143";
 		}		
 		$("item" + key).adopt( //span#vote" + key			
 			new Element("span#upvote" + key).adopt(
@@ -528,10 +528,10 @@ function drawTICElements() {
 					title : "Upvote importance",
 					styles : {
 						cursor : "pointer",						
-						width : "15",
+						width : "15px",
 						position : "absolute",
 						top : "7px", 
-						left : xleft
+						left : xleft + "px"
 					},
 					events : {
 						click : function(){
@@ -559,7 +559,7 @@ function drawTICElements() {
 						top : "16px", 
 						"color" : "grey",
 						"font-size" : "12px",
-						left : xleft,
+						left : xleft + "px",
 						"text-align" : "center",
 						"background" : "white"
 					}
@@ -571,10 +571,10 @@ function drawTICElements() {
 					title : "Downvote importance",
 					styles : {
 						cursor : "pointer",						
-						width : "15",
+						width : "15px",
 						position : "absolute",
 						top : "30px", 
-						left : xleft,
+						left : xleft + "px",
 						"-moz-transform" : "rotate(-180deg)",
 						"-moz-transform-origin" : "center center"
 					},
@@ -661,7 +661,7 @@ function drawTICElements() {
 				styles : {
 					position : "absolute",
 					display : "none",
-					width : "144",
+					width : "144px",
 					top : "55px",
 					visibility : "visible",
 					"font-size" : "12px",
@@ -671,7 +671,7 @@ function drawTICElements() {
 					"overflow-y":"hidden",
 					"overflow-x":"hidden",					
 					border : "0.5px solid",
-					"border-radius" : 5,
+					"border-radius" : "5px",
 					"border-color" : "rgba(112,138,144,0.2)"						
 				}
 			})							
@@ -687,8 +687,8 @@ function drawTICElements() {
 					title : "Add a due date",
 					styles : {		
 					    "margin-left" : "2px",
-						width : "23",
-						height : "23",						
+						width : "23px",
+						height : "23px",						
 						opacity : "0.8"
 					}					
 				})
@@ -712,8 +712,8 @@ function drawTICElements() {
 					title : "Add a person",					
 					styles : {		
 						"margin-left" : "1px",				
-						width : "23",
-						height : "23",						
+						width : "23px",
+						height : "23px",						
 						opacity : "0.8"
 					},
 					events : {
@@ -744,8 +744,8 @@ function drawTICElements() {
 					title : "Add an URL",
 					styles : {	
 						"margin-left" : "1px",					
-						width : "23",
-						height : "23",		 				
+						width : "23px",
+						height : "23px",		 				
 						opacity : "0.8"
 					},
 					events : {
@@ -776,8 +776,8 @@ function drawTICElements() {
 					title : "Add a note",
 					styles : {	
 						"margin-left" : "1px",					
-						width : "23",
-						height : "23",		 				
+						width : "23px",
+						height : "23px",		 				
 						opacity : "0.8"
 					},
 					events : {
@@ -808,8 +808,8 @@ function drawTICElements() {
 					title : "Remane an item",
 					styles : {
 						"margin-left" : "1px",						
-						width : "23",
-						height : "23",		 				
+						width : "23px",
+						height : "23px",		 				
 						opacity : "0.8"
 					},
 					events : {
@@ -835,8 +835,8 @@ function drawTICElements() {
 					alt : "Remove item",
 					title : "Remove from here",
 					styles : {					
-						width : "23",
-						height : "23",
+						width : "23px",
+						height : "23px",
 						opacity : "0.8"
 					},
 					events : {
@@ -1063,13 +1063,13 @@ function drawTICElementsPastStates(pastStatesId) {
 			$("itemsList").adopt(
 				new Element("div#item" + key, {
 					styles : {
-						width : "150",
-						height : "46",
+						width : "150px",
+						height : "46px",
 						position : "absolute",
-						left : coordinatex,
-						top : coordinatey,
+						left : coordinatex + "px",
+						top : coordinatey + "px",
 						border : "0.1em solid",
-						"border-radius": 5,
+						"border-radius": "5px",
 						"border-color": "rgba(112,138,144,0.2)",
 					}
 				})
@@ -1150,7 +1150,7 @@ function drawTICElementsPastStates(pastStatesId) {
 						title : "Expand information",
 						styles : {
 							cursor: "pointer",						
-							width : "20",
+							width : "20px",
 							position: "absolute",
 							top: "27px", 
 							left: "-6px"
@@ -1198,7 +1198,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							title : "Preview",
 							styles : {
 								cursor: "pointer",						
-								width : "20",
+								width : "20px",
 								position: "absolute",
 								top: "30px", 
 								left: "28px"
@@ -1251,10 +1251,10 @@ function drawTICElementsPastStates(pastStatesId) {
 				if (value["width"]) {
 					var xleft = value["width"]-8;
 				} else {
-					var xleft = "139px";
+					var xleft = "139";
 				}			
-				$("previmg" + key).setStyle("left",xleft);
-				$("previmg" + key).setStyle("top","62px");		
+				$("previmg" + key).setStyle("left" , xleft + "px");
+				$("previmg" + key).setStyle("top" , "62px");		
 			}						
 			//### TEXT/NAME
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
@@ -1268,9 +1268,9 @@ function drawTICElementsPastStates(pastStatesId) {
 					new Element("span#name" + key,  {
 						styles : {
 							position: "absolute",
-							width : "100",
+							width : "100px",
 							top: "2px",
-							left : "45",
+							left : "45px",
 							"overflow": "hidden",
 							"font-size": "12px"
 						}
@@ -1314,8 +1314,8 @@ function drawTICElementsPastStates(pastStatesId) {
 					new Element("div#textbox" + key, {
 						styles : {
 							top: "2px",
-							width: xleft,
-							height: ytop,
+							width: xleft + "px",
+							height: ytop + "px",
 							position : "absolute",
 							"overflow-y" : "hidden", //"scroll"
 							"overflow-x" : "hidden"
@@ -1330,8 +1330,8 @@ function drawTICElementsPastStates(pastStatesId) {
 								"color": "#9B999E",
 								padding : "5px 10px 10px 10px",
 								"background": "rgba(0, 0, 0, 0)", /* transparent background */
-								width: xleft-10,
-								height: ytop,
+								width: xleft-10 + "px",
+								height: ytop + "px",
 								"text-overflow": "ellipsis",
 								"font-family": "arial, sans-serif",
 								"border-style": "none"						
@@ -1351,7 +1351,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			if (value["width"]) {
 				var xleft = value["width"]-7;
 			} else {
-				var xleft = "143px";
+				var xleft = "143";
 			}		
 			$("item" + key).adopt( //span#vote" + key			
 				new Element("span#upvote" + key).adopt(
@@ -1360,10 +1360,10 @@ function drawTICElementsPastStates(pastStatesId) {
 						alt : "Upvote importance",
 						title : "Upvote importance",
 						styles : {
-							width : "15",
+							width : "15px",
 							position : "absolute",
 							top : "7px", 
-							left : xleft
+							left : xleft + "px"
 						}					
 					})
 				),
@@ -1371,12 +1371,12 @@ function drawTICElementsPastStates(pastStatesId) {
 						text : value["vote"],
 						title : "Importance on the scale 0 to 10",
 						styles : {
-							width : "13",
+							width : "13px",
 							position : "absolute",
 							top : "16px", 
 							"color" : "grey",
 							"font-size" : "12px",
-							left : xleft,
+							left : xleft + "px",
 							"text-align" : "center",
 							"background" : "white"
 						}
@@ -1387,10 +1387,10 @@ function drawTICElementsPastStates(pastStatesId) {
 						alt : "Downvote importance",
 						title : "Downvote importance",
 						styles : {
-							width : "15",
+							width : "15px",
 							position : "absolute",
 							top : "30px", 
-							left : xleft,
+							left : xleft + "px",
 							"-moz-transform" : "rotate(-180deg)",
 							"-moz-transform-origin" : "center center"
 						}
@@ -1432,7 +1432,7 @@ function drawTICElementsPastStates(pastStatesId) {
 					styles : {
 						position : "absolute",
 						display : "none",
-						width : "144",
+						width : "144px",
 						top : "55px",
 						visibility : "visible",
 						"font-size" : "12px",
@@ -1442,7 +1442,7 @@ function drawTICElementsPastStates(pastStatesId) {
 						"overflow-y":"hidden",
 						"overflow-x":"hidden",					
 						border : "0.5px solid",
-						"border-radius" : 5,
+						"border-radius" : "5px",
 						"border-color" : "rgba(112,138,144,0.2)"						
 					}
 				})							
@@ -1452,9 +1452,9 @@ function drawTICElementsPastStates(pastStatesId) {
 				if (value["height"]) {
 					var ytop = parseInt(value["height"])+5;
 				} else {
-					var ytop = "150px";
+					var ytop = "150";
 				}	
-				$("information" + key).setStyle('top', ytop);
+				$("information" + key).setStyle('top', ytop + "px");
 			}			
 			//print more information about the information item
 			Object.each(value, function(item,index){
@@ -1671,8 +1671,8 @@ function editElementName(key) { //edit the name=content of notes
 		var xleft = data[key]["width"]-10;
 		var ytop = data[key]["height"]-10;
 	} else {
-		var xleft = "145px";
-		var ytop = "130px";
+		var xleft = "145";
+		var ytop = "130";
 	}
 	var copy = $("nametext" + key).clone(true,true);
 	copy.cloneEvents($("nametext" + key));
@@ -1685,8 +1685,8 @@ function editElementName(key) { //edit the name=content of notes
 			padding : "5px 10px 10px 10px",
 			"background" : "rgba(0, 0, 0, 0)", /* transparent background */
 			"resize" : "none",
-			width : xleft,
-			height : ytop,
+			width : xleft + "px",
+			height : ytop + "px",
 			"font-family" : "arial, sans-serif",
 			"border-style" : "none"
 		},
@@ -1751,7 +1751,7 @@ function editElementNameNotes(key) { //edit the name=content of notes
 		new Element("div#toolbar" + key,  {
 			styles : {
 				position : "absolute",
-				width : "144",
+				width : "144px",
 				top : "-46px",
 				left : "-1px",
 				visibility : "visible",
@@ -1760,7 +1760,7 @@ function editElementNameNotes(key) { //edit the name=content of notes
 				"padding" : "3px",
 				"background-color" : "white",
 				border : "0.5px solid",
-				"border-radius" : 5,
+				"border-radius" : "5px",
 				"border-color" : "rgba(112,138,144,0.2)"						
 			}		
 		}).adopt(
@@ -1998,14 +1998,14 @@ function deleteElement(key, name) { //deleting the information item
 
 function checkDateElement(date,key) { //check if the due date is approaching and emphasize the value
 	if (data[key]["width"] && data[key]["height"]) {
-		var xleft = ((parseInt(data[key]["width"])-10)/2-25) + "px";
-		var ytop = (parseInt(data[key]["height"])+1) + "px";
+		var xleft = ((parseInt(data[key]["width"])-10)/2-25);
+		var ytop = (parseInt(data[key]["height"])+1);
 	} else {
-		var xleft = "50px";
+		var xleft = "50";
 		if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
-			var ytop  = "141px";
+			var ytop  = "141";
 		} else { 
-			var ytop  = "47px";
+			var ytop  = "47";
 		}
 	}
 	var today = new Date();
@@ -2020,10 +2020,10 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 				text : date ,
 				styles : {
 					position : "absolute",
-				 	top : ytop,
+				 	top : ytop + "px",
 				 	"font-size" : "11px",
 				 	"z-index" : "3",
-				 	left : xleft,
+				 	left : xleft + "px",
 				 	color : "rgba(204, 0, 0, 1)"
 				} 
 			})
@@ -2038,10 +2038,10 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 				text : date ,
 				styles : {
 					position : "absolute",
-				 	top : ytop,
+				 	top : ytop + "px",
 				 	"font-size" : "11px",
 				 	"z-index" : "3",
-				 	left : xleft,
+				 	left : xleft + "px",
 				 	color : "rgba(112,138,144,0.6)"
 				} 
 			})
@@ -2075,7 +2075,7 @@ function elementMoveEnable(key){
 			//if x goes under tabs (projects & timeline), move it to the right
 			if (data[key].coordinatex < 40) {
 				data[key].coordinatex = 40;
-				$("item" + key).setStyle('left' , data[key].coordinatex);
+				$("item" + key).setStyle('left' , data[key].coordinatex + "px");
 			}
 			//ARROW pointing to the CENTRE
 			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
@@ -2119,18 +2119,18 @@ function elementResizeEnable(key){
 			var newWidth = $("item" + key).getSize().x - 12;
 			var newHeight = $("item" + key).getSize().y - 12;
 			//$("iconimg" + key).setStyle('left', newWidth);
-			$("previmg" + key).setStyle('left', newWidth+2);
-			$("upvoteimg" + key).setStyle('left', newWidth);
-			$("downvoteimg" + key).setStyle('left', newWidth);					
-			$("vote" + key).setStyle('left', newWidth+1);
-			$("textbox" + key).setStyles({'width': newWidth, 'height': newHeight});
+			$("previmg" + key).setStyle('left', newWidth+2 + "px");
+			$("upvoteimg" + key).setStyle('left', newWidth + "px");
+			$("downvoteimg" + key).setStyle('left', newWidth + "px");					
+			$("vote" + key).setStyle('left', newWidth+1 + "px");
+			$("textbox" + key).setStyles({'width': newWidth + "px", 'height': newHeight + "px"});
 			if ($("item" + key).contains($("nametext" + key))) {
-				$("nametext" + key).setStyles({'width': newWidth, 'height': newHeight});
+				$("nametext" + key).setStyles({'width': newWidth + "px", 'height': newHeight + "px"});
 			}
-			$("resizeimg" + key).setStyles({'left': newWidth-4, 'top': newHeight-4});
-			$("information" + key).setStyle('top', newHeight+15);
+			$("resizeimg" + key).setStyles({'left': newWidth-4 + "px", 'top': newHeight-4 + "px"});
+			$("information" + key).setStyle('top', newHeight+15 + "px");
 			if ($("item" + key).contains($("emphasizedate" + key))) {
-				$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25, 'top': newHeight+7});
+				$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25 + "px", 'top': newHeight+7 + "px"});
 			}					
 			}   				
 	});
@@ -2205,11 +2205,11 @@ function drawPICCircles(){
 					"z-index" : "-2",					
 					top : topMargin,
 					left : "50%",
-					margin : "-" + marginHalf + " 0px 0px -" + marginHalf,
-					width : circleInnitialSize,
-					height : circleInnitialSize,
+					margin : "-" + marginHalf + "px" + " 0px 0px -" + marginHalf + "px",
+					width : circleInnitialSize + "px",
+					height : circleInnitialSize + "px",
 					border : "1px solid",
-					"border-radius" : circleInnitialSize,
+					"border-radius" : circleInnitialSize + "px",
 					display : "inline",
 					"border-color" : "rgba(112,138,144,0.2)"
 				}
@@ -2884,7 +2884,7 @@ function databaseShowTasks() {
 							"html" : taskname,
 							styles : {
 								float : "left", 
-								width : "121"							
+								width : "121px"							
 							},
 							events : {
 								click : function(){
@@ -2899,10 +2899,10 @@ function databaseShowTasks() {
 							"id" : "taskEdit" + taskid,
 							"alt" : "Rename",
 							"title" : "Reaname project",
-							"width" : "17px",
-							"height" : "20px",
 							styles : {
 								float : "left",
+								"width" : "17px",
+								"height" : "20px",								
 								cursor : "pointer"								
 							},
 							events : {
@@ -2917,11 +2917,11 @@ function databaseShowTasks() {
 							"src" : "images/icons_general/RecycleBin_Empty.png",
 							"id" : "taskDelete" + taskid,
 							"alt" : "Remove",
-							"title" : "Remove project",
-							"width" : "17px",
-							"height" : "20px",							
+							"title" : "Remove project",						
 							styles : {
 								float : "left",
+								"width" : "17px",
+								"height" : "20px",									
 								cursor : "pointer"								
 							},
 							events : {
@@ -2940,11 +2940,11 @@ function databaseShowTasks() {
 							"src" : "images/icons_general/file_cabinet_closed.png",
 							"id" : "taskArchive" + taskid,
 							"alt" : "Archive",
-							"title" : "Archive",
-							"width" : "17px",
-							"height" : "20px",							
+							"title" : "Archive",						
 							styles : {
 								float : "left",
+								"width" : "17px",
+								"height" : "20px",									
 								cursor : "pointer"								
 							},
 							events : {
@@ -3029,7 +3029,7 @@ function databaseShowArchivedTasks() {
 							"html" : taskname,
 							styles : {
 								float : "left", 
-								width : "121"							
+								width : "121px"							
 							},
 							events : {
 								click : function(){
@@ -3044,10 +3044,10 @@ function databaseShowArchivedTasks() {
 							"id" : "taskEdit" + taskid,
 							"alt" : "Edit",
 							"title" : "Edit task name",
-							"width" : "17px",
-							"height" : "20px",
 							styles : {
 								float : "left",
+								"width" : "17px",
+								"height" : "20px",								
 								cursor : "pointer"								
 							},
 							events : {
@@ -3062,11 +3062,11 @@ function databaseShowArchivedTasks() {
 							"src" : "images/icons_general/RecycleBin_Empty.png",
 							"id" : "taskDelete" + taskid,
 							"alt" : "Delete",
-							"title" : "Remove task",
-							"width" : "17px",
-							"height" : "20px",							
+							"title" : "Remove task",							
 							styles : {
 								float : "left",
+								"width" : "17px",
+								"height" : "20px",								
 								cursor : "pointer"								
 							},
 							events : {
@@ -3087,11 +3087,11 @@ function databaseShowArchivedTasks() {
 							"src" : "images/icons_general/file_cabinet_opened.png",
 							"id" : "taskArchive" + taskid,
 							"alt" : "Retrieve",
-							"title" : "Retrieve",
-							"width" : "17px",
-							"height" : "20px",							
+							"title" : "Retrieve",						
 							styles : {
 								float : "left",
+								"width" : "17px",
+								"height" : "20px",									
 								cursor : "pointer"								
 							},
 							events : {
@@ -3483,11 +3483,11 @@ function databaseDrawTaskCollection(taskid) {
 										cursor: "pointer",
 										"border-color" : "transparent transparent transparent #FFFFFF",
 										"border-style" : "solid",
-										"border-width" : "8px 0 8px 12px",
+										"border-width" : "8px 0px 8px 12px",
 										"float" : "left",
-										"height" : "0",
+										"height" : "0px",
 										width : "0",
-										"margin-left" : "20"
+										"margin-left" : "20px"
 									},							
 									events : {
 										click : function(){
@@ -3506,9 +3506,9 @@ function databaseDrawTaskCollection(taskid) {
 										cursor: "pointer",
 										border : "7px solid #FFFFFF",
 										"float" : "left",
-										height : "0",
-										width : "0",
-										"margin-left": "10"								
+										height : "0px",
+										width : "0px",
+										"margin-left": "10px"								
 									},							
 									events : {
 										click : function(){
@@ -3526,11 +3526,11 @@ function databaseDrawTaskCollection(taskid) {
 										cursor: "pointer",
 										"border-color" : "transparent transparent transparent #FFFFFF",
 										"border-style" : "solid",
-										"border-width" : "8px 0 8px 12px",
+										"border-width" : "8px 0px 8px 12px",
 										"float" : "left",
-										"height" : "0",
-										"width" : "0",
-										"margin-left": "10"
+										"height" : "0px",
+										"width" : "0px",
+										"margin-left": "10px"
 									},							
 									events : {
 										click : function(){
@@ -3544,7 +3544,7 @@ function databaseDrawTaskCollection(taskid) {
 									styles : {
 										"border-color" : "transparent #FFFFFF",
 										"border-style" : "solid",
-										"border-width" : "0 4px 0",
+										"border-width" : "0px 4px 0px",
 										"float" : "left",
 										height : "15px",
 										"text-indent" : "-9999px",
@@ -3560,7 +3560,7 @@ function databaseDrawTaskCollection(taskid) {
 						$('pastStatesList').adopt(
 							new Element("li#pastState" + index, {
 								styles : {
-									width : "150",
+									width : "150px",
 									"-moz-border-radius" : "3px 3px 3px 3px",
 									"border-radius" : "3px 3px 3px 3px"								
 								}
