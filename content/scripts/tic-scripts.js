@@ -27,6 +27,7 @@ var elements = []; //for detaching dragging when elements are edited or resized
 var elementsR = []; //for detaching resizing when elements are edited
 var dragged = false; //for checking if an item got moved in case of clicking on a link and moving
 var autosave = []; //for clearing autosave ... bug when dragging text from a note to the same note
+var myScrollable = []; // custom scrollbar on notes - to remove and re-enalbe when draged or resized
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -229,7 +230,31 @@ function drawTICElements() {
 							top: "2px", 
 							left: "0px",
 							float: "left"
-						}					
+						},
+						events : {
+							dblclick : function(){ //add double click to the icon to mimic the desktop
+								if (dragged == false) {
+									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+										addNumberOfClicksToElement(key);										
+										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
+										//execute scripts 
+										var scriptFiles = ["sh", "bash", "bat", "ps1"];
+										if (scriptFiles.contains(fileExt.toLowerCase())) {
+											fileRunShScript(value["path"]);
+										} else {
+											fileOpen(value["path"]);	
+										}								 		
+									} else if (value["type"] == "URL") {
+										addNumberOfClicksToElement(key);
+										//URL's are opened in a window
+										window.open(value["path"]);
+									}
+									return false;
+								} else {
+									dragged = false;
+								}								
+							}
+						}											
 					})
 				)
 			);		
@@ -259,7 +284,31 @@ function drawTICElements() {
 							top: "13px", 
 							left: "13px",
 							"font-size": "10px"
-						}
+						},
+						events : {
+							dblclick : function(){ //add double click to the icon to mimic the desktop
+								if (dragged == false) {
+									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+										addNumberOfClicksToElement(key);										
+										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
+										//execute scripts 
+										var scriptFiles = ["sh", "bash", "bat", "ps1"];
+										if (scriptFiles.contains(fileExt.toLowerCase())) {
+											fileRunShScript(value["path"]);
+										} else {
+											fileOpen(value["path"]);	
+										}								 		
+									} else if (value["type"] == "URL") {
+										addNumberOfClicksToElement(key);										
+										//URL's are opened in a window
+										window.open(value["path"]);
+									}
+									return false;
+								} else {
+									dragged = false;
+								}								
+							}
+						}							
 					})
 			);		
 		}
@@ -438,6 +487,7 @@ function drawTICElements() {
 							click : function(){
 								if (dragged == false) {
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
+										addNumberOfClicksToElement(key);
 										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
 										//execute scripts 
 										var scriptFiles = ["sh", "bash", "bat", "ps1"];
@@ -447,6 +497,7 @@ function drawTICElements() {
 											fileOpen(value["path"]);	
 										}								 		
 									} else if (value["type"] == "URL") {
+										addNumberOfClicksToElement(key);
 										//URL's are opened in a window
 										window.open(value["path"]);
 									}
@@ -479,8 +530,9 @@ function drawTICElements() {
 						width: xleft + "px",
 						height: ytop + "px",
 						position : "absolute",
-						"overflow-y" : "hidden", 
-						"overflow-x" : "hidden"
+						overflow: "hidden"
+						//"overflow-y" : "hidden", 
+						//"overflow-x" : "hidden"
 					}
 				}).adopt(
 					new Element("div#nametext" + key, {
@@ -500,12 +552,14 @@ function drawTICElements() {
 						},
 						events: {
 							dblclick : function(){
+								addNumberOfClicksToElement(key);
 								editElementNameNotes(key);
 							}	
 						}
 					})
 				)
 			);
+			myScrollable[key] = new Scrollable($("textbox" + key));
 		}
 
 		//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE 
@@ -924,6 +978,17 @@ function drawTICElements() {
 				//don't print names for notes
 				if (index == "name" && ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML"))) {
 					item = "A note";						
+				}				
+
+				if (index == "numOfClicks") {
+					indivElement.set({
+					    html : "<strong>Number of clicks</strong>: " + item + ""
+					});							 
+				} 
+				if (index == "lastClick") {
+					indivElement.set({
+					    html : "<strong>Last click</strong>: " + item + ""
+					});							 
 				}				
 
 				if (indivElement.get('html') == ""){
@@ -2049,6 +2114,15 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 	}
 }
 
+function addNumberOfClicksToElement(key) { //check if the due date is approaching and emphasize the value
+	if (!data[key]["numOfClicks"] || data[key]["numOfClicks"] == 0) {
+		data[key]["numOfClicks"] = 1;
+	} else {
+		data[key]["numOfClicks"] += 1;
+	}
+	data[key]["lastClick"] = getTimestamp();
+}
+
 /***************************************************************************
 Functions to enable and disable movability of elements. The functions are called:
 elementMoveEnable(key)
@@ -2065,7 +2139,8 @@ function elementMoveEnable(key){
 		//handle : $("item" + key),//$("move" + key), //make the move arrows the handle to move elements
 		container : $("body"), //limit the moves within the window
 		onBeforeStart: function () {
-			//
+			//remove the scrollbar
+			myScrollable.splice(key, 1);
 		},
 		onDrop: function(){		
 			//change the X coordinates of the new element to the default width 1000px
@@ -2082,6 +2157,8 @@ function elementMoveEnable(key){
 			$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");				
 		},
 		onComplete: function(event) {
+			//add the scroll bar
+			myScrollable[key] = new Scrollable($("textbox" + key));
 			dragged = true;
 		}			
 	}); 
@@ -3890,6 +3967,9 @@ function doDrop(event) { //add new information items to the page and variable da
 						modified : fileDragged.lastModifiedTime,
 						timestamp : getTimestamp(),
 						stats : stats,
+						numOfClicks : "0",
+						lastClick: getTimestamp(),
+						sizeOfEdits: "0",
 						vote : "0",
 						arrow : "no-no"
 				};		
@@ -3920,6 +4000,8 @@ function doDrop(event) { //add new information items to the page and variable da
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
+					numOfClicks : "0",
+					lastClick: getTimestamp(),					
 					vote : "0",
 					arrow : "no-no"
 			};		 
@@ -3947,7 +4029,9 @@ function doDrop(event) { //add new information items to the page and variable da
 						name : title,
 						coordinatex : coorX,
 						coordinatey : coorY,
-						timestamp : getTimestamp(),
+						timestamp : getTimestamp(),		
+						numOfClicks : "0",
+						lastClick: getTimestamp(),										
 						vote : "0",
 						arrow : "no-no"
 				};	
@@ -3961,7 +4045,9 @@ function doDrop(event) { //add new information items to the page and variable da
 						timestamp : getTimestamp(),
 						modified : getTimestamp(),
 						width: "150",
-						height: "140",
+						height: "140",			
+						numOfClicks : "0",
+						lastClick: getTimestamp(),									
 						vote : "0",
 						arrow : "no-no"
 				};
@@ -3991,6 +4077,8 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						numOfClicks : "0",
+						lastClick: getTimestamp(),							
 						vote : "0",
 						arrow : "no-no"
 				};	
@@ -4005,7 +4093,9 @@ function doDrop(event) { //add new information items to the page and variable da
 						modified : getTimestamp(),
 						width: "150",
 						height: "140",					
-						vote : "0",
+						numOfClicks : "0",
+						lastClick: getTimestamp(),							
+						vote : "0",						
 						arrow : "no-no"
 				};
 			}						 									 	
@@ -4035,6 +4125,8 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						numOfClicks : "0",
+						lastClick: getTimestamp(),							
 						vote : "0",
 						arrow : "no-no"
 				};	
@@ -4048,7 +4140,9 @@ function doDrop(event) { //add new information items to the page and variable da
 						timestamp : getTimestamp(),
 						modified : getTimestamp(),
 						width: "150",
-						height: "140",					
+						height: "140",		
+						numOfClicks : "0",
+						lastClick: getTimestamp(),										
 						vote : "0",
 						arrow : "no-no"
 				};	
@@ -4074,7 +4168,9 @@ function addNewNote() {
 			timestamp : getTimestamp(),
 			modified : getTimestamp(),
 			width: "150",
-			height: "140",			
+			height: "140",		
+			numOfClicks : "0",
+			lastClick: getTimestamp(),					
 			vote : "0",
 			arrow : "no-no",
 	};
@@ -4571,7 +4667,7 @@ function compareDataObjectSizeMod(data1, data2) {
 			//and check which one does not exist in the shorter one and which one changed				
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
-					if (dataInner[index] != item) { //check if he value has changed
+					if (dataInner[index] != item) { //check if the value has changed
 		    			if (index == "modified" || index == "size") {
 		    				countChangesT = countChangesT + 1;
 	    				} 

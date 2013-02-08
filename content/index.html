@@ -29,6 +29,8 @@
 
 <script language="JavaScript" type="text/javascript" src="scripts/Editor.js"></script>
 
+<script language="JavaScript" type="text/javascript" src="scripts/Scrollable.js"></script>
+
 <link rel="shortcut icon" href="images/TIC.png"></link>
 
 <!--link rel="stylesheet" type="text/css" href="tic-style.css" --><!--/link-->
@@ -825,6 +827,36 @@
 	}
 /******* TextEditor ********/		
 
+/* Scrollbar CSS */
+	.scrollbar {
+		width: 21px;
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.scrollbar .knob {
+		background: #666;
+		width: 7px;
+		height: 50px;
+		margin: 0 7px;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
+		border-radius: 3px;
+		cursor: pointer;
+		-moz-opacity: 0.75;
+		opacity: 0.75;
+		-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=75);
+	}
+
+	.scrollbar .knob:hover {
+		-moz-opacity: 1;
+		opacity: 1;
+		-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+	}
+/* End Scrollbar CSS */
 
 </style>
 
