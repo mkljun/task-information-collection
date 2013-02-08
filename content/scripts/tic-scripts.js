@@ -544,7 +544,7 @@ function drawTICElements() {
 							"color": "#9B999E",
 							padding : "5px 10px 10px 10px",
 							"background": "rgba(0, 0, 0, 0)", /* transparent background */
-							width: xleft-10 + "px",
+							width: xleft-15 + "px",
 							height: ytop + "px",
 							"text-overflow": "ellipsis",
 							"font-family": "arial, sans-serif",
@@ -2140,7 +2140,7 @@ function elementMoveEnable(key){
 		container : $("body"), //limit the moves within the window
 		onBeforeStart: function () {
 			//remove the scrollbar
-			myScrollable.splice(key, 1);
+			myScrollable[key].destroy(); //.splice(key, 1);
 		},
 		onDrop: function(){		
 			//change the X coordinates of the new element to the default width 1000px
