@@ -337,7 +337,6 @@ function drawTICElements() {
 										//if one of the parents of the clicked element doesn't contain 
 										//our div's parent ... hite our div
 										if (!$(event.target).getParents().contains($("item" + key)) ) { 
-											$("msg").innerHTML += "-2-";
 											$("information" + key).setStyle('display','none');
 										 	$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
 										 	$("body").removeEvent('click', bla);
@@ -2896,7 +2895,6 @@ function compareAndCleanStages(){
 						tmpId1 = tmpId2;
 						obj2 = JSON.decode(statement.row.coll_items);
 						tmpId2 = statement.row.coll_id;
-						// $("msg").innerHTML += "-";
 						if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
 							tmpArray.append([tmpId1]);
 						}
