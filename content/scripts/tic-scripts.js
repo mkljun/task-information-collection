@@ -332,6 +332,19 @@ function drawTICElements() {
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
 									$("revealimg" + key).set('src', "images/icons_general/reveal-close.png");
+									//hide div if clicked outside element
+									var bla = function(event){
+										//if one of the parents of the clicked element doesn't contain 
+										//our div's parent ... hite our div
+										if (!$(event.target).getParents().contains($("item" + key)) ) { 
+											$("msg").innerHTML += "-2-";
+											$("information" + key).setStyle('display','none');
+										 	$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
+										 	$("body").removeEvent('click', bla);
+										}
+									}
+									//add event ... call the above bla
+									$("body").addEvent('click', bla);
 								} else {
 									$("information" + key).setStyle('display','none');
 									$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
@@ -339,7 +352,7 @@ function drawTICElements() {
 							} else {
 								dragged = false;
 							}
-						}
+						}					
 					}
 				})
 			)
@@ -528,7 +541,7 @@ function drawTICElements() {
 					styles : {
 						top: "2px",
 						width: xleft + "px",
-						height: ytop + "px",
+						height: ytop+12 + "px",
 						position : "absolute",
 						overflow: "hidden"
 					}
@@ -543,9 +556,9 @@ function drawTICElements() {
 							padding : "5px 10px 10px 10px",
 							"background": "rgba(0, 0, 0, 0)", /* transparent background */
 							width: xleft-15 + "px",
-							height: ytop + "px",
+							height: ytop-5 + "px",
 							"text-overflow": "ellipsis",
-							overflow: "hidden",
+							//overflow: "hidden",
 							"font-family": "arial, sans-serif",
 							"border-style": "none"
 						},
@@ -931,6 +944,27 @@ function drawTICElements() {
 					var updatedSize = fileSizes(data[key]["path"]);
 					data[key]["size"] = updatedSize;
 					item = bytesToSize(updatedSize);
+					//if initial size does not exists make it the current size
+					if (!data[key]["initialSize"]) {
+						data[key]["initialSize"] = data[key]["size"];
+					}
+					//if size of the file changed over 5Kb since it was dragged we are changing it to output info
+					var sizeDiff = data[key]["size"] - data[key]["initialSize"];
+					if (sizeDiff > 5120 && data[key]["arrow"] == "no-no") {
+						data[key]["arrow"] = "no-out";
+					}
+					//if the file has the same size after a month set it to input information
+					var today = new Date();
+					//if initial timestamp does not exists make it the current day
+					if (!data[key]["initialTimestamp"]) {
+						data[key]["initialTimestamp"] = today;
+					}
+					var initialTimestamp = new Date().parse(data[key]["initialTimestamp"]);
+					var difference = today.diff(initialTimestamp);
+					if (sizeDiff == 0 && data[key]["arrow"] == "no-no" && difference < -30) {
+						data[key]["arrow"] = "in-no";
+					}	
+
 				} else if (index == "size"  && value["type"] != "FILE") {
 					delete data[key]["size"];
 				}
@@ -2156,7 +2190,9 @@ function elementMoveEnable(key){
 		},
 		onDrag: function() {
 			//drag the scroll bar along
-			myScrollable[key].reposition();
+			if (myScrollable[key]) { 
+				myScrollable[key].reposition();
+			}
 		},
 		onComplete: function(event) {
 			dragged = true;
@@ -2200,9 +2236,9 @@ function elementResizeEnable(key){
 			$("upvoteimg" + key).setStyle('left', newWidth + "px");
 			$("downvoteimg" + key).setStyle('left', newWidth + "px");
 			$("vote" + key).setStyle('left', newWidth+1 + "px");
-			$("textbox" + key).setStyles({'width': newWidth + "px", 'height': newHeight + "px"});
+			$("textbox" + key).setStyles({'width': newWidth + "px", 'height': newHeight+12 + "px"});
 			if ($("item" + key).contains($("nametext" + key))) {
-				$("nametext" + key).setStyles({'width': newWidth + "px", 'height': newHeight + "px"});
+				$("nametext" + key).setStyles({'width': newWidth + "px", 'height': newHeight-5 + "px"});
 			}
 			$("resizeimg" + key).setStyles({'left': newWidth-4 + "px", 'top': newHeight-4 + "px"});
 			$("information" + key).setStyle('top', newHeight+15 + "px");
@@ -2844,6 +2880,7 @@ function compareAndCleanStages(){
 				statement.params.tid = tasksArray[j];
 				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 				if (statement.state == 1) {
+					//first we read two stages
 					var tmpArray = [];
 					statement.executeStep();
 					var obj1 = JSON.decode(statement.row.coll_items);
@@ -2859,6 +2896,7 @@ function compareAndCleanStages(){
 						tmpId1 = tmpId2;
 						obj2 = JSON.decode(statement.row.coll_items);
 						tmpId2 = statement.row.coll_id;
+						// $("msg").innerHTML += "-";
 						if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
 							tmpArray.append([tmpId1]);
 						}
@@ -3963,13 +4001,14 @@ function doDrop(event) { //add new information items to the page and variable da
 						name : fileDragged.leafName,
 						coordinatex : coorX,
 						coordinatey : coorY,
+						initialSize : fileDragged.fileSize,
 						size : fileDragged.fileSize,
+						initialTimestamp : getTimestamp(),
 						modified : fileDragged.lastModifiedTime,
 						timestamp : getTimestamp(),
 						stats : stats,
 						numOfClicks : "0",
 						lastClick: getTimestamp(),
-						sizeOfEdits: "0",
 						vote : "0",
 						arrow : "no-no"
 				};
@@ -4000,6 +4039,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					coordinatex : coorX,
 					coordinatey : coorY,
 					timestamp : getTimestamp(),
+					initialTimestamp : getTimestamp(),
 					numOfClicks : "0",
 					lastClick: getTimestamp(),
 					vote : "0",
@@ -4030,6 +4070,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						initialTimestamp : getTimestamp(),
 						numOfClicks : "0",
 						lastClick: getTimestamp(),
 						vote : "0",
@@ -4043,6 +4084,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						initialTimestamp : getTimestamp(),
 						modified : getTimestamp(),
 						width: "150",
 						height: "140",
@@ -4077,6 +4119,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						initialTimestamp : getTimestamp(),
 						numOfClicks : "0",
 						lastClick: getTimestamp(),
 						vote : "0",
@@ -4090,6 +4133,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						initialTimestamp : getTimestamp(),
 						modified : getTimestamp(),
 						width: "150",
 						height: "140",
@@ -4125,6 +4169,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						initialTimestamp : getTimestamp(),
 						numOfClicks : "0",
 						lastClick: getTimestamp(),
 						vote : "0",
@@ -4138,6 +4183,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						coordinatex : coorX,
 						coordinatey : coorY,
 						timestamp : getTimestamp(),
+						initialTimestamp : getTimestamp(),
 						modified : getTimestamp(),
 						width: "150",
 						height: "140",
@@ -4623,7 +4669,7 @@ function randomDate(date1, date2) {
 Compares specific two data objects and finds the differences between them.
 Never checking: extension, type, path, timestamp
 compareDataObjectSizeMod(data1, data2): 
-	returns TRUE: if changed size, modified
+	returns TRUE: if changed size, modified, numOfClicks, lastClick
 	   event: The last stored state in DB will be deleted after the new one is saved.
 	returns FALSE: if changed coordinates, name, vote, email, person, arrow, url, note, date, vote
 	returns FALSE: objects are not of the same length 
@@ -4639,11 +4685,11 @@ compareDataObjectCoordinates(data1, data2):
 The function is called:	   
 	- compareAndCleanStages(): deleted stages without significant changes
 ****************************************************************************/
-function compareDataObjectSizeMod(data1, data2) {
+function compareDataObjectSizeMod(data1, data2) {	
 	//check if the objects are of the same length 
 	//if they are not return false and the new task will be saved.
 	if (Object.getLength(data1) != Object.getLength(data2)) {
-		return false;
+		return false;	
 		//this means an item has been added or deleted to the new stage
 		//this can happen because a new state is also saved when items are
 		//added doDrop(event) or deleted deleteElement(key, name)
@@ -4651,8 +4697,9 @@ function compareDataObjectSizeMod(data1, data2) {
 		//if they are of the same length compare values
 		var countChangesT = 0; //returning true if not null
 		var countChangesF = 0; //returning false if not null
+		//for each object (0, 1, 2, 3, ...) get keys (type, name, coordiantex ...) and values
 		Object.each (data2, function(value, key){
- 
+
 			//CHECK if the arrays are the same length ...
 			//find out which array is longer so we'll start traversing that one ...
 			if (Object.getLength(value) <= Object.getLength(data1[key])) {
@@ -4663,12 +4710,12 @@ function compareDataObjectSizeMod(data1, data2) {
 				var dataInner = data1[key];
 			}
 
-			//traverse the item' s tags of the longer array 
+			//traverse the item's tags of the longer array 
 			//and check which one does not exist in the shorter one and which one changed
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
 					if (dataInner[index] != item) { //check if the value has changed
-		    			if (index == "modified" || index == "size") {
+		    			if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
 		    				countChangesT = countChangesT + 1;
 	    				} 
 	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
@@ -4678,7 +4725,7 @@ function compareDataObjectSizeMod(data1, data2) {
 	    				}
     				}
 				} else { //find out which index (tag of an element) exist in the longer array and not in shorter
-		    			if (index == "modified" || index == "size") {
+		    			if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
 		    				countChangesT = countChangesT + 1;
 	    				} 
 	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
@@ -4728,7 +4775,7 @@ function compareDataObjectCoordinates(data1, data2) {
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
 					if (dataInner[index] != item) { //check if he value has changed
-		    			if (index == "coordinatex" || index == "coordinatey") {
+		    			if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
 		    				countChangesT = countChangesT + 1;
 	    				} 
 	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
@@ -4738,7 +4785,7 @@ function compareDataObjectCoordinates(data1, data2) {
 	    				}
     				}
 				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
-		    			if (index == "coordinatex" || index == "coordinatey") {
+		    			if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
 		    				countChangesT = countChangesT + 1;
 	    				} 
 	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
