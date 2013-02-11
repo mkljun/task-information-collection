@@ -1,27 +1,27 @@
 /***************************************************************************
-* 
+*
 * Task Information Collection
-* 
+*
 * MIT licence
 * by Matjaž Kljun
 *
 ****************************************************************************/
 
 /***************************************************************************
-* 
+*
 * Global variables
 *
 ****************************************************************************/
-var data;             //stores a TIC of the currently selected task
-var currentTaskId;    //id of the currently selected task/project
+var data;			 //stores a TIC of the currently selected task
+var currentTaskId;	//id of the currently selected task/project
 var currentTaskName;  //name of the currently selected task/project
 var connection;		  //a handle to the database connection
 //currently not using mootools slider - it's slow, it draws additional TIC before the last one
-//var mySlide; 
-var pastTICStatesIds; //array of old ids used for timeline 
+//var mySlide;
+var pastTICStatesIds; //array of old ids used for timeline
 var pastTICStatesCurrentIndex; //id of currently viewed old state in a timeline
 var pastTICStatesInterval; //interval for each state to be visible in a playback
-var tempURIforXUL;    //for opening a preview of an URL in a XUL iframe for security purposes
+var tempURIforXUL;	//for opening a preview of an URL in a XUL iframe for security purposes
 var framekiller = false; //for checking if previewed page prevents opening in iframe and warn user
 var elements = []; //for detaching dragging when elements are edited or resized
 var elementsR = []; //for detaching resizing when elements are edited
@@ -52,19 +52,19 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 	drawGeneralIcons();
 
 	//if previewed page prevents opening in iframe ask user about overide TIC or not
-	window.onbeforeunload = function() { 
+	window.onbeforeunload = function() {
 	  if(framekiller == true) {
 	 	framekiller = false;
 		alert("This page prevents previewing and wants to redirect you. " +
 			  "Open it with cliking on its link instead.");
-		return false; 
+		return false;
 	  }
 	}
 
 	//save state of the task and close DB connection if a page is being closed
 	window.onunload = function(e) {
+		databaseSetLastTask();
 		databaseSaveTaskCollection(databaseDrawTaskCollection, "0");
-		//databaseSetLastTask();
 		connection.asyncClose();
 	}
 
@@ -76,22 +76,22 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 });
 
 //save the state of a task every X mili seconds - 3000000 ms is 5 minutes
-(function() { 
+(function() {
 	var editedElement
 	//check if a name is edited
-    Object.each (data, function(value, key){
-    	//check if a name is edited
-    	editedElement = $("namearea" + key); 
+	Object.each (data, function(value, key){
+		//check if a name is edited
+		editedElement = $("namearea" + key);
 		if (editedElement) {
-		    editedElement.blur();
+			editedElement.blur();
 		}
 		//check if a note is edited
-    	editedElement = $("toolbar" + key); 
+		editedElement = $("toolbar" + key);
 		if (editedElement) {
 			$("nametext" + key).fireEvent('blur');
-		    $('saveNote' + key).fireEvent('click');
+			$('saveNote' + key).fireEvent('click');
 		}
-    });   
+	});
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId)}).periodical(3000000);
 //set the last task to the currently selected
 (function() { databaseSetLastTask() }).periodical(180000);
@@ -109,15 +109,15 @@ drawTICElements() function draws elements of a selected task on the page
 	- doDrop(event): when new items are dropped, saved in global data variable
   	  and drawn back on the page
   	- window.onresize: when a browser window is resized
-  	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
+  	- databaseSaveEditTaskName(newName, taskid): when a task name is changed
   	  and saved
-drawTICElementsPastStates(pastStatesId): draws past task states without 
+drawTICElementsPastStates(pastStatesId): draws past task states without
 posibility to change things
 	- playDrawTICElementsPastStates(): when the playback of old states is selected
-playDrawTICElementsPastStates(): calls the drawing if an old state based on 
+playDrawTICElementsPastStates(): calls the drawing if an old state based on
 pastTICStatesCurrentIndex
-    - databaseDrawTaskCollection(taskid) appended to the show next button on the timelene
-      and to the past states of the task on the mase timeline
+	- databaseDrawTaskCollection(taskid) appended to the show next button on the timelene
+	  and to the past states of the task on the mase timeline
 startDrawTICElementsPastStates() : starts the timeline playback
 	- databaseDrawTaskCollection(taskid) appended to the play button
 stopDrawTICElementsPastStates(): stops the timeleni playback
@@ -140,7 +140,7 @@ function drawTICElements() {
 		var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 		if ((value["type"] == "FILE")) {
 			if (fileExt.toLowerCase() == "exe") {
-				//icon of EXE file - program or software  
+				//icon of EXE file - program or software
 				var ios = Components.classes["@mozilla.org/network/io-service;1"].
 				  getService(Components.interfaces.nsIIOService);
 				var fph = ios.getProtocolHandler("file").
@@ -209,8 +209,8 @@ function drawTICElements() {
 			//$("item" + key).setStyle('background-image', 'url(images/note.png)');
 			$("item" + key).setStyles({
 						background : "#F7F7F7 url('images/dogear_small.png') no-repeat",
-					    "background-position" : "100% 0%",
-					    border : "1px dotted #ccc"});
+						"background-position" : "100% 0%",
+						border : "1px dotted #ccc"});
 		}
 
 		//### ICON
@@ -227,7 +227,7 @@ function drawTICElements() {
 						styles : {
 							width : "42px",
 							position: "relative",
-							top: "2px", 
+							top: "2px",
 							left: "0px",
 							float: "left"
 						},
@@ -237,13 +237,13 @@ function drawTICElements() {
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 										addNumberOfClicksToElement(key);
 										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-										//execute scripts 
+										//execute scripts
 										var scriptFiles = ["sh", "bash", "bat", "ps1"];
 										if (scriptFiles.contains(fileExt.toLowerCase())) {
 											fileRunShScript(value["path"]);
 										} else {
 											fileOpen(value["path"]);
-										}								 
+										}								
 									} else if (value["type"] == "URL") {
 										addNumberOfClicksToElement(key);
 										//URL's are opened in a window
@@ -281,7 +281,7 @@ function drawTICElements() {
 						styles : {
 							width : "18px",
 							position: "absolute",
-							top: "13px", 
+							top: "13px",
 							left: "13px",
 							"font-size": "10px"
 						},
@@ -291,13 +291,13 @@ function drawTICElements() {
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 										addNumberOfClicksToElement(key);
 										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-										//execute scripts 
+										//execute scripts
 										var scriptFiles = ["sh", "bash", "bat", "ps1"];
 										if (scriptFiles.contains(fileExt.toLowerCase())) {
 											fileRunShScript(value["path"]);
 										} else {
 											fileOpen(value["path"]);
-										}								 
+										}								
 									} else if (value["type"] == "URL") {
 										addNumberOfClicksToElement(key);
 										//URL's are opened in a window
@@ -323,7 +323,7 @@ function drawTICElements() {
 						cursor: "pointer",
 						width : "20px",
 						position: "absolute",
-						top: "27px", 
+						top: "27px",
 						left: "-6px"
 					},
 					events : {
@@ -334,9 +334,9 @@ function drawTICElements() {
 									$("revealimg" + key).set('src', "images/icons_general/reveal-close.png");
 									//hide div if clicked outside element
 									var bla = function(event){
-										//if one of the parents of the clicked element doesn't contain 
+										//if one of the parents of the clicked element doesn't contain
 										//our div's parent ... hite our div
-										if (!$(event.target).getParents().contains($("item" + key)) ) { 
+										if (!$(event.target).getParents().contains($("item" + key)) ) {
 											$("information" + key).setStyle('display','none');
 										 	$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
 										 	$("body").removeEvent('click', bla);
@@ -351,7 +351,7 @@ function drawTICElements() {
 							} else {
 								dragged = false;
 							}
-						}					
+						}
 					}
 				})
 			)
@@ -379,7 +379,7 @@ function drawTICElements() {
 							position : "absolute",
 							width : "11px",
 							height : "11px",
-							top : ytop + "px", 
+							top : ytop + "px",
 							left : xleft + "px"
 						}
 					})
@@ -389,15 +389,15 @@ function drawTICElements() {
 		//### Preview
 		var imageTypes = ['png', 'jpg', 'jpeg', 'bmp', 'apng'];
 		var htmlTypes = ['htm', 'html'];
-		var textTypes = ['css','txt','inf' ,'xml','csv','asc','bat' ,'log', 'ps1', 
+		var textTypes = ['css','txt','inf' ,'xml','csv','asc','bat' ,'log', 'ps1',
 						 'c'  ,'cpp', 'in', 'conf', 'h'  ,'hh' ,'hpp','hxx','h++' ,'cc' ,'cpp'  ,'cxx' ,'c++' ,
 		 				 'ini','sql','rdf','rb' ,'rbw','sh' ,'bash','php','phtml','php4','php3','php5','phps',
 						 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
 						 'asp','vbs','vbe','wsf','wsc',
 						 'tex','bib','enl','ris', 'py','pyc','pyo' ,
-						 'm3u', "1st", "asc", "bbs", "cpz", "dos", "faq", "inf", "me", "msg", "toc", "vim"]; 
+						 'm3u', "1st", "asc", "bbs", "cpz", "dos", "faq", "inf", "me", "msg", "toc", "vim"];
 		var sourceTypes = ['NOTE', 'TEXT', 'HTML']; //these are tye types added when pieces of text are dropped or a note created
-		if ((value["type"] == "URL") 
+		if ((value["type"] == "URL")
 			|| sourceTypes.contains(value["type"])
 			|| imageTypes.contains(fileExt.toLowerCase())
 			|| htmlTypes.contains(fileExt.toLowerCase())
@@ -412,7 +412,7 @@ function drawTICElements() {
 							cursor: "pointer",
 							width : "20px",
 							position: "absolute",
-							top: "30px", 
+							top: "30px",
 							left: "30px"
 						},
 						events : {
@@ -421,7 +421,7 @@ function drawTICElements() {
 									//notes
 									if (sourceTypes.contains(value["type"])) {
 								 		var profileBox = new LightFace({
-											width: 800, 
+											width: 800,
 											draggable: true,
 											title: '',
 											content: value["name"],
@@ -452,8 +452,8 @@ function drawTICElements() {
 								 			tempURIforXUL = 'file://'+value['path'];
 								 		}
 								 		framekiller = true;
-									    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
-								 	} 
+										var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();
+								 	}
 								} else {
 									dragged = false;
 								}
@@ -501,13 +501,13 @@ function drawTICElements() {
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 										addNumberOfClicksToElement(key);
 										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-										//execute scripts 
+										//execute scripts
 										var scriptFiles = ["sh", "bash", "bat", "ps1"];
 										if (scriptFiles.contains(fileExt.toLowerCase())) {
 											fileRunShScript(value["path"]);
 										} else {
 											fileOpen(value["path"]);
-										}								 
+										}								
 									} else if (value["type"] == "URL") {
 										addNumberOfClicksToElement(key);
 										//URL's are opened in a window
@@ -573,7 +573,7 @@ function drawTICElements() {
 			myScrollable[key] = new Scrollable($("textbox" + key));
 		}
 
-		//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE 
+		//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE
 		var borderRed =		[112, 126, 140, 155, 169, 183, 197, 212, 226, 240, 255];
 		var borderGreen =   [138, 124, 110, 97, 83, 69, 55, 41, 27, 14, 0];
 		var borderBlue =	[144, 130, 116, 101, 87, 72, 57, 43, 29, 14, 0];
@@ -595,7 +595,7 @@ function drawTICElements() {
 						cursor : "pointer",
 						width : "15px",
 						position : "absolute",
-						top : "7px", 
+						top : "7px",
 						left : xleft + "px"
 					},
 					events : {
@@ -606,7 +606,7 @@ function drawTICElements() {
 									$("vote" + key).set('html' , value["vote"]);
 									data[key]["vote"] = value["vote"];
 									$("item" + key).setStyle('border', borderWidth[value["vote"]] + 'em solid rgba(' + borderRed[value["vote"]] + ', ' + borderGreen[value["vote"]] + ', ' + borderBlue[value["vote"]] + ', ' + borderOpacity[value["vote"]] + ')');
-								} 
+								}
 								return false;
 							} else {
 								dragged = false;
@@ -615,13 +615,13 @@ function drawTICElements() {
 					}
 				})
 			),
-			new Element("span#vote" + key, { 
+			new Element("span#vote" + key, {
 					text : value["vote"],
 					title : "Importance on the scale 0 to 10",
 					styles : {
 						width : "13",
 						position : "absolute",
-						top : "16px", 
+						top : "16px",
 						"color" : "grey",
 						"font-size" : "12px",
 						left : xleft + "px",
@@ -638,7 +638,7 @@ function drawTICElements() {
 						cursor : "pointer",
 						width : "15px",
 						position : "absolute",
-						top : "30px", 
+						top : "30px",
 						left : xleft + "px",
 						"-moz-transform" : "rotate(-180deg)",
 						"-moz-transform-origin" : "center center"
@@ -655,7 +655,7 @@ function drawTICElements() {
 								} else {
 									dragged = false;
 								}
-							} 
+							}
 						}
 					}
 				})
@@ -664,7 +664,7 @@ function drawTICElements() {
 
 		//ARROW pointing to the CENTRE & write coordinates of the item
 		//Arrows used to define item as Input, Outpur or both to the task
-		var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
+		var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop);
 		var imageSrc;
 		if ((value["arrow"] == "no-no")) {
 			imageSrc = 'images/arrow_no-no.png';
@@ -674,7 +674,7 @@ function drawTICElements() {
 			imageSrc = 'images/arrow_no-out.png';
 		} else if ((value["arrow"] == "in-out"))  {
 			imageSrc = 'images/arrow_in-out.png';
-		} 
+		}
 		$("item" + key).adopt( //"img#arrow" + key
 			new Element ("a#arrowlink" + key, {
 				href : "#inout",
@@ -697,14 +697,14 @@ function drawTICElements() {
 								$("arrow" + key).erase('src');
 								$("arrow" + key).set('src','images/arrow_no-no.png');
 								data[key]["arrow"] = "no-no";
-							} 
+							}
 							return false;
 						} else {
 							dragged = false;
 						}
 					}
 				}
-			}).adopt( 
+			}).adopt(
 				new Element("img#arrow" + key, {
 					src : imageSrc,
 					title : "Click to define if information is 'input' or 'output' to the task or both",
@@ -751,7 +751,7 @@ function drawTICElements() {
 					alt : "Add a due date",
 					title : "Add a due date",
 					styles : {
-					    "margin-left" : "2px",
+						"margin-left" : "2px",
 						width : "23px",
 						height : "23px",
 						opacity : "0.8"
@@ -793,7 +793,7 @@ function drawTICElements() {
 							var person = prompt("Please enter the details of a person associated with this information",persontmp);
 							if (person != null) {
   								addElementValue(key,"person",person);
-							} 
+							}
 						}
 					}
 				})
@@ -810,7 +810,7 @@ function drawTICElements() {
 					styles : {
 						"margin-left" : "1px",
 						width : "23px",
-						height : "23px",		 
+						height : "23px",		
 						opacity : "0.8"
 					},
 					events : {
@@ -825,7 +825,7 @@ function drawTICElements() {
 							var url = prompt("Please enter the URL address associated with this information",urltmp);
 							if (url != null) {
   								addElementValue(key,"url",url);
-							} 
+							}
 						}
 					}
 				})
@@ -842,7 +842,7 @@ function drawTICElements() {
 					styles : {
 						"margin-left" : "1px",
 						width : "23px",
-						height : "23px",		 
+						height : "23px",		
 						opacity : "0.8"
 					},
 					events : {
@@ -857,7 +857,7 @@ function drawTICElements() {
 							var note = prompt("Please enter a note about this information",notetmp);
 							if (note != null) {
   								addElementValue(key,"note",note);
-							} 
+							}
 						}
 					}
 				})
@@ -874,7 +874,7 @@ function drawTICElements() {
 					styles : {
 						"margin-left" : "1px",
 						width : "23px",
-						height : "23px",		 
+						height : "23px",		
 						opacity : "0.8"
 					},
 					events : {
@@ -931,7 +931,7 @@ function drawTICElements() {
 
 		//print more information about the information item
 		Object.each(value, function(item,index){
-			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
+			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey")
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
 				&& (index != "vote") && (index != "width") && (index != "timestamp")
 				&& (index != "height") && (index != "stats")) {
@@ -962,7 +962,7 @@ function drawTICElements() {
 					var difference = today.diff(initialTimestamp);
 					if (sizeDiff == 0 && data[key]["arrow"] == "no-no" && difference < -30) {
 						data[key]["arrow"] = "in-no";
-					}	
+					}
 
 				} else if (index == "size"  && value["type"] != "FILE") {
 					delete data[key]["size"];
@@ -972,22 +972,22 @@ function drawTICElements() {
 					if (value["type"] == "FILE" || value["type"] == "FOLDER") {
 						indivElement.set({
 							html: "<strong>Open folder</strong>: <a href=\"#openfolder\">" + item + "</a>",
-						    events: {
-						        click: function(){ folderOpen(value["path"]) }
-						    }
+							events: {
+								click: function(){ folderOpen(value["path"]) }
+							}
 						});
 					} else if (value["type"] == "URL") {
 						indivElement.set({
-						    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
-						});							 
-					} 
-				} 
+							html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
+						});							
+					}
+				}
 
 				if (index == "email") {
 					indivElement.set({
-					    html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
-					});							 
-				} 
+						html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
+					});							
+				}
 
 				//get current modificaion time and make it human readable
 				if (index == "modified"){
@@ -1005,7 +1005,7 @@ function drawTICElements() {
 				}
 				//emphasize the item if the due date is approaching and is in less than 7 days
 				if (index == "date"){
-    				checkDateElement(item,key);
+					checkDateElement(item,key);
 				}
 				//don't print names for notes
 				if (index == "name" && ((value["type"] == "NOTE") || (value["type"] == "TEXT") || (value["type"] == "HTML"))) {
@@ -1014,13 +1014,13 @@ function drawTICElements() {
 
 				if (index == "numOfClicks") {
 					indivElement.set({
-					    html : "<strong>Number of clicks</strong>: " + item + ""
-					});							 
-				} 
+						html : "<strong>Number of clicks</strong>: " + item + ""
+					});							
+				}
 				if (index == "lastClick") {
 					indivElement.set({
-					    html : "<strong>Last click</strong>: " + item + ""
-					});							 
+						html : "<strong>Last click</strong>: " + item + ""
+					});							
 				}
 
 				if (indivElement.get('html') == ""){
@@ -1030,16 +1030,16 @@ function drawTICElements() {
 				}
 
 				$("information" + key).adopt (indivElement);
-			} 
+			}
 		});
 
-		//check for overlaping tasks for the informatuon item - 
+		//check for overlaping tasks for the informatuon item -
 		// if they share information items get array of tasks IDs
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 			//get the table and erease the id of the selected task
 		 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
 		 	var leftStep = -13;
-		 	if (overlapingTasks.length != 0) { 
+		 	if (overlapingTasks.length != 0) {
 				Array.each(overlapingTasks, function(id, index){
 					leftStep = leftStep + 21;
 					$("item" + key).adopt( //"span#icon"
@@ -1069,7 +1069,7 @@ function drawTICElements() {
 					);
 				});
 			}
-		} 
+		}
 
 		//make elements movable
 		elementMoveEnable(key);
@@ -1097,6 +1097,9 @@ function drawTICElements() {
 		}
 
 	});
+
+	//model importance ... emphasize items based on weighted criteria matrix
+	modelimportance();
 }
 
 function drawTICElementsPastStates(pastStatesId) {
@@ -1123,7 +1126,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			var fileExt = value["name"].split(".").getLast(); //get the last dot & take what's after it
 			if ((value["type"] == "FILE")) {
 				if (fileExt.toLowerCase() == "exe") {
-					//icon of EXE file - program or software  
+					//icon of EXE file - program or software
 					var ios = Components.classes["@mozilla.org/network/io-service;1"].
 					  getService(Components.interfaces.nsIIOService);
 					var fph = ios.getProtocolHandler("file").
@@ -1181,8 +1184,8 @@ function drawTICElementsPastStates(pastStatesId) {
 				}
 				$("item" + key).setStyles({
 							background : "#F7F7F7 url('images/dogear_small.png') no-repeat",
-						    "background-position" : "100% 0%",
-						    border : "1px dotted #ccc"});
+							"background-position" : "100% 0%",
+							border : "1px dotted #ccc"});
 			}
 
 			//### ICON
@@ -1200,7 +1203,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							styles : {
 								width : "42px",
 								position: "relative",
-								top: "2px", 
+								top: "2px",
 								left: "0px",
 								float: "left"
 							}
@@ -1231,7 +1234,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							styles : {
 								width : "18px",
 								position: "absolute",
-								top: "13px", 
+								top: "13px",
 								left: "13px",
 								"font-size": "10px"
 							}
@@ -1249,7 +1252,7 @@ function drawTICElementsPastStates(pastStatesId) {
 							cursor: "pointer",
 							width : "20px",
 							position: "absolute",
-							top: "27px", 
+							top: "27px",
 							left: "-6px"
 						},
 						events : {
@@ -1280,9 +1283,9 @@ function drawTICElementsPastStates(pastStatesId) {
 							 'js' ,'jse','wsf','wsc','cs' ,'as' ,'java','pl' ,'pm'   ,'t'   ,'py'  ,'pyc' ,'pyo' ,
 							 'asp','vbs','vbe','wsf','wsc',
 							 'tex','bib','enl','ris', 'py','pyc','pyo' ,
-							 'm3u', "1st", "asc", "bbs", "cpz", "dos", "faq", "inf", "me", "msg", "toc", "vim"]; 
+							 'm3u', "1st", "asc", "bbs", "cpz", "dos", "faq", "inf", "me", "msg", "toc", "vim"];
 			var sourceTypes = ['NOTE', 'TEXT', 'HTML']; //these are tye types added when pieces of text are dropped or a note created
-			if ((value["type"] == "URL") 
+			if ((value["type"] == "URL")
 				|| sourceTypes.contains(value["type"])
 				|| imageTypes.contains(fileExt.toLowerCase())
 				|| htmlTypes.contains(fileExt.toLowerCase())
@@ -1297,7 +1300,7 @@ function drawTICElementsPastStates(pastStatesId) {
 								cursor: "pointer",
 								width : "20px",
 								position: "absolute",
-								top: "30px", 
+								top: "30px",
 								left: "28px"
 							},
 							events : {
@@ -1305,7 +1308,7 @@ function drawTICElementsPastStates(pastStatesId) {
 									//notes
 									if (sourceTypes.contains(value["type"])) {
 								 		var profileBox = new LightFace({
-											width: 800, 
+											width: 800,
 											draggable: true,
 											title: '',
 											content: value["name"],
@@ -1336,8 +1339,8 @@ function drawTICElementsPastStates(pastStatesId) {
 								 			tempURIforXUL = 'file://'+value['path'];
 								 		}
 								 		framekiller = true;
-									    var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();														    
-								 	} 
+										var light = new LightFace.IFrame({ height:500, width:800, url: "chrome://tic/content/sandbox.xul", title: value["name"] }).addButton('Close', function() { light.close(); },true).open();
+								 	}
 								}
 							}
 						})
@@ -1380,13 +1383,13 @@ function drawTICElementsPastStates(pastStatesId) {
 								click : function(){
 									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
 										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-										//execute scripts 
+										//execute scripts
 										var scriptFiles = ["sh", "bash", "bat", "ps1"];
 										if (scriptFiles.contains(fileExt.toLowerCase())) {
 											fileRunShScript(value["path"]);
 										} else {
 											fileOpen(value["path"]);
-										}															 
+										}															
 									} else if (value["type"] == "URL") {
 										//URL's are opened in a window
 										window.open(value["path"]);
@@ -1438,7 +1441,7 @@ function drawTICElementsPastStates(pastStatesId) {
 				);
 			}
 
-			//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE 
+			//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE
 			var borderRed =		[112, 126, 140, 155, 169, 183, 197, 212, 226, 240, 255];
 			var borderGreen =   [138, 124, 110, 97, 83, 69, 55, 41, 27, 14, 0];
 			var borderBlue =	[144, 130, 116, 101, 87, 72, 57, 43, 29, 14, 0];
@@ -1459,18 +1462,18 @@ function drawTICElementsPastStates(pastStatesId) {
 						styles : {
 							width : "15px",
 							position : "absolute",
-							top : "7px", 
+							top : "7px",
 							left : xleft + "px"
 						}
 					})
 				),
-				new Element("span#vote" + key, { 
+				new Element("span#vote" + key, {
 						text : value["vote"],
 						title : "Importance on the scale 0 to 10",
 						styles : {
 							width : "13px",
 							position : "absolute",
-							top : "16px", 
+							top : "16px",
 							"color" : "grey",
 							"font-size" : "12px",
 							left : xleft + "px",
@@ -1486,7 +1489,7 @@ function drawTICElementsPastStates(pastStatesId) {
 						styles : {
 							width : "15px",
 							position : "absolute",
-							top : "30px", 
+							top : "30px",
 							left : xleft + "px",
 							"-moz-transform" : "rotate(-180deg)",
 							"-moz-transform-origin" : "center center"
@@ -1497,7 +1500,7 @@ function drawTICElementsPastStates(pastStatesId) {
 
 			//ARROW pointing to the CENTRE & write coordinates of the item
 			//Arrows used to define item as Input, Outpur or both to the task
-			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
+			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop);
 			var imageSrc;
 			if ((value["arrow"] == "no-no")) {
 				imageSrc = 'images/arrow_no-no.png';
@@ -1507,8 +1510,8 @@ function drawTICElementsPastStates(pastStatesId) {
 				imageSrc = 'images/arrow_no-out.png';
 			} else if ((value["arrow"] == "in-out"))  {
 				imageSrc = 'images/arrow_in-out.png';
-			} 
-			$("item" + key).adopt( 
+			}
+			$("item" + key).adopt(
 					new Element("img#arrow" + key, {
 						src : imageSrc,
 						title : "Click to define if information is 'input' or 'output' to the task or both",
@@ -1555,7 +1558,7 @@ function drawTICElementsPastStates(pastStatesId) {
 			}
 			//print more information about the information item
 			Object.each(value, function(item,index){
-				if ((index != "display") && (index != "coordinatex") && (index != "coordinatey") 
+				if ((index != "display") && (index != "coordinatex") && (index != "coordinatey")
 					&& (index != "extension") && (index != "type")  && (index != "arrow")
 					&& (index != "vote") && (index != "width") && (index != "timestamp")
 					&& (index != "height") && (index != "stats")) {
@@ -1574,22 +1577,22 @@ function drawTICElementsPastStates(pastStatesId) {
 						if (value["type"] == "FILE" || value["type"] == "FOLDER") {
 							indivElement.set({
 								html: "<strong>Open folder</strong>: <a href=\"#openfolder\">" + item + "</a>",
-							    events: {
-							        click: function(){ folderOpen(value["path"]) }
-							    }
+								events: {
+									click: function(){ folderOpen(value["path"]) }
+								}
 							});
 						} else if (value["type"] == "URL") {
 							indivElement.set({
-							    html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
-							});							 
-						} 
-					} 
+								html : "<strong>" + index + "</strong>: <a href=\""+ item +"\">" + item + "</a>"
+							});							
+						}
+					}
 
 					if (index == "email") {
 						indivElement.set({
-						    html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
-						});							 
-					} 
+							html : "<strong>" + index + "</strong>: <a href=\"mailto:"+ item +"\">" + item + "</a>"
+						});							
+					}
 
 					//get current modificaion time and make it human readable
 					if (index == "modified"){
@@ -1618,16 +1621,16 @@ function drawTICElementsPastStates(pastStatesId) {
 					}
 
 					$("information" + key).adopt (indivElement);
-				} 
+				}
 			});
 
-			//check for overlaping tasks for the informatuon item - 
+			//check for overlaping tasks for the informatuon item -
 			// if they share information items get array of tasks IDs
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 				//get the table and erease the id of the selected task
 			 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
 			 	var leftStep = -13;
-			 	if (overlapingTasks.length != 0) { 
+			 	if (overlapingTasks.length != 0) {
 					Array.each(overlapingTasks, function(id, index){
 						leftStep = leftStep + 21;
 						$("item" + key).adopt( //"span#icon"
@@ -1657,7 +1660,7 @@ function drawTICElementsPastStates(pastStatesId) {
 						);
 					});
 				}
-			} 
+			}
 		});
 		//empty the object as it cannot be edited and we don't need it anymore.
 		dataPastStates = {};
@@ -1674,11 +1677,11 @@ function playDrawTICElementsPastStates() {
 	//clear the background of the previously selected past state
 	if (pastTICStatesCurrentIndex != 0) {
 		var prev = parseInt(pastTICStatesCurrentIndex)-1;
-    	$("pastState" + prev).setStyle('background-color', null);
-    } else if (pastTICStatesCurrentIndex == 0) {
-    	var prev = pastTICStatesIds.length-1;
-    	$("pastState" + prev).setStyle('background-color', null);
-    }
+		$("pastState" + prev).setStyle('background-color', null);
+	} else if (pastTICStatesCurrentIndex == 0) {
+		var prev = pastTICStatesIds.length-1;
+		$("pastState" + prev).setStyle('background-color', null);
+	}
 
 	$("pastState" + pastTICStatesCurrentIndex).setStyle('background-color', '#ffffcc');
 	drawTICElementsPastStates(pastTICStatesIds[pastTICStatesCurrentIndex]);
@@ -1696,7 +1699,7 @@ function stopDrawTICElementsPastStates() {
 /***************************************************************************
 Add, edit and delete elements and their values
 The function are called:
-addElementValue(key,tag,value): 
+addElementValue(key,tag,value):
 	- drawTICElements(): append to buttons to add date, person, url, note
 	- editElementName(key): autosaving names on focus and on blur
 	- editElementNameNotes(key): autosaving names on focus and on blur
@@ -1707,8 +1710,8 @@ editElementName(key): editing of files, URLs and folders
 editElementNameNotes(key): editing names of notes, text and html
 	- drawTICElements(): edit content of notes by doubleclicking on them
 saveNoteOnBodyClick(event): this function looks wether there is a note edited
-    and if it is, if the mouse cclick is fired on the toolbar or edited text.
-    If it is note, save the note
+	and if it is, if the mouse cclick is fired on the toolbar or edited text.
+	If it is note, save the note
 editNLwithBR(text): change new lines with break HTML tag
 deleteElement(key, name): deleting the information item
 	- drawTICElements(): append to delete icon of every item/element on the page
@@ -1726,7 +1729,7 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	if ($("information" + key).contains($("list" + tag + key))) {
 		$("list" + tag + key).dispose();
 	}
-	if (tag != "name" || (tag == "name" && data[key]["type"] != "NOTE" && data[key]["type"] != "TEXT" && data[key]["type"] != "HTML")) { 
+	if (tag != "name" || (tag == "name" && data[key]["type"] != "NOTE" && data[key]["type"] != "TEXT" && data[key]["type"] != "HTML")) {
 		$("information" + key).adopt ( //"span#content_" + key
 			new Element("div#list" + tag + key, {
 				html : "<strong>" + tag + "</strong>: " + value
@@ -1741,7 +1744,7 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	}
 
 	//change modification time for notes
-	if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") { 
+	if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
 		if ($("information" + key).contains($("list" + "modified" + key))) {
 			$("list" + "modified" + key).dispose();
 		}
@@ -1754,9 +1757,9 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	}
 
 	//if the date has been changed ... emphasize the border
-    if (tag == "date") {
-    	checkDateElement(value,key);
-    }
+	if (tag == "date") {
+		checkDateElement(value,key);
+	}
 }
 
 function editElementName(key) { //edit the name=content of notes
@@ -1794,7 +1797,7 @@ function editElementName(key) { //edit the name=content of notes
 			focus : function() {
 				elementMoveDisable(key);
 				var element = this;
-				autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);  
+				autosave = (function() {addElementValue(key,"name",element.get("value"));}).periodical(2500);
 			},
 			blur : function() {
 				clearInterval(autosave);
@@ -1817,7 +1820,7 @@ function editElementName(key) { //edit the name=content of notes
 
 function editElementNameNotes(key) { //edit the name=content of notes
 	//disable moving and resizing of this item
-	elementMoveDisable(key); 
+	elementMoveDisable(key);
 	elementResizeDisable(key);
 
 	var copy = new Element('div#copynametext' + key);
@@ -1826,13 +1829,13 @@ function editElementNameNotes(key) { //edit the name=content of notes
 
 	var edit = $("nametext" + key).clone(true,false);
 
-	edit.set({ 
+	edit.set({
 		id: 'editnametext' + key,
 		contenteditable: "true",
 		events: {
-			focus : function() { 
+			focus : function() {
 				autosave[key] = (function() {
-					addElementValue(key,"name",edit.get('html')); 
+					addElementValue(key,"name",edit.get('html'));
 				}).periodical(2500);  
 			},
 			blur : function () {
@@ -1844,7 +1847,7 @@ function editElementNameNotes(key) { //edit the name=content of notes
 	var elementID = "editnametext" + key;
 	initDoc(elementID);
 	$("editnametext" + key).focus();
-	$("item" + key).adopt( 
+	$("item" + key).adopt(
 		new Element("div#toolbar" + key,  {
 			styles : {
 				position : "absolute",
@@ -2038,7 +2041,7 @@ function editElementNameNotes(key) { //edit the name=content of notes
 						addElementValue(key,"name",text);
 						$("toolbar" + key).dispose();
 
-						copy.setProperty("html", text); 
+						copy.setProperty("html", text);
 						copy.replaces(edit);
 
 						elementMoveEnable(key);
@@ -2048,29 +2051,29 @@ function editElementNameNotes(key) { //edit the name=content of notes
 
 			})
 		)
-	);   
+	);
 }
 
 function saveNoteOnBodyClick(event) {
 	//save a note if it is clicked outside of it!!!!!!!!!
-    Object.each (data, function(value, key){
+	Object.each (data, function(value, key){
 		//check if a note is edited
-    	editedElement = $("toolbar" + key); 
+		editedElement = $("toolbar" + key);
 		if (editedElement) {
 			//check if the parent id is item's div and if not, save the note
-			if ($(event.target).getParents().contains($("item" + key)) == false ) { 
+			if ($(event.target).getParents().contains($("item" + key)) == false ) {
 					$("editnametext" + key).fireEvent('blur');
 					$('saveNote' + key).fireEvent('click');
 			}
 			//get the last click coordinates .. check e.g.:
-			// 	event.pageX > $("toolbar" + key).getCoordinates().right 
+			// 	event.pageX > $("toolbar" + key).getCoordinates().right
 		}
-    }); 
+	});
 }
 
 function editNLwithBR(text) {
 	text = text.replace( /\n/gi, "<br />");
-    return text;
+	return text;
 }
 
 function deleteElementValue(key,tag,value) { //deleting a value/tag of the information item
@@ -2081,7 +2084,7 @@ function deleteElement(key, name) { //deleting the information item
 	//check if a name is edited
 	if ($("namearea" + key)) { $("namearea" + key).blur(); }
 	//check if a note is edited
-	if ($("toolbar" + key)) { 
+	if ($("toolbar" + key)) {
 		$("nametext" + key).fireEvent('blur');
 		$('saveNote' + key).fireEvent('click');
 	}
@@ -2101,7 +2104,7 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 		var xleft = "50";
 		if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML") {
 			var ytop  = "141";
-		} else { 
+		} else {
 			var ytop  = "47";
 		}
 	}
@@ -2122,7 +2125,7 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 				 	"z-index" : "3",
 				 	left : xleft + "px",
 				 	color : "rgba(204, 0, 0, 1)"
-				} 
+				}
 			})
 		);
 	} else {
@@ -2140,7 +2143,7 @@ function checkDateElement(date,key) { //check if the due date is approaching and
 				 	"z-index" : "3",
 				 	left : xleft + "px",
 				 	color : "rgba(112,138,144,0.6)"
-				} 
+				}
 			})
 		);
 	}
@@ -2153,6 +2156,161 @@ function addNumberOfClicksToElement(key) { //check if the due date is approachin
 		data[key]["numOfClicks"] += 1;
 	}
 	data[key]["lastClick"] = getTimestamp();
+}
+
+function modelimportance() {
+
+	var today = new Date();
+	var borderRed =		[112, 126, 140, 155, 169, 183, 197, 212, 226, 240, 255];
+	var borderGreen =   [138, 124, 110, 97, 83, 69, 55, 41, 27, 14, 0];
+	var borderBlue =	[144, 130, 116, 101, 87, 72, 57, 43, 29, 14, 0];
+	var borderOpacity = [0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5];
+	var borderWidth =   [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20];
+
+	Object.each (data, function(value, key){
+		var importance = 0;
+		var arrValues = {};
+		//Create weighted criteria matrix
+		if (!(value["importance"])) {
+			if (!(value["lastClick"])) {
+				data[key]["lastClick"] = getTimestamp();
+				value["lastClick"] = getTimestamp();
+			}
+			if (!(value["numOfClicks"])) {
+				data[key]["numOfClicks"] = 0;
+				value["numOfClicks"] = 0;
+			}
+			if ( value["type"] == "FILE") {
+				if (!(value["initialSize"]) && value["size"]) {
+					data[key]["initialSize"] = value["size"];
+					value["initialSize"] = value["size"];
+				}
+			}
+			if ( value["type"] == "FILE" || value["type"] == "FOLDER") {
+				if (!(value["modified"]) && !isNaN(value["size"])) {
+					data[key]["modified"] = getTimestamp();
+					value["modified"] = getTimestamp();
+				}
+			}
+
+			if (Math.abs(today.diff(value["lastClick"])) != 0) {
+				arrValues["lastClick"]= (1/Math.abs(today.diff(value["lastClick"])))*10;
+			} else {
+				arrValues["lastClick"]= 0;
+			}
+
+			if (value["numOfClicks"] == 0) {
+				arrValues["numOfClicks"] = 0;
+			} else if (value["numOfClicks"] >= 1 && value["numOfClicks"] <= 2) {
+				arrValues["numOfClicks"] = 1;
+			} else if (value["numOfClicks"] >= 2 && value["numOfClicks"] <= 4) {
+				arrValues["numOfClicks"] = 2;
+			} else if (value["numOfClicks"] >= 5 && value["numOfClicks"] <= 8) {
+				arrValues["numOfClicks"] = 3;
+			} else if (value["numOfClicks"] >= 9 && value["numOfClicks"] <= 13) {
+				arrValues["numOfClicks"] = 4;
+			} else if (value["numOfClicks"] >= 14 && value["numOfClicks"] <= 19) {
+				arrValues["numOfClicks"] = 5;
+			} else if (value["numOfClicks"] >= 20 && value["numOfClicks"] <= 26) {
+				arrValues["numOfClicks"] = 6;
+			} else if (value["numOfClicks"] >= 27 && value["numOfClicks"] <= 34) {
+				arrValues["numOfClicks"] = 7;
+			} else if (value["numOfClicks"] >= 35 && value["numOfClicks"] <= 43) {
+				arrValues["numOfClicks"] = 8;
+			} else if (value["numOfClicks"] >= 44 && value["numOfClicks"] <= 53) {
+				arrValues["numOfClicks"] = 9;
+			} else if (value["numOfClicks"] >= 54) {
+				arrValues["numOfClicks"] = 10;
+			}
+
+			if ( value["type"] == "FILE" ) {
+				arrValues["type"]= 10;
+			} else if (value["type"] == "FOLDER") {
+				arrValues["type"]= 7.5;
+			} else if (value["type"] == "NOTE") {
+				arrValues["type"]= 5;
+			} else {
+				arrValues["type"]= 2.5;
+			}
+
+			if ( value["type"] == "FILE" || value["type"] == "FOLDER") {
+				if (Math.abs(today.diff(value["modified"])) == 0) {
+					arrValues["modified"] = 10;
+				} else {
+					arrValues["modified"] = (1/Math.abs(today.diff(value["modified"])))*10;
+				}
+			} else {
+				if (Math.abs(today.diff(value["lastClick"])) == 0) {
+					arrValues["modified"] = 10;
+				} else {
+					arrValues["modified"] = (1/Math.abs(today.diff(value["lastClick"])))*10;
+				}
+			}
+
+			if ( value["type"] == "FILE" &&  !isNaN(value["size"])) {
+				var sizeChange = Math.abs(value["size"] - value["initialSize"]);
+				arrValues["sizeChange"] = (sizeChange/value["size"]) * 10;
+			}
+
+			if ( value["type"] == "FILE" &&  !isNaN(value["size"])) {
+				importance = 2*arrValues["lastClick"] + 4*arrValues["numOfClicks"] + 1*arrValues["type"] + 2*arrValues["modified"] + 1*arrValues["sizeChange"];
+			} else {
+				importance = 3*arrValues["lastClick"] + 5*arrValues["numOfClicks"] + 1*arrValues["type"] + 1*arrValues["modified"];
+			}
+
+			$("msg").innerHTML += ":::: " + Math.round(importance/10) + "-" + value["path"] + "<br>";
+
+			importance = Math.round(importance/10);
+			if (importance > 4) {
+				//$("vote" + key).set('html' , importance);
+ 				$("item" + key).setStyle('border', borderWidth[importance] + 'em solid rgba(' + borderRed[importance] + ', ' + borderGreen[importance] + ', ' + borderBlue[importance] + ', ' + borderOpacity[importance] + ')');
+			}
+
+			/*
+			Decision making matrix or weight criteria matrix
+
+		    All
+			weight  criteria      normalisation
+			3 		lastClick     # of days between today and lastClick and we use reciprical value
+			                      1/x to get normalised value ... the more days passed, lower the value
+			                      multiply by 10 (whatever comes from 0 to 1)
+			                      MAX value is 10
+			5 		numOfClicks   have to parametricise 0 clicks is 0, 1-2 is 1, 2-4 is 2, 5-8 is 3,
+								  9-13 4, 14-19 is 5, 19-25 is 6, 26-33 is 7, 34-42 is 8, 43-52 is 9,
+								  53 - .. is 10
+		 						  MAX value is 10
+			1 		type          Files 4 (10 normalised = 10*4/4), Folders 3 (7.5=10*3/4), Notes 2 (5),
+			    				  HTML & Text & URL 1 (2.5)
+			                      MAX value is 10
+			1 		modified      the same as lastClick ... (1/x)*10
+			 					  MAX value is 10
+		 	SUM: 10               SUM MAX values = 40
+
+					MAX possible value = 4*10 + 5*10 + 1*10 + 1*10 = 100
+
+		    Files
+			2 		lastClick
+			4 		numOfClicks
+			1 		type
+			2 		modified
+		    1 		sizeChange    0 is 0  and the rest we use proportion (sizeChange/size)*10
+		                          We are comparing e.g. HTML file of which changes we can measure in Kb
+		                          and e.g. DOC files of which chages are measured in MB and e.g. SVG in
+		                          10s of MB ....
+		                          We should use the propotion of the file change based on the whole file
+			SUM: 10  			  SUM MAX values = 30
+
+					MAX possible value = 2*10 + 4*10 + 1*10 + 2*10 + 1*10 = 100
+
+			Show just importance higher that 6
+			*/					
+		} else {
+			importance[key] = value["importance"];
+							// leave emelents alone and don't change their values
+							// maybe arrange value of other elements lowest than
+							// the lowest of all element with a set value
+		}
+	});
 }
 
 /***************************************************************************
@@ -2184,24 +2342,24 @@ function elementMoveEnable(key){
 				$("item" + key).setStyle('left' , data[key].coordinatex + "px");
 			}
 			//ARROW pointing to the CENTRE
-			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop); 
+			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop);
 			$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");
 		},
 		onDrag: function() {
 			//drag the scroll bar along
-			if (myScrollable[key]) { 
+			if (myScrollable[key]) {
 				myScrollable[key].reposition();
 			}
 		},
 		onComplete: function(event) {
 			dragged = true;
 		}
-	}); 
+	});
 }
 
 function elementMoveDisable(key){
 	//make elements movable
-	elements[key].detach(); 
+	elements[key].detach();
 }
 
 /***************************************************************************
@@ -2221,7 +2379,7 @@ function elementResizeEnable(key){
 		},
 		onComplete: function(){
 			if ($("item" + key).contains($("nametext" + key))) {
-			    $("nametext" + key).set('html', data[key]["name"]);
+				$("nametext" + key).set('html', data[key]["name"]);
 			}
 			data[key].width = ($("item" + key).getSize().x - 6);
 			data[key].height = ($("item" + key).getSize().y - 6);
@@ -2244,7 +2402,7 @@ function elementResizeEnable(key){
 			if ($("item" + key).contains($("emphasizedate" + key))) {
 				$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25 + "px", 'top': newHeight+7 + "px"});
 			}
-			}   
+			}
 	});
 }
 
@@ -2253,7 +2411,7 @@ function elementResizeDisable(key){
 }
 
 /***************************************************************************
-Function prints the task name of the currently selected task in the centre 
+Function prints the task name of the currently selected task in the centre
 and title. The function is called:
 	- databaseDrawTaskCollection(taskid): when new task is selected and drawn
 	- databaseSaveEditTaskName(newName, taskid): when a task name is bing changed and saved
@@ -2295,9 +2453,9 @@ function printTaskNameCentre(taskId) {
 /***************************************************************************
 Draw importance circles on the page
 The function are called:
-drawPICCircles(): 
+drawPICCircles():
 	- window.onresize: when the browser window is resized
-	- printTaskNameCentre(taskId): after the name of the task is printed in 
+	- printTaskNameCentre(taskId): after the name of the task is printed in
 	  the middle of the page the circles are drawn as well
 drawCentreDot(): draws the red dot in the centre of the page
 	- not used anywhere: for test purposes only
@@ -2372,7 +2530,7 @@ function drawGeneralIcons(){
 				"-moz-border-radius" : "0px 5px 5px 0px",
 				"border-radius" : "0px 0px 5px 5px"
 			}
-		}).adopt( 
+		}).adopt(
 			new Element("img", {
 				title : "Home folder",
 				src : 'images/icons_general/Home.png',
@@ -2382,9 +2540,9 @@ function drawGeneralIcons(){
 				},
 				events : {
 					click : function(){
-						var file = Components.classes["@mozilla.org/file/directory_service;1"].  
-								   getService(Components.interfaces.nsIProperties).  
-								   get("Home", Components.interfaces.nsIFile);   
+						var file = Components.classes["@mozilla.org/file/directory_service;1"].
+								   getService(Components.interfaces.nsIProperties).
+								   get("Home", Components.interfaces.nsIFile);
 						folderOpen(file.path);
 					}
 				}
@@ -2411,9 +2569,9 @@ function drawGeneralIcons(){
 				},
 				events : {
 					click : function(){
-						var file = Components.classes["@mozilla.org/file/directory_service;1"].  
-								   getService(Components.interfaces.nsIProperties).  
-								   get("Desk", Components.interfaces.nsIFile);   
+						var file = Components.classes["@mozilla.org/file/directory_service;1"].
+								   getService(Components.interfaces.nsIProperties).
+								   get("Desk", Components.interfaces.nsIFile);
 						folderOpen(file.path);
 					}
 				}
@@ -2450,22 +2608,22 @@ function drawGeneralIcons(){
 }
 
 /***************************************************************************
-Function connects to the database. 
-1. If the database file TaskInformationCollection.sqlite exists, it returns 
+Function connects to the database.
+1. If the database file TaskInformationCollection.sqlite exists, it returns
    the connection
 2. If the file does not exist, it creates it, creates tables and enetrs a
    first task in and returns the connection handle
 The function is called:
-- window.addEvent('domready': after the DOM loades and stores the connection 
-  handle to the global variable var connection = databaseConnect(); so the 
+- window.addEvent('domready': after the DOM loades and stores the connection
+  handle to the global variable var connection = databaseConnect(); so the
   script uses the same handle all the time
 ****************************************************************************/
 function databaseConnect() {
 	var dbConn;
-	Components.utils.import("resource://gre/modules/Services.jsm"); 
-	Components.utils.import("resource://gre/modules/FileUtils.jsm");  
+	Components.utils.import("resource://gre/modules/Services.jsm");
+	Components.utils.import("resource://gre/modules/FileUtils.jsm");
 	//ProfD = profile directory https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO
-   	file = FileUtils.getFile("ProfD", ["TaskInformationCollections.sqlite"]); 
+   	file = FileUtils.getFile("ProfD", ["TaskInformationCollections.sqlite"]);
    	if (file.exists()) {
    		dbConn = Services.storage.openDatabase(file);
    		printAboutHide();
@@ -2476,7 +2634,7 @@ function databaseConnect() {
 		while (statement.executeStep()) {
 			aRows.push(statement.row.name);
 		}
-		statement.finalize(); 
+		statement.finalize();
 		//add task_archived
 		if (aRows.contains('task_archived') == false) {
 			dbConn.executeSimpleSQL("ALTER TABLE tasks ADD COLUMN task_archived BOOL DEFAULT 0");
@@ -2488,11 +2646,11 @@ function databaseConnect() {
 		//check if index exists
 		//SELECT count(*) FROM sqlite_master WHERE type='index' AND name='collections_task_id';
 
-        return dbConn;
+		return dbConn;
    	} else {
    		//Will also create the file if it does not exist
    		dbConn = Services.storage.openDatabase(file);
-		//create tables: 
+		//create tables:
    		dbConn.executeSimpleSQL("CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT, task_archived BOOL DEFAULT 0, task_order INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER)");
    		dbConn.executeSimpleSQL("CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id INTEGER, coll_timestamp TEXT, coll_items TEXT)");
@@ -2508,7 +2666,7 @@ function databaseConnect() {
 		statement.params.date1 = currentTime;
 		statement.params.date2 = currentTime;
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-		if (statement.state == 1) { 
+		if (statement.state == 1) {
 			//synchronus ... we can't do anything before the DB is set up
 			statement.execute();
 			statement.finalize();
@@ -2524,19 +2682,19 @@ function databaseConnect() {
 /***************************************************************************
 STORE and GET last selected task
 The function are called:
-databaseGetLastTask() 
-	- window.addEvent('domready': when the DOM is ready 
+databaseGetLastTask()
+	- window.addEvent('domready': when the DOM is ready
 	  currentTaskId = databaseGetLastTask();
 databaseSetLastTask()
-    - databaseDrawTaskCollection(taskid): when a new task is selected
-	- databaseDeleteTask(taskid,name): when the task is deleted it sets the 
+	- databaseDrawTaskCollection(taskid): when a new task is selected
+	- databaseDeleteTask(taskid,name): when the task is deleted it sets the
 	  last task to the current one
 	- (function() { databaseSetLastTask() }).periodical(180000);
 	  saves the current task Id to the last viewed task
 ****************************************************************************/
 function databaseGetLastTask() {
 	//select from DB
-	var statement = connection.createStatement("SELECT * FROM tasks_last WHERE last_id = 1"); 
+	var statement = connection.createStatement("SELECT * FROM tasks_last WHERE last_id = 1");
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
 		statement.executeStep();
@@ -2552,10 +2710,10 @@ function databaseSetLastTask() {
 	var statement = connection.createStatement("UPDATE tasks_last SET last_task = :lata WHERE last_id = 1");
 	statement.params.lata = currentTaskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
+	if (statement.state == 1) {
 		connection.executeAsync([statement], 1,  {
 			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 					printOut("Query canceled or aborted!");
 				} else {
 					//printOut(aReason.message);
@@ -2564,7 +2722,7 @@ function databaseSetLastTask() {
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function(aResultSet) {}
-		}); 
+		});
 	} else {
 		printOut("Not a valid SQL statement: UPDATE tasks_last SET last_task = :lt WHERE last_id = '1'");
 	}
@@ -2573,25 +2731,25 @@ function databaseSetLastTask() {
 /***************************************************************************
 Database backup and maintenance
 The function are called:
-databaseDump() Send the dump of the database to the server if set in preferences 
+databaseDump() Send the dump of the database to the server if set in preferences
 	- (function() { databaseDump() }).periodical(3600000): starts it every hour
 sendJSON(userid,dbdump): sends the JSON of the DB dump to the server
 	- databaseDump(): when the dump is ready
 databaseMaintenance(): performs vacuum and reindexing once a month based on the value
-    stored in the DB table user
+	stored in the DB table user
 	- (function() { databaseMaintenance() }).periodical(3600000): runs every hour
-compareAndCleanStages(): see beow detailed description 
+compareAndCleanStages(): see beow detailed description
 	- databaseMaintenance(): before the reindex and vacuuming
 ****************************************************************************/
 function databaseDump() {
 	//get the preference of shared4research2 value and send data only if it is yes == 2
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-	                      .getService(Components.interfaces.nsIPrefService);
+						  .getService(Components.interfaces.nsIPrefService);
 	var branch = prefs.getBranch("extensions.tic.");
 	var share4research2 = branch.getIntPref("share4research2");
 
 	if (share4research2 == 2) {
-	    var dumpText = "";
+		var dumpText = "";
 		//Get the userid and last date the db was dumped and sent over
 		var statement = connection.createStatement("SELECT * FROM user");
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
@@ -2599,11 +2757,11 @@ function databaseDump() {
 			var userId = "";
 			var dateLastDumped = "";
 			var dataSentSuccessful = "";
-			while (statement.executeStep()) { 
+			while (statement.executeStep()) {
 				userId = statement.row.data_userid;
 				dateLastDumped = statement.row.data_last_sent;
 			}
-			statement.finalize(); 
+			statement.finalize();
 		} else {
 			printOut("Not a valid SQL statement: SELECT * FROM user");
 			return false;
@@ -2619,10 +2777,10 @@ function databaseDump() {
 				if (statement.state == 1) {
 					dumpText += "DROP TABLE IF EXISTS \"tasks\";\n";
 					dumpText += "CREATE TABLE tasks (task_id INTEGER PRIMARY KEY, task_name TEXT, task_due TEXT, task_share_email TEXT, task_archived BOOL DEFAULT 0);\n";
-					while (statement.executeStep()) { 
-						dumpText += "INSERT INTO \"tasks\" VALUES(" + statement.row.task_id + ",'" + statement.row.task_name.replace("'", "''", "g") + "','" + statement.row.task_due + "','" + statement.row.task_share_email + "','" + statement.row.task_archived + "');\n"; 
+					while (statement.executeStep()) {
+						dumpText += "INSERT INTO \"tasks\" VALUES(" + statement.row.task_id + ",'" + statement.row.task_name.replace("'", "''", "g") + "','" + statement.row.task_due + "','" + statement.row.task_share_email + "','" + statement.row.task_archived + "');\n";
 					}
-					statement.finalize(); 
+					statement.finalize();
 				} else {
 					printOut("Not a valid SQL statement: SELECT * FROM tasks");
 					return false;
@@ -2632,10 +2790,10 @@ function databaseDump() {
 				if (statement.state == 1) {
 					dumpText += "DROP TABLE IF EXISTS \"tasks_collections\";\n";
 					dumpText += "CREATE TABLE tasks_collections (coll_id INTEGER PRIMARY KEY, task_id , coll_timestamp TEXT, coll_items TEXT);\n";
-					while (statement.executeStep()) { 
+					while (statement.executeStep()) {
 						dumpText += "INSERT INTO \"tasks_collections\" VALUES(" + statement.row.coll_id + "," + statement.row.task_id + ",'" + statement.row.coll_timestamp + "','" + statement.row.coll_items.replace("'", "''", "g") + "');\n";
 					}
-					statement.finalize(); 
+					statement.finalize();
 				} else {
 					printOut("Not a valid SQL statement: SELECT * FROM tasks_collections");
 					return false;
@@ -2645,10 +2803,10 @@ function databaseDump() {
 				if (statement.state == 1) {
 					dumpText += "DROP TABLE IF EXISTS \"tasks_last\";\n";
 					dumpText += "CREATE TABLE tasks_last (last_id INTEGER PRIMARY KEY, last_task INTEGER);\n";
-					while (statement.executeStep()) { 
+					while (statement.executeStep()) {
 						dumpText += "INSERT INTO \"tasks_last\" VALUES(" + statement.row.last_id + "," + statement.row.last_task + ");\n";
 					}
-					statement.finalize(); 
+					statement.finalize();
 				} else {
 					printOut("Not a valid SQL statement: SELECT * FROM tasks_last");
 					return false;
@@ -2658,16 +2816,16 @@ function databaseDump() {
 				if (statement.state == 1) {
 					dumpText += "DROP TABLE IF EXISTS \"user\";\n";
 					dumpText += "CREATE TABLE user (data_id INTEGER PRIMARY KEY, data_userid TEXT, data_last_sent TEXT, data_last_mantained TEXT, data_user_email TEXT, data_user_password TEXT);\n";
-					while (statement.executeStep()) { 
+					while (statement.executeStep()) {
 						dumpText += "INSERT INTO \"user\" VALUES(" + statement.row.data_id + ",'" + statement.row.data_userid + "','" + statement.row.data_last_sent + "','" + statement.row.data_last_mantained + "','" + statement.row.data_user_email + "','" + statement.row.data_user_password + "');\n";
 					}
-					statement.finalize(); 
+					statement.finalize();
 				} else {
 					printOut("Not a valid SQL statement: SELECT * FROM user");
 					return false;
 				}
 
-	    		sendJSON(userId,dumpText);
+				sendJSON(userId,dumpText);
 			}
 		} else {
 			//create userId != "" && dateLastDumped != ""
@@ -2676,17 +2834,17 @@ function databaseDump() {
 			statement.params.tdate = new Date().decrement('day', 7).format('db');
 			statement.params.tid = (Number.random(100, 999) + currentTime).toMD5();
 			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-			if (statement.state == 1) { 
+			if (statement.state == 1) {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
-						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 								printOut("Query canceled or aborted!");
 						}
 						statement.finalize();
 					},
 					handleError : function(aError) {printOut(aError.message);},
 					handleResult : function() {}
-				}); 
+				});
 			} else {
 				printOut("Not a valid SQL statement: INSERT INTO user (data_id, data_userid, data_last_sent) VALUES(1,:uid, :date)");
 			}
@@ -2694,25 +2852,25 @@ function databaseDump() {
 
 		/*
 		//Write dump to a file 01.sql in the profile folder for testing purposes
-			Components.utils.import("resource://gre/modules/Services.jsm"); 
-			Components.utils.import("resource://gre/modules/FileUtils.jsm");  
+			Components.utils.import("resource://gre/modules/Services.jsm");
+			Components.utils.import("resource://gre/modules/FileUtils.jsm");
 			//ProfD = profile directory https://developer.mozilla.org/en/Code_snippets/File_I%2F%2FO
-		   	file = FileUtils.getFile("ProfD", ["01.sql"]); 
-		    // file is nsIFile, data is a string  
-		    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].  
-		                             createInstance(Components.interfaces.nsIFileOutputStream);  
-		    // use 0x02 | 0x10 to open file for appending.  
-		    foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);   
-		    // write, create, truncate  
-		    // In a c file operation, we have no need to set file mode with or operation,  
-		    // directly using "r" or "w" usually.  
-		    // if you are sure there will never ever be any non-ascii text in data you can   
-		    // also call foStream.writeData directly  
-		    var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].  
-		                             createInstance(Components.interfaces.nsIConverterOutputStream);  
-		    converter.init(foStream, "UTF-8", 0, 0);  
-		    converter.writeString(dumpText);  
-		    converter.close(); // this closes foStream  
+		   	file = FileUtils.getFile("ProfD", ["01.sql"]);
+			// file is nsIFile, data is a string
+			var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].
+									 createInstance(Components.interfaces.nsIFileOutputStream);
+			// use 0x02 | 0x10 to open file for appending.
+			foStream.init(file, 0x02 | 0x08 | 0x20, 0666, 0);
+			// write, create, truncate
+			// In a c file operation, we have no need to set file mode with or operation,
+			// directly using "r" or "w" usually.
+			// if you are sure there will never ever be any non-ascii text in data you can
+			// also call foStream.writeData directly
+			var converter = Components.classes["@mozilla.org/intl/converter-output-stream;1"].
+									 createInstance(Components.interfaces.nsIConverterOutputStream);
+			converter.init(foStream, "UTF-8", 0, 0);
+			converter.writeString(dumpText);
+			converter.close(); // this closes foStream
 		*/
 
 	} //do the above only if it is selected in preference to dump the DB and send it over for research
@@ -2722,21 +2880,21 @@ function sendJSON(userid,dbdump) {
 
 	var compressed_dbdump = dbdump; //lzw_encode(dbdump);
 	var data = {
-		'userId': userid, 
+		'userId': userid,
  		'db': compressed_dbdump
 	};
 
  	var myRequest = new Request.JSON({
  		url : 'https://pim.famnit.upr.si/tic/receiveit.php',
- 		onComplete : function(){ 
+ 		onComplete : function(){
  			var statement = connection.createStatement("UPDATE user SET data_last_sent = :date WHERE data_userid = :uid");
 			statement.params.date = new Date().format('db');
 			statement.params.uid = userid
 			//MOZ_STORAGE_STATEMENT_READY 1 The SQL statement is ready to be executed.
-			if (statement.state == 1) { 
+			if (statement.state == 1) {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
-						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 							printOut("Query canceled or aborted!");
 						} else {
 							//printOut(aReason.message);
@@ -2745,7 +2903,7 @@ function sendJSON(userid,dbdump) {
 					},
 					handleError : function(aError) {printOut(aError.message);},
 					handleResult : function(aResultSet) {}
-				}); 
+				});
 			} else {
 				printOut("Not a valid SQL statement: UPDATE user SET data_last_sent = :date WHERE data_userid = :uid");
 			}
@@ -2753,7 +2911,7 @@ function sendJSON(userid,dbdump) {
  	}).post(data);
 }
 
-//vacuum db & reindex 
+//vacuum db & reindex
 function databaseMaintenance() {
 	//do maintenance once a month ... based on the date of the last dump
 	//Get the userid and last date the db was dumped and sent over
@@ -2763,7 +2921,7 @@ function databaseMaintenance() {
 		var dateLastMaintained = "";
 		statement.executeStep();
 		dateLastMaintained = statement.row.data_last_mantained;
-		statement.finalize(); 
+		statement.finalize();
 
 		if (dateLastMaintained == "") {
 			dateLastMaintained == new Date().decrement('day', -31).format('db');
@@ -2784,7 +2942,7 @@ function databaseMaintenance() {
 			if (statement.state == 1) {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
-						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 								printOut("Query canceled or aborted!");
 						} else {
 							//printOut(aReason.message);
@@ -2793,7 +2951,7 @@ function databaseMaintenance() {
 					},
 					handleError : function(aError) {printOut(aError.message);},
 					handleResult : function() {}
-				}); 
+				});
 			} else {
 				printOut("Not a valid SQL statement: REINDEX collections_task_id");
 				return false;
@@ -2805,7 +2963,7 @@ function databaseMaintenance() {
 			if (statement.state == 1) {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
-						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 								printOut("Query canceled or aborted!");
 						} else {
 							//printOut(aReason.message);
@@ -2814,7 +2972,7 @@ function databaseMaintenance() {
 					},
 					handleError : function(aError) {printOut(aError.message);},
 					handleResult : function() {}
-				}); 
+				});
 			} else {
 				printOut("Not a valid SQL statement: VACUUM");
 				return false;
@@ -2827,7 +2985,7 @@ function databaseMaintenance() {
 			if (statement.state == 1) {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
-						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 								printOut("Query canceled or aborted!");
 						} else {
 							//printOut(aReason.message);
@@ -2836,7 +2994,7 @@ function databaseMaintenance() {
 					},
 					handleError : function(aError) {printOut(aError.message);},
 					handleResult : function() {}
-				}); 
+				});
 			} else {
 				printOut("Not a valid SQL statement: UPDATE user SET data_last_mantained = :date WHERE data_id = 1");
 				return false;
@@ -2854,10 +3012,10 @@ function databaseMaintenance() {
 //if two consequent stages differ only in certain tags(s) it deletes the oldes one
 function compareAndCleanStages(){
 	var tasksArray = [];
-	var statement = connection.createStatement("SELECT * FROM tasks ORDER BY task_id DESC");  
+	var statement = connection.createStatement("SELECT * FROM tasks ORDER BY task_id DESC");
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
-		while (statement.executeStep()) { 
+	if (statement.state == 1) {
+		while (statement.executeStep()) {
 			tasksArray.append([statement.row.task_id]);
 		}
 	}
@@ -2874,7 +3032,7 @@ function compareAndCleanStages(){
 			var numOfCols = parseInt(statement.row.l);
 			statement.finalize();
 			//do a clean-up only if there are more than 5 old states
-            if (numOfCols > 5) { 
+			if (numOfCols > 5) {
 				var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id=:tid ORDER BY coll_id ASC");
 				statement.params.tid = tasksArray[j];
 				//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
@@ -2886,7 +3044,7 @@ function compareAndCleanStages(){
 					var tmpId1 = statement.row.coll_id;
 					statement.executeStep();
 					var obj2 = JSON.decode(statement.row.coll_items);
-					var tmpId2 = statement.row.coll_id; 
+					var tmpId2 = statement.row.coll_id;
 					if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
 						tmpArray.append([tmpId1]);
 					}
@@ -2899,7 +3057,7 @@ function compareAndCleanStages(){
 							tmpArray.append([tmpId1]);
 						}
 					}
-					statement.finalize(); 
+					statement.finalize();
 				} else {
 					printOut("Not a valid SQL statement: INSERT INTO tasks (task_name) VALUES(:tn)");
 				}
@@ -2913,21 +3071,21 @@ function compareAndCleanStages(){
 }
 
 /***************************************************************************
-Functions print out the list of all available tasks from the database to the 
+Functions print out the list of all available tasks from the database to the
 side panel. The function is called:
 databaseShowTasks()
 	- window.addEvent('domready',: when the DOM loads
-	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
+	- databaseSaveEditTaskName(newName, taskid): when a task name is changed
 	- databaseEnterNewTask(): when new task is entered
 	- databaseDeleteTask(taskid,name): when a task is deleted
 databaseShowArchivedTasks()
 	- window.addEvent('domready',: when the DOM loads
-	- databaseSaveEditTaskName(newName, taskid): when a task name is changed 
+	- databaseSaveEditTaskName(newName, taskid): when a task name is changed
 	- databaseDeleteTask(taskid,name): when a task is deleted
 ****************************************************************************/
-function databaseShowTasks() {	   	  
+function databaseShowTasks() {	   	
 	//clear the tasks from DOM
-	$("tasksList").empty(); 
+	$("tasksList").empty();
 	$("tasksList").adopt(
 		new Element ("ul#taskOrderList", {
 			styles : {
@@ -2941,11 +3099,11 @@ function databaseShowTasks() {
 		})
 	);
 	//select from DB
-	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=0 ORDER BY task_order DESC, task_id DESC");  
+	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=0 ORDER BY task_order DESC, task_id DESC");
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
-		while (statement.executeStep()) { 
-			(function(){  
+	if (statement.state == 1) {
+		while (statement.executeStep()) {
+			(function(){
 				var taskname = statement.row.task_name;
 				var taskid = statement.row.task_id;
 				$("taskOrderList").adopt(
@@ -2960,8 +3118,8 @@ function databaseShowTasks() {
 						}
 					})
 				);
-				$("task" + taskid).adopt( 
-					    new Element("a", {
+				$("task" + taskid).adopt(
+						new Element("a", {
 							"id" : "taskIdCircle" + taskid,
 							"href" : "#" + taskname,
 							 "text" : taskid,
@@ -2982,21 +3140,21 @@ function databaseShowTasks() {
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;
 								}
-							}				    
-					    }),
+							}
+						}),
 						new Element("span", {
 							"html" : "&nbsp;",
 							styles : {
 								float : "left",
-								width : "3px" 
+								width : "3px"
 							}
-						}),					    
+						}),
 						new Element("a", {
 							"id" : "taskName" + taskid,
 							"href" : "#" + taskname,
 							"html" : taskname,
 							styles : {
-								float : "left", 
+								float : "left",
 								width : "121px"
 							},
 							events : {
@@ -3078,23 +3236,23 @@ function databaseShowTasks() {
 						})
 				);
 			})();
-		} 
+		}
 		statement.finalize();
 	} else {
 		printOut("Not a valid SQL statement: SELECT * FROM tasks ORDER BY task_id DESC");
 	}
 }
 
-function databaseShowArchivedTasks() {	   	  
+function databaseShowArchivedTasks() {	   	
 	//clear the tasks from DOM
-	$("tasksListArchived").empty(); 
+	$("tasksListArchived").empty();
 	//select from DB
-	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=1 ORDER BY task_id DESC");  
+	var statement = connection.createStatement("SELECT * FROM tasks WHERE task_archived=1 ORDER BY task_id DESC");
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 
-	if (statement.state == 1) { 
-		while (statement.executeStep()) { 
-			(function(){  
+	if (statement.state == 1) {
+		while (statement.executeStep()) {
+			(function(){
 				var taskname = statement.row.task_name;
 				var taskid = statement.row.task_id;
 				$("tasksListArchived").adopt(
@@ -3105,8 +3263,8 @@ function databaseShowArchivedTasks() {
 						}
 					})
 				);
-				$("task" + taskid).adopt( 
-					    new Element("a", {
+				$("task" + taskid).adopt(
+						new Element("a", {
 							"id" : "taskIdCircle" + taskid,
 							"href" : "#" + taskname,
 							 "text" : taskid,
@@ -3127,21 +3285,21 @@ function databaseShowArchivedTasks() {
 									databaseSaveTaskCollection(databaseDrawTaskCollection, taskid);
 									return false;
 								}
-							}				    
-					    }),
+							}
+						}),
 						new Element("span", {
 							"html" : "&nbsp;",
 							styles : {
 								float : "left",
-								width : "3px" 
+								width : "3px"
 							}
-						}),					    
+						}),
 						new Element("a", {
 							"id" : "taskName" + taskid,
 							"href" : "#" + taskname,
 							"html" : taskname,
 							styles : {
-								float : "left", 
+								float : "left",
 								width : "121px"
 							},
 							events : {
@@ -3226,7 +3384,7 @@ function databaseShowArchivedTasks() {
 
 				);
 			})();
-		} 
+		}
 		statement.finalize();
 	} else {
 		printOut("Not a valid SQL statement: SELECT * FROM tasks ORDER BY task_id DESC");
@@ -3235,7 +3393,7 @@ function databaseShowArchivedTasks() {
 
 /***************************************************************************
 Function gets the task name from the task id. The function is called:
-	- drawTICElements(): when overlapping tasks to show a name if mouseovered 
+	- drawTICElements(): when overlapping tasks to show a name if mouseovered
 	  the overlapping number in a circle above the item icon
 	- drawTICElementsPastStates(pastStatesId): the same as above
 	- printTaskNameCentre(taskId): to print a name in the centre of the page
@@ -3246,11 +3404,11 @@ function databaseGetTaskName(taskId) {
 	statement.params.tid = taskId;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
-		var taskname; 
-		while (statement.executeStep()) { 
+		var taskname;
+		while (statement.executeStep()) {
 			taskname = statement.row.task_name;
 		}
-		statement.finalize(); 
+		statement.finalize();
 		return taskname;
 	} else {
 		printOut("Not a valid SQL statement: SELECT * FROM tasks WHERE task_id = :tid");
@@ -3260,9 +3418,9 @@ function databaseGetTaskName(taskId) {
 
 /***************************************************************************
 Changes and saves the task name text. Changing creates a form field around
-the task name and creates a save button 
+the task name and creates a save button
 The functiona re called :
-changeEditTaskName(taskid) 
+changeEditTaskName(taskid)
 	- databaseShowTasks(): append to the button edit besides task name in a side panel
 databaseSaveEditTaskName(newName, taskid)
 	- changeEditTaskName(taskid): append to the Save button when the name is edited
@@ -3291,16 +3449,16 @@ function databaseSaveEditTaskName(newName, taskid) {
 	statement.params.tn = newName;
 	statement.params.tid = taskid;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
+	if (statement.state == 1) {
 		connection.executeAsync([statement], 1,  {
 			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 						printOut("Query canceled or aborted!");
 				} else {
 					statement.finalize();
 					databaseShowTasks();
 					databaseShowArchivedTasks();
-					if (taskid == currentTaskId) { 
+					if (taskid == currentTaskId) {
 						printTaskNameCentre(taskid);
 						drawTICElements();
 					}
@@ -3308,7 +3466,7 @@ function databaseSaveEditTaskName(newName, taskid) {
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
-		}); 
+		});
 	} else {
 		printOut("Not a valid SQL statement: UPDATE tasks SET task_name = :tn WHERE task_id= :tid");
 	}
@@ -3320,8 +3478,8 @@ The functiona are called:
 databaseDeleteTask(taskid,name): deletes the task and all the associated collections
 	- databaseShowTasks(): append to the button bedised task name in the side panel
 databaseDeleteTaskStage(coll_id): deletes just one stage of a task
-	- databaseSaveTaskCollection (callback, param): if the new task stage and the 
-	  last one in the DB are differenc sheck if they differ in file sizes and mod 
+	- databaseSaveTaskCollection (callback, param): if the new task stage and the
+	  last one in the DB are differenc sheck if they differ in file sizes and mod
 	  times onyl and if the d delete the one in the DB
 	- compareAndCleanStages(): compares two consequest stages of every task and
 	  if they don't significantly differ (e.g. only coordinates) the older one is deleted
@@ -3336,10 +3494,10 @@ function databaseDeleteTask(taskid,name){
 	var statement2 = connection.createStatement("DELETE FROM tasks WHERE task_id= :tid");
 	statement2.params.tid = taskid;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement1.state == 1 && statement2.state == 1) { 
+	if (statement1.state == 1 && statement2.state == 1) {
 		connection.executeAsync([statement1, statement2], 2,  {
 			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 						printOut("Query canceled or aborted!");
 				} else {
 					databaseShowTasks();
@@ -3349,7 +3507,7 @@ function databaseDeleteTask(taskid,name){
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
-		}); 
+		});
 		statement1.finalize();
 		statement2.finalize();
 	} else {
@@ -3367,7 +3525,7 @@ function databaseDeleteTaskStage(coll_id){
 	var statement = connection.createStatement("DELETE FROM tasks_collections WHERE coll_id= :cid");
 	statement.params.cid = coll_id;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
+	if (statement.state == 1) {
 		statement.executeStep();
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
@@ -3378,10 +3536,10 @@ function databaseArchiveTask(taskid, name) {
 	var statement = connection.createStatement("UPDATE tasks SET task_archived=1 WHERE  task_id= :tid");
 	statement.params.tid = taskid;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
+	if (statement.state == 1) {
 		connection.executeAsync([statement], 1,  {
 			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 						printOut("Query canceled or aborted!");
 				} else {
 					statement.finalize();
@@ -3392,7 +3550,7 @@ function databaseArchiveTask(taskid, name) {
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
-		}); 
+		});
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3402,10 +3560,10 @@ function databaseRetrieveTask(taskid, name) {
 	var statement = connection.createStatement("UPDATE tasks SET task_archived=0 WHERE  task_id= :tid");
 	statement.params.tid = taskid;
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
+	if (statement.state == 1) {
 		connection.executeAsync([statement], 1,  {
 			handleCompletion : function(aReason) {
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 						printOut("Query canceled or aborted!");
 				} else {
 					statement.finalize();
@@ -3416,7 +3574,7 @@ function databaseRetrieveTask(taskid, name) {
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {}
-		}); 
+		});
 	} else {
 		printOut("Not valid SQL statements: DELETE FROM tasks...");
 	}
@@ -3425,12 +3583,12 @@ function databaseRetrieveTask(taskid, name) {
 /***************************************************************************
 Function draws all information items of a selected task from the side panel
 It sets the global variable currentTaskId to the received taskid
-It gets all the rows (states) of the selected task, it orders them by timestamp, 
+It gets all the rows (states) of the selected task, it orders them by timestamp,
 prints out the first (last entered one) and adds the rest to the timeline on the side
 The function is called:
 	- window.addEvent('domready': when the page loads
 	- databaseShowTasks() append to the task names in the side panel
-	- databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId): as 
+	- databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId): as
 	  a callback parameter whenever the task is saved
 ****************************************************************************/
 function databaseDrawTaskCollection(taskid) {
@@ -3471,7 +3629,7 @@ function databaseDrawTaskCollection(taskid) {
 					events : {
 						click : function(){
 							stopDrawTICElementsPastStates();
-							drawTICElements(); 
+							drawTICElements();
 						}
 					}
 				})
@@ -3513,7 +3671,7 @@ function databaseDrawTaskCollection(taskid) {
 							events : {
 								click : function(){
 									stopDrawTICElementsPastStates();
-									drawTICElements(); 
+									drawTICElements();
 								}
 							}
 						})
@@ -3533,11 +3691,11 @@ function databaseDrawTaskCollection(taskid) {
 					var pastTICStatesDates = [];
 					pastTICStatesDates.length = 0;
 					//the first executeStep() was to fill the data, the rest is to fill the past states arrays
-					while (statement.executeStep()) { 
+					while (statement.executeStep()) {
 						//store past states of the task from the table to a slider
 						pastTICStatesIds.push(statement.row.coll_id);
 						pastTICStatesDates.push(statement.row.coll_timestamp);
-					}   
+					}
 					$("timelineSlideoutInner").empty();
 					$("timelineSlideoutInner").adopt(
 						new Element ("div#timelineInfo", {
@@ -3572,7 +3730,7 @@ function databaseDrawTaskCollection(taskid) {
 									clearBackgroundTimelineItems();
 									pastTICStatesCurrentIndex = 0; //clear the current id of the past states
 									stopDrawTICElementsPastStates();
-									drawTICElements(); 
+									drawTICElements();
 								}
 							}
 						})
@@ -3605,7 +3763,7 @@ function databaseDrawTaskCollection(taskid) {
 									events : {
 										click : function(){
 											stopDrawTICElementsPastStates();
-											startDrawTICElementsPastStates(); 
+											startDrawTICElementsPastStates();
 										}
 									}
 								})
@@ -3653,7 +3811,7 @@ function databaseDrawTaskCollection(taskid) {
 									}
 								})
 							).adopt(
-							    new Element ("span", { //need this part for the second part of the play-pause button
+								new Element ("span", { //need this part for the second part of the play-pause button
 									styles : {
 										"border-color" : "transparent #FFFFFF",
 										"border-style" : "solid",
@@ -3712,11 +3870,11 @@ function databaseDrawTaskCollection(taskid) {
 Function saves all information items of the currently selected task (global
 variable currentTaskId) to the database
 The function is called:
-	- doDrop(event): when new items/lements are dragged to the page 
+	- doDrop(event): when new items/lements are dragged to the page
 	- addNewNote(): when a new note is put on the page
 	- deleteElement(key, name): when an element is deleted from the page
 	- window.onunload: when the browser tab or windows closes
-	- (function() { databaseSaveTaskCollection(databaseDrawTaskCollection, 
+	- (function() { databaseSaveTaskCollection(databaseDrawTaskCollection,
 	   currentTaskId) }).periodical(300000): checks for changes every 5 minutes
 	- databaseShowTasks(): appand to the task name so it saves the task before task changes
 	- drawTICElements(): append to the links of overlapping tasks (the same as above)
@@ -3731,10 +3889,10 @@ function databaseSaveTaskCollection(callback, param) {
 		statement.executeStep();
 		var rows = statement.row.l;
 		//finalize the statement as we gather all data
-		statement.finalize(); 
+		statement.finalize();
 
 		/*CHECK THE OLD STATES*/
-		//if there are already some rows related to the task find the last one 
+		//if there are already some rows related to the task find the last one
 		//to copmpare it to the current
 		if (parseInt(rows) > 0){
 			var statement = connection.createStatement("SELECT * FROM tasks_collections WHERE task_id = :tid ORDER BY coll_id DESC LIMIT 1");
@@ -3763,7 +3921,7 @@ function databaseSaveTaskCollection(callback, param) {
 			//The STRINGS are NOT the same .. DO some more comparison
 			if (compareDataObjectSizeMod(data, JSON.decode(dataTMP)) != false) {
 				//if true the objects differ in size and modification time only and we delete the old one
-				databaseDeleteTaskStage(previousStageId); 
+				databaseDeleteTaskStage(previousStageId);
 			}
 
 			//set the time variables
@@ -3775,9 +3933,9 @@ function databaseSaveTaskCollection(callback, param) {
 			//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 			if (statement.state == 1) {
 				connection.executeAsync([statement], 1, {
-					handleCompletion : function(aReason) { 
+					handleCompletion : function(aReason) {
 		  				callback(param);
-		  				statement.finalize();   
+		  				statement.finalize();
 		  			},
 					handleError : function(aError) {printOut(aError.message);},
 					handleResult : function() {}
@@ -3789,20 +3947,20 @@ function databaseSaveTaskCollection(callback, param) {
 
 	} else {
 		printOut("Not a valid SQL statement: SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");
-	}	 
+	}	
 }
 
 /***************************************************************************
-databaseEnterNewTask() Enters a new task to the database from the form and 
+databaseEnterNewTask() Enters a new task to the database from the form and
 calls a function that prints new task list. Function is called:
-	- append to the form on the Projects/Tasks panel 
-databaseEnterNewTaskOrder() Enters the order of a task which is the same as 
+	- append to the form on the Projects/Tasks panel
+databaseEnterNewTaskOrder() Enters the order of a task which is the same as
 the task ID at the beginning. Function is called:
 	- databaseEnterNewTask()
-	- somewhere else when I'll sort out the 
+	- somewhere else when I'll sort out the
 getLastEnteredTask(): gets the last inserted task id
 	- databaseEnterNewTask(): to set the task_order the same as task_id
-	- databaseDeleteTask(taskid,name): if the current task is the one that 
+	- databaseDeleteTask(taskid,name): if the current task is the one that
 	  has just been deleted change it to the last one in the DB
 ****************************************************************************/
 function databaseEnterNewTask() {
@@ -3811,8 +3969,8 @@ function databaseEnterNewTask() {
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
 		connection.executeAsync([statement], 1, {
-			handleCompletion : function(aReason) { 
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+			handleCompletion : function(aReason) {
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 					printOut("Query canceled or aborted!");
 				} else {
 					printOut("New project \"" + $("createName").value + "\" was successfully created!");
@@ -3824,8 +3982,8 @@ function databaseEnterNewTask() {
 					//open (draw) the last inserted project
 					var rowid = connection.lastInsertRowID;
 					databaseSaveTaskCollection(databaseDrawTaskCollection, rowid);
-				} 
-	  			statement.finalize();   
+				}
+	  			statement.finalize();
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {
@@ -3844,13 +4002,13 @@ function databaseEnterNewTaskOrder(taskId, taskOrder) {
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 	if (statement.state == 1) {
 		connection.executeAsync([statement], 1, {
-			handleCompletion : function(aReason) { 
-				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {  
+			handleCompletion : function(aReason) {
+				if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
 					printOut("Query canceled or aborted!");
 				} else {
-				    // do nothing
-				} 
-	  			statement.finalize();   
+					// do nothing
+				}
+	  			statement.finalize();
 			},
 			handleError : function(aError) {printOut(aError.message);},
 			handleResult : function() {
@@ -3887,13 +4045,13 @@ function databaseOverlapingTasks(informationPath) {
 	var tasksIdsArray = [];
 	//change \ in windows paths in \\ as this is how  backslashes are stored in db
 	informationPath = informationPath.replace( /\\/gi, '\\\\');
-    //$("msg").innerHTML += informationPath+"<br />";
-	var statement = connection.createStatement("SELECT task_id FROM tasks_collections WHERE coll_items LIKE :pt ");  
-	statement.params.pt = "%\"" + informationPath + "\"%"; 
-	//statement.params.pt = statement.escapeStringForLIKE("%'" + informationPath + "'%", "'");  
+	//$("msg").innerHTML += informationPath+"<br />";
+	var statement = connection.createStatement("SELECT task_id FROM tasks_collections WHERE coll_items LIKE :pt ");
+	statement.params.pt = "%\"" + informationPath + "\"%";
+	//statement.params.pt = statement.escapeStringForLIKE("%'" + informationPath + "'%", "'");
 	//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
-	if (statement.state == 1) { 
-		while (statement.executeStep()) { 
+	if (statement.state == 1) {
+		while (statement.executeStep()) {
 			tasksIdsArray.push(statement.row.task_id);
 		}
 		statement.finalize();
@@ -3905,7 +4063,7 @@ function databaseOverlapingTasks(informationPath) {
 }
 
 /***************************************************************************
-Function that handles dropping of information items to the page. When item 
+Function that handles dropping of information items to the page. When item
 is dropped it hecks the type, adds it to the data variable and saves the new
 state to the database.
 Dragged types:
@@ -3913,7 +4071,7 @@ Dragged types:
 	text/x-moz-url 4: (string) : [http://mootorial.com/wiki/ Strings] - USE THIS
 	text/uri-list 4: (string) : [http://mootorial.com/wiki/]
 	text/plain 4: (string) : [http://mootorial.com/wiki/]
-	text/html 4: (string) : [http://mootorial.com/wiki/]  
+	text/html 4: (string) : [http://mootorial.com/wiki/]
 * FILE & FOLDER
 	application/x-moz-file 1: (object) : [[xpconnect wrapped nsISupports]]
 * TEXT - (texmaker, OOo, Word)
@@ -3925,16 +4083,16 @@ Dragged types:
 	text/_moz_htmlcontext 4: (string) : []
 	text/_moz_htmlinfo 4: (string) : [0,0]
 	text/html 4: (string) : [The additional methods ...] - USE THIS
-	text/plain 4: (string) : [The additional methods ...] 
+	text/plain 4: (string) : [The additional methods ...]
 * Other Types: FOLDER, ... maybe implement NOTE, TALK, TODO
-The function is called: 
+The function is called:
 	- when an item is dropped on the page
 ****************************************************************************/
 function doDrop(event) { //add new information items to the page and variable data
 
-	//stop any autosaving going on 
+	//stop any autosaving going on
 	autosave.each(function(item, index){
-     clearInterval(autosave[index]);
+	 clearInterval(autosave[index]);
 	});
 
 	//do not propagate default actions when dragging over
@@ -3963,7 +4121,7 @@ function doDrop(event) { //add new information items to the page and variable da
 	//change the coordinates of the new element to the default width 1000px
 	//we need this to position the elements right if the window is resized
 	//Lower the Y coordinate by 40 so the moving arrows come under the moise pointer
-	var coorX = ((tempX)/(window.innerWidth/1000)).toFixed(parseInt(0)); 
+	var coorX = ((tempX)/(window.innerWidth/1000)).toFixed(parseInt(0));
 	var coorY = ((tempY-40)/(window.innerHeight/1000)).toFixed(parseInt(0));
 
 
@@ -3973,13 +4131,13 @@ function doDrop(event) { //add new information items to the page and variable da
 	for (var i = 0; i < count; i++) {
 		var types = event.dataTransfer.mozTypesAt(i);
 		//if file or directory (folder) is dragged over
-		if (types[0] == "application/x-moz-file") {	   
+		if (types[0] == "application/x-moz-file") {	
 			var fileDragged = event.dataTransfer.mozGetDataAt("application/x-moz-file", i);
 			if (fileDragged instanceof Components.interfaces.nsIFile){
 				var fullPath = fileDragged.path;
 				var fileType = fullPath.split(".");
 				var stats = JSON.stringify(getFolderStats(fullPath));
-				if(fileDragged.isDirectory()) { 
+				if(fileDragged.isDirectory()) {
 					fileType = "FOLDER";
 				} else {
 					fileType = "FILE";
@@ -3989,7 +4147,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					var question = confirm("The project space already contains this item. Do you want to add another one?");
 					if (question == false){
 						return false;
-					} 
+					}
 				}
 				//set the global nexKey variable to the next highest index
 				var nextKey = findNextKey(data);
@@ -4020,12 +4178,12 @@ function doDrop(event) { //add new information items to the page and variable da
 				var question = confirm("The project space already contains this item. Do you want to add another one?");
 				if (question == false){
 					return false;
-				} 
+				}
 			}
 			//set the global nexKey variable to the next highest index
 			var nextKey = findNextKey(data);
 			//split dragged data into URL and title
-			var title = urlDragged.split("\n");	 
+			var title = urlDragged.split("\n");	
 			if (!title[1]) {
 				title[1] = url;
 				getTitle(url,nextKey);
@@ -4042,7 +4200,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					lastClick: getTimestamp(),
 					vote : "0",
 					arrow : "no-no"
-			};		 
+			};		
 		//Text from editors - HTML
 		} else if (types[0] == "text/html") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[1], i).trim();
@@ -4055,7 +4213,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					var question = confirm("The project space already contains this item. Do you want to add another one?");
 					if (question == false){
 						return false;
-					} 
+					}
 				}
 				//set the temporary title
 				var title = getDomain(textDragged);
@@ -4074,7 +4232,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						vote : "0",
 						arrow : "no-no"
 				};
-			} else {							 
+			} else {							
 				data[nextKey] = {
 						type : "TEXT",
 						path : "",
@@ -4104,7 +4262,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					var question = confirm("The project space already contains this item. Do you want to add another one?");
 					if (question == false){
 						return false;
-					} 
+					}
 				}
 				//set the temporary title
 				var title = getDomain(textDragged);
@@ -4123,7 +4281,7 @@ function doDrop(event) { //add new information items to the page and variable da
 						vote : "0",
 						arrow : "no-no"
 				};
-			} else {					 
+			} else {					
 				data[nextKey] = {
 						type : "TEXT",
 						path : "",
@@ -4140,8 +4298,8 @@ function doDrop(event) { //add new information items to the page and variable da
 						vote : "0",
 						arrow : "no-no"
 				};
-			}						 									 
-		//Text from WEB - HTML 
+			}						 									
+		//Text from WEB - HTML
 		} else if (types[0] == "text/_moz_htmlcontext") {
 			var textDragged = event.dataTransfer.mozGetDataAt(types[2], i);
 			textDragged = cleanHtml(textDragged);
@@ -4154,7 +4312,7 @@ function doDrop(event) { //add new information items to the page and variable da
 					var question = confirm("The project space already contains this item. Do you want to add another one?");
 					if (question == false){
 						return false;
-					} 
+					}
 				}
 				//set the temporary title
 				var title = getDomain(textDragged);
@@ -4195,12 +4353,12 @@ function doDrop(event) { //add new information items to the page and variable da
 	}
 	//save to DB and draw the collection
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId);
-} 
+}
 
 /***************************************************************************
 Function that finds next key which is one more than the last inserted.
 The function is called:
-	-drawGeneralIcons(): append to the note icon s when it's clicked it calls this finction 
+	-drawGeneralIcons(): append to the note icon s when it's clicked it calls this finction
 ****************************************************************************/
 function addNewNote() {
 	var nextKey = findNextKey(data);
@@ -4222,7 +4380,7 @@ function addNewNote() {
 }
 
 /***************************************************************************
-Function that returns next key from an object which is one more than the last 
+Function that returns next key from an object which is one more than the last
 inserted. The function is called:
 	- doDrop(event): when new items are dropped on the page it gets the id for it
 	- addNewNote(): when a nw note is added .. the same as above
@@ -4241,7 +4399,7 @@ function findNextKey(datatmp) {
 /***************************************************************************
 Function that iterates through a given object and deletes all content in it
 The function is called:
-	- databaseDrawTaskCollection(taskid): empties the data object so it can 
+	- databaseDrawTaskCollection(taskid): empties the data object so it can
 	  get the new task stage in
 ****************************************************************************/
 function emptyObject(datatmp) {
@@ -4252,16 +4410,16 @@ function emptyObject(datatmp) {
 
 /***************************************************************************
 Prints messages on the screen
-The functions are called: 
-printOut(message) 
+The functions are called:
+printOut(message)
 	- whenever there's a message to print out
 printOutHide()
 	- databaseConnect(): it hides the printOut message so the About box
 	  can be shown when the TIc is run for the firts time
 printAboutShow()
-    - databaseConnect(): prints out the About box when the TIC is run for the first time
+	- databaseConnect(): prints out the About box when the TIC is run for the first time
 printAboutHide()
-	- append to the button in the About box     
+	- append to the button in the About box	
 ****************************************************************************/
 function printOut(message){
 	$("printText").removeClass("hidden");
@@ -4286,11 +4444,11 @@ function printAboutHide(){
 /***************************************************************************
 Converts bytes to human readable format
 The function is called:
-	- drawTICElements(): converts size in the more information box of every 
+	- drawTICElements(): converts size in the more information box of every
 	  item that has this value
 	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
-function bytesToSize(bytes) {  
+function bytesToSize(bytes) {
 	//thx http://bateru.com/news/2011/08/code-of-the-day-javascript-convert-bytes-to-kb-mb-gb-etc/
 	var units = [ ' bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB' ];
 	var amountOf2s = Math.floor( Math.log( +bytes )/Math.log(2) );
@@ -4299,7 +4457,7 @@ function bytesToSize(bytes) {
 	}
 	var i = Math.floor( amountOf2s / 10 );
 	bytes = +bytes / Math.pow( 2, 10*i );
- 
+
 	//Cuts to 3 decimals places.
 	if( bytes.toString().length > bytes.toFixed(3).toString().length ){
 		bytes = bytes.toFixed(3);
@@ -4313,88 +4471,88 @@ The functions are called:
 fileOpen(filetmp) Open files with local applications
 	- drawTICElements(): when clicked on an element/item name (files)
 	- drawTICElementsPastStates(pastStatesId): the same as above
-folderOpen(filetmp) and folderOpenLinux(filetmp) Open folder of a selected 
+folderOpen(filetmp) and folderOpenLinux(filetmp) Open folder of a selected
 	file or folder
-	- drawTICElements(): when clicked on a path of an element/item in the 
+	- drawTICElements(): when clicked on a path of an element/item in the
 	  more information box for files and folders
 	- drawTICElementsPastStates(pastStatesId): the same as above
 	- drawGeneralIcons(): opening a home folder or desktop
 fileRunShScript(filetmp)
 ****************************************************************************/
 function fileOpen(filetmp){
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-    //when synced between different OSs ignore erros of wrong paths
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	//when synced between different OSs ignore erros of wrong paths
 	try {
-		file.initWithPath(filetmp); 
-		if ( file.exists() ) { 
-			file.launch();  
+		file.initWithPath(filetmp);
+		if ( file.exists() ) {
+			file.launch();
 		} else {
 			printOut("The file or the folder you selected does not exists on your local hard drive!");
 		}
-	} catch(e) { 
+	} catch(e) {
 		printOut("The file you selected is probably on another comouter!");
 	}
 }
 
 function folderOpen(filetmp){
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-    //when synced between different OSs ignore erros of wrong paths
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	//when synced between different OSs ignore erros of wrong paths
 	try {
-		file.initWithPath(filetmp); 
-		if ( file.exists() ) { 
-			file.reveal();  
+		file.initWithPath(filetmp);
+		if ( file.exists() ) {
+			file.reveal();
 			//could also use this to get the parent folder of a file: folder = file.parent;
 		} else {
 			printOut("The folder you selected does not exists on your local hard drive!");
 		}
-	} catch(e) { 
+	} catch(e) {
 		printOut("The folder you selected is probably on another computer!");
 	}
 }
 
 function fileRunShScript (filetmp) {
 	//var shell = "/bin/sh";
-    var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 	try {
-    	file.initWithPath(filetmp);
+		file.initWithPath(filetmp);
 		var process = Components.classes["@mozilla.org/process/util;1"]
-                        .createInstance(Components.interfaces.nsIProcess);
+						.createInstance(Components.interfaces.nsIProcess);
 		process.init(file);
-        //var args = ["path/to/script","arg1","arg2","etc"];       
-        var args = [];       
+		//var args = ["path/to/script","arg1","arg2","etc"];	
+		var args = [];	
 		process.run(false, args, args.length);
-	} catch(e) { 
+	} catch(e) {
 		printOut("The script cannot be opened as it cannot be found or run on this computer!");
 	}
 }
 
 /***************************************************************************
 Functions that collect some folder statistics - how many files and sub-
-folders are in each folder dragged on a particular project space (without 
+folders are in each folder dragged on a particular project space (without
 folder or file names).
 The functions are called:
 getFolderStats (dirtmp) dirtmp = local file path
 	- drawTICElements(): to update statistics
 getRecursiveFolderData1 (dir, NUMBER): dir = nsIFile, NUMBER is a level to
-    recursively traverse the tree (0 is all levels, 2 is up to the second level)
+	recursively traverse the tree (0 is all levels, 2 is up to the second level)
 	- getFolderData (dirtmp): depends how deep we want the stats to be
 ****************************************************************************/
 
 function getFolderStats (dirtmp) {
-	var dir = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
+	var dir = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
 	try {
-		dir.initWithPath(dirtmp); 
+		dir.initWithPath(dirtmp);
 		var recursiveFolderData = {};
-		if ( dir.isDirectory() ) { 
-			recursiveFolderData = getRecursiveFolderCount (dir, 0); 
+		if ( dir.isDirectory() ) {
+			recursiveFolderData = getRecursiveFolderCount (dir, 0);
 		} else if ( dir.isFile()) {
 			dir.initWithPath(dir.parent.path);
-			recursiveFolderData = getRecursiveFolderCount (dir, 0); 
+			recursiveFolderData = getRecursiveFolderCount (dir, 0);
 		} else {
 			recursiveFolderData = {"stat": "na"};
-		} 
+		}
 		return recursiveFolderData;
-	} catch(e) { 
+	} catch(e) {
 		//printOut("The folder you selected is probably on another comouter!");
 	}
 }
@@ -4405,7 +4563,7 @@ function getRecursiveFolderCount (dir, level) {
 	   var maxDepth = 0;
 	   var folders = 0;
 	   var files = 0;
-	   
+	  
 	   var entries = dir.directoryEntries;
 	   while (entries.hasMoreElements()) {
 	       var file = entries.getNext().QueryInterface(Components.interfaces.nsILocalFile);
@@ -4431,27 +4589,27 @@ function getRecursiveFolderCount (dir, level) {
 	       depth : maxDepth + 1
 	   };
 	} catch (ex) {
-	    // do nothing
-	}	 
+		// do nothing
+	}	
 }
 
 /***************************************************************************
 Get a file size from the given file
 The function is called:
-	- drawTICElements(): checkes for the new size 
+	- drawTICElements(): checkes for the new size
 	  in the more information box of every item that has this value
 ****************************************************************************/
 function fileSizes(filetmp){
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-    //when synced between different OSs ignore erros of wrong paths
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	//when synced between different OSs ignore erros of wrong paths
 	try {
 		file.initWithPath(filetmp);
-		if ( file.exists() ) { 
-			return file.fileSize;  
+		if ( file.exists() ) {
+			return file.fileSize;
 		} else {
 			return "not available";
 		}
-	} catch(e) { 
+	} catch(e) {
 		printOut("The folder you selected does not exists on your local hard drive!");
 	}
 }
@@ -4464,16 +4622,16 @@ The function is called:
 	- drawTICElementsPastStates(pastStatesId): the same as above
 ****************************************************************************/
 function fileModified(filetmp){
-	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);  
-    //when synced between different OSs ignore erros of wrong paths
+	var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
+	//when synced between different OSs ignore erros of wrong paths
 	try {
 		file.initWithPath(filetmp);
-		if ( file.exists() ) { 
-			return file.lastModifiedTime;  
+		if ( file.exists() ) {
+			return file.lastModifiedTime;
 		} else {
 			return "not available";
 		}
-	} catch(e) { 
+	} catch(e) {
 		printOut("The folder you selected does not exists on your local hard drive!");
 	}
 }
@@ -4487,14 +4645,14 @@ The function is called:
 ****************************************************************************/
 function unixToTime(unixTime){
 	var time = new Date(unixTime).format('db');
-	return time; 
+	return time;
 }
 
 /***************************************************************************
 The function gets the current date and time in YYYY-MM-DD HH:MM:SS format
 The function is called:
 	- doDrop(event): puts a time stamp to the newly dropped item on a page
- 	- addNewNote(): the same as above 
+ 	- addNewNote(): the same as above
 ****************************************************************************/
 function getTimestamp(){
 	var time = new Date().format('db');
@@ -4540,13 +4698,13 @@ function tipHide(el) {
 Calculate the angle from a point on a page to the centre.
 Return array angle & quadrant
 The function is called:
-	- drawTICElements(): gets the angle of arrows for every item/element on 
+	- drawTICElements(): gets the angle of arrows for every item/element on
 	  the page and when the items are moved it changes it
 	- drawTICElementsPastStates(pastStatesId): the same as above except moving
 ****************************************************************************/
 function getAngle(coorX,coorY) {
 	//transform the coordinates so the centre of a page is (0,0)
-	//(0,0) is originaly in the top left corner 
+	//(0,0) is originaly in the top left corner
 	var newX = coorX - (window.innerWidth/2) + 5.5;
 	var newY = -coorY + (window.innerHeight/2) - 39;
 
@@ -4556,7 +4714,7 @@ function getAngle(coorX,coorY) {
 	//var angle1 = radians1*(180/Math.PI);
 	var radians2 = Math.atan2(newY,newX);
 	var angle2 = radians2*(180/Math.PI);;
-	//check in which quadrant the point x,y is 
+	//check in which quadrant the point x,y is
 	if ((newX >= 0) && (newY >= 0)) {
 		quadrant = 1;
 	} else if ((newX < 0)&& (newY >= 0)) {
@@ -4600,33 +4758,33 @@ The function is called:
 	- doDrop(event): to check whether dragged text is URL and convert it
 ****************************************************************************/
 function validURL(str) {
-  var pattern = new RegExp('^[a-zA-Z\d]+://(\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?$'); 
+  var pattern = new RegExp('^[a-zA-Z\d]+://(\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?$');
   if(!pattern.test(str.trim())) {
-    return false;
+	return false;
   } else {
-    return true;
+	return true;
   }
 }
 
 function getDomain(externalUrl){
-    var arr = externalUrl.split("/");
-    return arr[2];
+	var arr = externalUrl.split("/");
+	return arr[2];
 }
 
 function getTitle(externalUrl,key){
-    var req = new Request({
+	var req = new Request({
 		method: 'get',
 		data: { 'url' : externalUrl },
 		url: "http://pim.famnit.upr.si/tic/getTitleOfUrl.php",
-		onComplete: function(response) { 
+		onComplete: function(response) {
 			//the response is very slow, so we save the title only when it arrives
-			if (typeof response != 'undefined' && response != "" && response != "302 Moved" 
+			if (typeof response != 'undefined' && response != "" && response != "302 Moved"
 				&& response != "Moved Temporarily") {
 				data[key]["name"] = response;
 				$("nametext" + key).set('html' , response);
 			}
 		}
-    }).send();
+	}).send();
 }
 
 /***************************************************************************
@@ -4637,11 +4795,11 @@ The function is called:
 function checkIfDuplicate(pathTmp) {
 	var beenHere = 0;
 	Array.each(Object.keys(data), function(key, index){
-	    if(data[key]["path"] == pathTmp) {
-	    	beenHere = 1;
-	    }
-	}); 
-	if (beenHere == 1) { 
+		if(data[key]["path"] == pathTmp) {
+			beenHere = 1;
+		}
+	});
+	if (beenHere == 1) {
 		return true;
 	} else {
 		return false;
@@ -4651,7 +4809,7 @@ function checkIfDuplicate(pathTmp) {
 
 /***************************************************************************
 Returns a random date between two other dates
-var randomDateTmp = randomDate('1999-06-08 16:34:52', new Date()); 
+var randomDateTmp = randomDate('1999-06-08 16:34:52', new Date());
 The function is called:
 	- not called .. used for testing purposes
 ****************************************************************************/
@@ -4666,32 +4824,32 @@ function randomDate(date1, date2) {
 /***************************************************************************
 Compares specific two data objects and finds the differences between them.
 Never checking: extension, type, path, timestamp
-compareDataObjectSizeMod(data1, data2): 
+compareDataObjectSizeMod(data1, data2):
 	returns TRUE: if changed size, modified, numOfClicks, lastClick
 	   event: The last stored state in DB will be deleted after the new one is saved.
 	returns FALSE: if changed coordinates, name, vote, email, person, arrow, url, note, date, vote
-	returns FALSE: objects are not of the same length 
+	returns FALSE: objects are not of the same length
 	   event: New stage will be saved and no previous deleted
 The function is called:
 	- compareAndCleanStages(): deleted stages without significant changes
-	- databaseSaveTaskCollection (callback, param): checked if the new state differs in 
-	  size and modofication only 
-compareDataObjectCoordinates(data1, data2): 
+	- databaseSaveTaskCollection (callback, param): checked if the new state differs in
+	  size and modofication only
+compareDataObjectCoordinates(data1, data2):
 	returns TRUE: if changed coordinates
 	returns FALSE: if changed size, modified, name, vote, email, person, arrow, url, note, date, vote
-	returns FALSE: objects are not of the same length 
-The function is called:	   
+	returns FALSE: objects are not of the same length
+The function is called:	
 	- compareAndCleanStages(): deleted stages without significant changes
 ****************************************************************************/
-function compareDataObjectSizeMod(data1, data2) {	
-	//check if the objects are of the same length 
+function compareDataObjectSizeMod(data1, data2) {
+	//check if the objects are of the same length
 	//if they are not return false and the new task will be saved.
 	if (Object.getLength(data1) != Object.getLength(data2)) {
-		return false;	
+		return false;
 		//this means an item has been added or deleted to the new stage
 		//this can happen because a new state is also saved when items are
 		//added doDrop(event) or deleted deleteElement(key, name)
-	} else { 
+	} else {
 		//if they are of the same length compare values
 		var countChangesT = 0; //returning true if not null
 		var countChangesF = 0; //returning false if not null
@@ -4708,29 +4866,29 @@ function compareDataObjectSizeMod(data1, data2) {
 				var dataInner = data1[key];
 			}
 
-			//traverse the item's tags of the longer array 
+			//traverse the item's tags of the longer array
 			//and check which one does not exist in the shorter one and which one changed
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
 					if (dataInner[index] != item) { //check if the value has changed
-		    			if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
-		    				countChangesT = countChangesT + 1;
-	    				} 
-	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
-	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
-	    					 || index == "note" || index == "date" || index == "vote") {
-	    					countChangesF = countChangesF + 1;
-	    				}
-    				}
+						if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
+							countChangesT = countChangesT + 1;
+						}
+						if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
+							 || index == "email" || index == "person" || index == "arrow" || index == "url"
+							 || index == "note" || index == "date" || index == "vote") {
+							countChangesF = countChangesF + 1;
+						}
+					}
 				} else { //find out which index (tag of an element) exist in the longer array and not in shorter
-		    			if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
-		    				countChangesT = countChangesT + 1;
-	    				} 
-	    				if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
-	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
-	    					 || index == "note" || index == "date" || index == "vote") {
-	    					countChangesF = countChangesF + 1;
-	    				}
+						if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
+							countChangesT = countChangesT + 1;
+						}
+						if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
+							 || index == "email" || index == "person" || index == "arrow" || index == "url"
+							 || index == "note" || index == "date" || index == "vote") {
+							countChangesF = countChangesF + 1;
+						}
 				}
 			});
 
@@ -4745,19 +4903,19 @@ function compareDataObjectSizeMod(data1, data2) {
 }
 
 function compareDataObjectCoordinates(data1, data2) {
-	//check if the objects are of the same length 
+	//check if the objects are of the same length
 	//if they are not return false and the new task will be saved.
 	if (Object.getLength(data1) != Object.getLength(data2)) {
 		return false;
 		//this means an item has been added or deleted to the new stage
 		//this can happen because a new state is also saved when items are
 		//added doDrop(event) or deleted deleteElement(key, name)
-	} else { 
+	} else {
 		//if they are of the same length compare values
 		var countChangesT = 0; //returning true if not null
 		var countChangesF = 0; //returning false if not null
 		Object.each (data2, function(value, key){
- 
+
 			//CHECK if the arrays are the same length ...
 			//find out which array is longer so we'll start traversing that one ...
 			if (Object.getLength(value) <= Object.getLength(data1[key])) {
@@ -4773,24 +4931,24 @@ function compareDataObjectCoordinates(data1, data2) {
 			Object.each(dataOuter, function(item, index){
 				if (dataInner[index] != null) { //check if index exists in the other array
 					if (dataInner[index] != item) { //check if he value has changed
-		    			if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
-		    				countChangesT = countChangesT + 1;
-	    				} 
-	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
-	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
-	    					 || index == "note" || index == "date" || index == "vote") {
-	    					countChangesF = countChangesF + 1;
-	    				}
-    				}
+						if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
+							countChangesT = countChangesT + 1;
+						}
+						if (index == "modified" || index == "size" || index == "name" || index == "vote"
+							 || index == "email" || index == "person" || index == "arrow" || index == "url"
+							 || index == "note" || index == "date" || index == "vote") {
+							countChangesF = countChangesF + 1;
+						}
+					}
 				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
-		    			if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
-		    				countChangesT = countChangesT + 1;
-	    				} 
-	    				if (index == "modified" || index == "size" || index == "name" || index == "vote"
-	    					 || index == "email" || index == "person" || index == "arrow" || index == "url"
-	    					 || index == "note" || index == "date" || index == "vote") {
-	    					countChangesF = countChangesF + 1;
-	    				}
+						if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
+							countChangesT = countChangesT + 1;
+						}
+						if (index == "modified" || index == "size" || index == "name" || index == "vote"
+							 || index == "email" || index == "person" || index == "arrow" || index == "url"
+							 || index == "note" || index == "date" || index == "vote") {
+							countChangesF = countChangesF + 1;
+						}
 				}
 			});
 
@@ -4805,13 +4963,13 @@ function compareDataObjectCoordinates(data1, data2) {
 }
 
 /***************************************************************************
-Print out preferences. 
+Print out preferences.
 The function is called:
-	- for testing purposes only 
+	- for testing purposes only
 ****************************************************************************/
 function getPreferences(){
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-	                      .getService(Components.interfaces.nsIPrefService);
+						  .getService(Components.interfaces.nsIPrefService);
 	var branch = prefs.getBranch("extensions.tic.");
 	var children = branch.getChildList("", {});
 	var share4research2 = branch.getIntPref("share4research2");
