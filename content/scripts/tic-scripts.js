@@ -212,7 +212,6 @@ function drawTICElements() {
 						"background-position" : "100% 0%",
 						border : "1px dotted #ccc"});
 		}
-
 		//### ICON
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 			$("item" + key).adopt( //"div#icon"
@@ -288,21 +287,9 @@ function drawTICElements() {
 						events : {
 							dblclick : function(){ //add double click to the icon to mimic the desktop
 								if (dragged == false) {
-									if ((value["type"] == "FILE") || (value["type"] == "FOLDER")) {
-										addNumberOfClicksToElement(key);
-										//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
-										//execute scripts
-										var scriptFiles = ["sh", "bash", "bat", "ps1"];
-										if (scriptFiles.contains(fileExt.toLowerCase())) {
-											fileRunShScript(value["path"]);
-										} else {
-											fileOpen(value["path"]);
-										}								
-									} else if (value["type"] == "URL") {
-										addNumberOfClicksToElement(key);
-										//URL's are opened in a window
-										window.open(value["path"]);
-									}
+									addNumberOfClicksToElement(key);
+									//URL's are opened in a window
+									window.open(value["path"]);
 									return false;
 								} else {
 									dragged = false;
@@ -312,6 +299,41 @@ function drawTICElements() {
 					})
 			);
 		}
+		// check if files or folders are moved or deleted 
+		if (value["type"] == "FILE" || value["type"] == "FOLDER") {
+			var updatedModified = fileModified(data[key]["path"]);
+			data[key]["modified"] = updatedModified;
+			if (updatedModified == "not available") {
+				$("item" + key).adopt( //"div#icon"
+					new Element("img#brokenimg" + key, {
+						src : "images/broken.png",
+						alt : "Icon",
+						styles : {
+							width : "25px",
+							height : "48px",
+							position: "relative",
+							top: "-61px",
+							left: "8px",
+							float: "left"
+						},
+						events : {
+							dblclick : function(){ //add double click to the icon to mimic the desktop
+								if (dragged == false) {
+									//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
+									//execute scripts
+									var scriptFiles = ["sh", "bash", "bat", "ps1"];
+									fileOpen(value["path"]);
+									return false;
+								} else {
+									dragged = false;
+								}
+							}
+						}
+					})
+				);
+			}
+		}		
+
 		//### REVEAL MORE
 		$("item" + key).adopt( //span#reveal" + key
 			new Element("span#reveal" + key).adopt(
@@ -332,18 +354,20 @@ function drawTICElements() {
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
 									$("revealimg" + key).set('src', "images/icons_general/reveal-close.png");
-									//hide div if clicked outside element
-									var bla = function(event){
+									// a function to hide div if clicked outside element
+									var hideMoreInfoFunction = function(event){
 										//if one of the parents of the clicked element doesn't contain
-										//our div's parent ... hite our div
-										if (!$(event.target).getParents().contains($("item" + key)) ) {
+										//our div's parent ... hide our div
+										//or if the delete button is clicked 
+										if (!$(event.target).getParents().contains($("item" + key)) || 
+											$(event.target).getParents().contains($("delete" + key))) {
 											$("information" + key).setStyle('display','none');
 										 	$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
-										 	$("body").removeEvent('click', bla);
+										 	$("body").removeEvent('click', hideMoreInfoFunction);
 										}
-									}
+									}									
 									//add event ... call the above bla
-									$("body").addEvent('click', bla);
+									$("body").addEvent('click', hideMoreInfoFunction);
 								} else {
 									$("information" + key).setStyle('display','none');
 									$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
@@ -895,7 +919,7 @@ function drawTICElements() {
 			new Element("a#delete" + key, {
 				href : "#delete"
 			}).adopt(
-				new Element("img", {
+				new Element("img#deleteimg" + key, {
 					src : "images/icons_general/RecycleBin_Empty.png",
 					alt : "Remove item",
 					title : "Remove from here",
@@ -943,27 +967,6 @@ function drawTICElements() {
 					var updatedSize = fileSizes(data[key]["path"]);
 					data[key]["size"] = updatedSize;
 					item = bytesToSize(updatedSize);
-					//if initial size does not exists make it the current size
-					if (!data[key]["initialSize"]) {
-						data[key]["initialSize"] = data[key]["size"];
-					}
-					//if size of the file changed over 5Kb since it was dragged we are changing it to output info
-					var sizeDiff = data[key]["size"] - data[key]["initialSize"];
-					if (sizeDiff > 5120 && data[key]["arrow"] == "no-no") {
-						data[key]["arrow"] = "no-out";
-					}
-					//if the file has the same size after a month set it to input information
-					var today = new Date();
-					//if initial timestamp does not exists make it the current day
-					if (!data[key]["initialTimestamp"]) {
-						data[key]["initialTimestamp"] = today;
-					}
-					var initialTimestamp = new Date().parse(data[key]["initialTimestamp"]);
-					var difference = today.diff(initialTimestamp);
-					if (sizeDiff == 0 && data[key]["arrow"] == "no-no" && difference < -30) {
-						data[key]["arrow"] = "in-no";
-					}
-
 				} else if (index == "size"  && value["type"] != "FILE") {
 					delete data[key]["size"];
 				}
@@ -1096,10 +1099,13 @@ function drawTICElements() {
 			}
 		}
 
+		//model input & output information
+		modelInputOutput(key);
+		//model importance ... emphasize items based on weighted criteria matrix
+		modelImportance(key);
 	});
 
-	//model importance ... emphasize items based on weighted criteria matrix
-	modelimportance();
+
 }
 
 function drawTICElementsPastStates(pastStatesId) {
@@ -2088,6 +2094,8 @@ function deleteElement(key, name) { //deleting the information item
 		$("nametext" + key).fireEvent('blur');
 		$('saveNote' + key).fireEvent('click');
 	}
+	//fire event to hide the more info before deleting
+	$("revealimg" + key).fireEvent('click');
 
 	//delete the element from data with the key
 	delete data[key];
@@ -2158,7 +2166,7 @@ function addNumberOfClicksToElement(key) { //check if the due date is approachin
 	data[key]["lastClick"] = getTimestamp();
 }
 
-function modelimportance() {
+function modelImportance(key) {
 
 	var today = new Date();
 	var borderRed =		[112, 126, 140, 155, 169, 183, 197, 212, 226, 240, 255];
@@ -2167,150 +2175,186 @@ function modelimportance() {
 	var borderOpacity = [0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5, 0.5];
 	var borderWidth =   [0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20];
 
-	Object.each (data, function(value, key){
-		var importance = 0;
-		var arrValues = {};
-		//Create weighted criteria matrix
-		if (!(value["importance"])) {
-			if (!(value["lastClick"])) {
-				data[key]["lastClick"] = getTimestamp();
-				value["lastClick"] = getTimestamp();
-			}
-			if (!(value["numOfClicks"])) {
-				data[key]["numOfClicks"] = 0;
-				value["numOfClicks"] = 0;
-			}
-			if ( value["type"] == "FILE") {
-				if (!(value["initialSize"]) && value["size"]) {
-					data[key]["initialSize"] = value["size"];
-					value["initialSize"] = value["size"];
-				}
-			}
-			if ( value["type"] == "FILE" || value["type"] == "FOLDER") {
-				if (!(value["modified"]) && !isNaN(value["size"])) {
-					data[key]["modified"] = getTimestamp();
-					value["modified"] = getTimestamp();
-				}
-			}
+	var importance = 0;
+	var arrValues = {};
 
-			if (Math.abs(today.diff(value["lastClick"])) != 0) {
-				arrValues["lastClick"]= (1/Math.abs(today.diff(value["lastClick"])))*10;
-			} else {
-				arrValues["lastClick"]= 0;
-			}
-
-			if (value["numOfClicks"] == 0) {
-				arrValues["numOfClicks"] = 0;
-			} else if (value["numOfClicks"] >= 1 && value["numOfClicks"] <= 2) {
-				arrValues["numOfClicks"] = 1;
-			} else if (value["numOfClicks"] >= 2 && value["numOfClicks"] <= 4) {
-				arrValues["numOfClicks"] = 2;
-			} else if (value["numOfClicks"] >= 5 && value["numOfClicks"] <= 8) {
-				arrValues["numOfClicks"] = 3;
-			} else if (value["numOfClicks"] >= 9 && value["numOfClicks"] <= 13) {
-				arrValues["numOfClicks"] = 4;
-			} else if (value["numOfClicks"] >= 14 && value["numOfClicks"] <= 19) {
-				arrValues["numOfClicks"] = 5;
-			} else if (value["numOfClicks"] >= 20 && value["numOfClicks"] <= 26) {
-				arrValues["numOfClicks"] = 6;
-			} else if (value["numOfClicks"] >= 27 && value["numOfClicks"] <= 34) {
-				arrValues["numOfClicks"] = 7;
-			} else if (value["numOfClicks"] >= 35 && value["numOfClicks"] <= 43) {
-				arrValues["numOfClicks"] = 8;
-			} else if (value["numOfClicks"] >= 44 && value["numOfClicks"] <= 53) {
-				arrValues["numOfClicks"] = 9;
-			} else if (value["numOfClicks"] >= 54) {
-				arrValues["numOfClicks"] = 10;
-			}
-
-			if ( value["type"] == "FILE" ) {
-				arrValues["type"]= 10;
-			} else if (value["type"] == "FOLDER") {
-				arrValues["type"]= 7.5;
-			} else if (value["type"] == "NOTE") {
-				arrValues["type"]= 5;
-			} else {
-				arrValues["type"]= 2.5;
-			}
-
-			if ( value["type"] == "FILE" || value["type"] == "FOLDER") {
-				if (Math.abs(today.diff(value["modified"])) == 0) {
-					arrValues["modified"] = 10;
-				} else {
-					arrValues["modified"] = (1/Math.abs(today.diff(value["modified"])))*10;
-				}
-			} else {
-				if (Math.abs(today.diff(value["lastClick"])) == 0) {
-					arrValues["modified"] = 10;
-				} else {
-					arrValues["modified"] = (1/Math.abs(today.diff(value["lastClick"])))*10;
-				}
-			}
-
-			if ( value["type"] == "FILE" &&  !isNaN(value["size"])) {
-				var sizeChange = Math.abs(value["size"] - value["initialSize"]);
-				arrValues["sizeChange"] = (sizeChange/value["size"]) * 10;
-			}
-
-			if ( value["type"] == "FILE" &&  !isNaN(value["size"])) {
-				importance = 2*arrValues["lastClick"] + 4*arrValues["numOfClicks"] + 1*arrValues["type"] + 2*arrValues["modified"] + 1*arrValues["sizeChange"];
-			} else {
-				importance = 3*arrValues["lastClick"] + 5*arrValues["numOfClicks"] + 1*arrValues["type"] + 1*arrValues["modified"];
-			}
-
-			$("msg").innerHTML += ":::: " + Math.round(importance/10) + "-" + value["path"] + "<br>";
-
-			importance = Math.round(importance/10);
-			if (importance > 4) {
-				//$("vote" + key).set('html' , importance);
- 				$("item" + key).setStyle('border', borderWidth[importance] + 'em solid rgba(' + borderRed[importance] + ', ' + borderGreen[importance] + ', ' + borderBlue[importance] + ', ' + borderOpacity[importance] + ')');
-			}
-
-			/*
-			Decision making matrix or weight criteria matrix
-
-		    All
-			weight  criteria      normalisation
-			3 		lastClick     # of days between today and lastClick and we use reciprical value
-			                      1/x to get normalised value ... the more days passed, lower the value
-			                      multiply by 10 (whatever comes from 0 to 1)
-			                      MAX value is 10
-			5 		numOfClicks   have to parametricise 0 clicks is 0, 1-2 is 1, 2-4 is 2, 5-8 is 3,
-								  9-13 4, 14-19 is 5, 19-25 is 6, 26-33 is 7, 34-42 is 8, 43-52 is 9,
-								  53 - .. is 10
-		 						  MAX value is 10
-			1 		type          Files 4 (10 normalised = 10*4/4), Folders 3 (7.5=10*3/4), Notes 2 (5),
-			    				  HTML & Text & URL 1 (2.5)
-			                      MAX value is 10
-			1 		modified      the same as lastClick ... (1/x)*10
-			 					  MAX value is 10
-		 	SUM: 10               SUM MAX values = 40
-
-					MAX possible value = 4*10 + 5*10 + 1*10 + 1*10 = 100
-
-		    Files
-			2 		lastClick
-			4 		numOfClicks
-			1 		type
-			2 		modified
-		    1 		sizeChange    0 is 0  and the rest we use proportion (sizeChange/size)*10
-		                          We are comparing e.g. HTML file of which changes we can measure in Kb
-		                          and e.g. DOC files of which chages are measured in MB and e.g. SVG in
-		                          10s of MB ....
-		                          We should use the propotion of the file change based on the whole file
-			SUM: 10  			  SUM MAX values = 30
-
-					MAX possible value = 2*10 + 4*10 + 1*10 + 2*10 + 1*10 = 100
-
-			Show just importance higher that 6
-			*/					
-		} else {
-			importance[key] = value["importance"];
-							// leave emelents alone and don't change their values
-							// maybe arrange value of other elements lowest than
-							// the lowest of all element with a set value
+	//Create weighted criteria matrix
+	if (!(data[key]["importance"])) {
+		if (!(data[key]["lastClick"])) {
+			data[key]["lastClick"] = getTimestamp();
 		}
-	});
+		if (!(data[key]["numOfClicks"])) {
+			data[key]["numOfClicks"] = 0;
+		}
+		if ( data[key]["type"] == "FILE") {
+			if (!(data[key]["initialSize"]) && data[key]["size"]) {
+				data[key]["initialSize"] = data[key]["size"];
+			}
+		}
+
+		if (data[key]["type"] == "FILE" || data[key]["type"] == "FOLDER") {
+			var updatedModified = fileModified(data[key]["path"]);
+			data[key]["modified"] = updatedModified;
+			if (updatedModified != "not available") {
+				if (!(data[key]["initialSize"])) {
+					data[key]["initialSize"] = data[key]["size"];
+				}
+			} 
+		}
+
+		if (Math.abs(today.diff(data[key]["lastClick"])) != 0) {
+			arrValues["lastClick"]= (1/Math.abs(today.diff(data[key]["lastClick"])))*10;
+		} else {
+			arrValues["lastClick"]= 0;
+		}
+
+		if (data[key]["numOfClicks"] == 0) {
+			arrValues["numOfClicks"] = 0;
+		} else if (data[key]["numOfClicks"] >= 1 && data[key]["numOfClicks"] <= 2) {
+			arrValues["numOfClicks"] = 1;
+		} else if (data[key]["numOfClicks"] >= 2 && data[key]["numOfClicks"] <= 4) {
+			arrValues["numOfClicks"] = 2;
+		} else if (data[key]["numOfClicks"] >= 5 && data[key]["numOfClicks"] <= 8) {
+			arrValues["numOfClicks"] = 3;
+		} else if (data[key]["numOfClicks"] >= 9 && data[key]["numOfClicks"] <= 13) {
+			arrValues["numOfClicks"] = 4;
+		} else if (data[key]["numOfClicks"] >= 14 && data[key]["numOfClicks"] <= 19) {
+			arrValues["numOfClicks"] = 5;
+		} else if (data[key]["numOfClicks"] >= 20 && data[key]["numOfClicks"] <= 26) {
+			arrValues["numOfClicks"] = 6;
+		} else if (data[key]["numOfClicks"] >= 27 && data[key]["numOfClicks"] <= 34) {
+			arrValues["numOfClicks"] = 7;
+		} else if (data[key]["numOfClicks"] >= 35 && data[key]["numOfClicks"] <= 43) {
+			arrValues["numOfClicks"] = 8;
+		} else if (data[key]["numOfClicks"] >= 44 && data[key]["numOfClicks"] <= 53) {
+			arrValues["numOfClicks"] = 9;
+		} else if (data[key]["numOfClicks"] >= 54) {
+			arrValues["numOfClicks"] = 10;
+		}
+
+		if ( data[key]["type"] == "FILE" ) {
+			arrValues["type"]= 10;
+		} else if (data[key]["type"] == "FOLDER") {
+			arrValues["type"]= 7.5;
+		} else if (data[key]["type"] == "NOTE") {
+			arrValues["type"]= 5;
+		} else {
+			arrValues["type"]= 2.5;
+		}
+
+		if (data[key]["type"] == "FILE" || data[key]["type"] == "FOLDER") {
+			if (updatedModified != "not available") {
+				if (fileModified(data[key]["path"]) != "not available") { 
+					if (Math.abs(today.diff(data[key]["modified"])) == 0) {
+						arrValues["modified"] = 10;
+					} else {
+						arrValues["modified"] = (1/Math.abs(today.diff(data[key]["modified"])))*10;
+					}
+				}
+			} 			
+		} else {
+			if (Math.abs(today.diff(data[key]["lastClick"])) == 0) {
+				arrValues["modified"] = 10;
+			} else {
+				arrValues["modified"] = (1/Math.abs(today.diff(data[key]["lastClick"])))*10;
+			}
+		}
+
+		if ( data[key]["type"] == "FILE" &&  updatedModified != "not available" ) {
+			var sizeChange = Math.abs(data[key]["size"] - data[key]["initialSize"]);
+			arrValues["sizeChange"] = (sizeChange/data[key]["size"]) * 10;
+		}
+
+		//if file exists
+		if ( data[key]["type"] == "FILE" &&  updatedModified != "not available") {
+			importance = 2*arrValues["lastClick"] + 4*arrValues["numOfClicks"] + 1*arrValues["type"] + 2*arrValues["modified"] + 1*arrValues["sizeChange"];
+		//if folder exists
+		} else if ( data[key]["type"] == "FOLDER" &&   updatedModified != "not available") {
+			importance = 3*arrValues["lastClick"] + 5*arrValues["numOfClicks"] + 1*arrValues["type"] + 1*arrValues["modified"];
+		} else if (data[key]["type"] == "NOTE" || data[key]["type"] == "TEXT" || data[key]["type"] == "HTML" || data[key]["type"] == "URL") {
+			importance = 3*arrValues["lastClick"] + 5*arrValues["numOfClicks"] + 1*arrValues["type"] + 1*arrValues["modified"];
+		} else {
+			importance = 0;
+		}
+
+		importance = Math.round(importance/10);
+		//$("msg").innerHTML += importance + "- " + data[key]["name"].substring(0,10) + "<br>";
+		if (importance > 4) {
+			$("vote" + key).set('html' , importance);
+			$("item" + key).setStyle('border', borderWidth[importance] + 'em solid rgba(' + borderRed[importance] + ', ' + borderGreen[importance] + ', ' + borderBlue[importance] + ', ' + borderOpacity[importance] + ')');
+		}
+
+		/*
+		Decision making matrix or weight criteria matrix
+
+	    All
+		weight  criteria      normalisation
+		3 		lastClick     # of days between today and lastClick and we use reciprical value
+		                      1/x to get normalised value ... the more days passed, lower the value
+		                      multiply by 10 (whatever comes from 0 to 1)
+		                      MAX value is 10
+		5 		numOfClicks   have to parametricise 0 clicks is 0, 1-2 is 1, 2-4 is 2, 5-8 is 3,
+							  9-13 4, 14-19 is 5, 19-25 is 6, 26-33 is 7, 34-42 is 8, 43-52 is 9,
+							  53 - .. is 10
+	 						  MAX value is 10
+		1 		type          Files 4 (10 normalised = 10*4/4), Folders 3 (7.5=10*3/4), Notes 2 (5),
+		    				  HTML & Text & URL 1 (2.5)
+		                      MAX value is 10
+		1 		modified      the same as lastClick ... (1/x)*10
+		 					  MAX value is 10
+	 	SUM: 10               SUM MAX values = 40
+
+				MAX possible value = 4*10 + 5*10 + 1*10 + 1*10 = 100
+
+	    Files
+		2 		lastClick
+		4 		numOfClicks
+		1 		type
+		2 		modified
+	    1 		sizeChange    0 is 0  and the rest we use proportion (sizeChange/size)*10
+	                          We are comparing e.g. HTML file of which changes we can measure in Kb
+	                          and e.g. DOC files of which chages are measured in MB and e.g. SVG in
+	                          10s of MB ....
+	                          We should use the propotion of the file change based on the whole file
+		SUM: 10  			  SUM MAX values = 30
+
+				MAX possible value = 2*10 + 4*10 + 1*10 + 2*10 + 1*10 = 100
+
+		Show just importance higher that 6
+		*/					
+	} else {
+		importance[key] = data[key]["importance"];
+						// leave emelents alone and don't change their values
+						// maybe arrange value of other elements lowest than
+						// the lowest of all element with a set value
+	}
+}
+
+function modelInputOutput(key) {
+	if (data[key]["type"] == "FILE" || !isNaN(data[key]["size"])) { 
+		//if initial size does not exists make it the current size
+		if (!data[key]["initialSize"]) {
+			data[key]["initialSize"] = data[key]["size"];
+		}
+		//if proportion of the size change of the file based on the whole size 
+		//is greater than 5% then change it to the output information
+		var sizeChange = Math.abs(data[key]["size"] - data[key]["initialSize"]);
+		var sizeChangeProportion = Math.round((sizeChange/data[key]["size"]) * 100);		
+		if (sizeChangeProportion > 5 && data[key]["arrow"] == "no-no") {
+			data[key]["arrow"] = "no-out";
+		}
+		//if the file has the same size after a month set it to input information
+		var today = new Date();
+		if (!data[key]["initialTimestamp"]) {
+			//if initial timestamp does not exists make it the current day
+			data[key]["initialTimestamp"] = getTimestamp();
+		}
+		var initialTimestamp = new Date().parse(data[key]["initialTimestamp"]);
+		var difference = today.diff(initialTimestamp);
+		if (sizeChange == 0 && data[key]["arrow"] == "no-no" && difference < -30) {
+			data[key]["arrow"] = "in-no";
+		}
+	}
 }
 
 /***************************************************************************
