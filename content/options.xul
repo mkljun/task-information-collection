@@ -15,6 +15,8 @@
       <preference id="pref-openMode"        name="extensions.tic.openMode" type="int"/>
       <preference id="pref-share4research2" name="extensions.tic.share4research2" type="int"/>   
       <preference id="pref-fileManager"     name="extensions.tic.fileManager" type="string"/>
+      <preference id="pref-autoImportance"  name="extensions.tic.autoImportance" type="int"/>
+      <preference id="pref-autoInputOutput"  name="extensions.tic.autoInputOutput" type="int"/>
     </preferences>
     <groupbox>
       <caption label="&pref-openMode.label;"/>
@@ -37,6 +39,20 @@
         <radio label="&pref-share4research2.checkboxY;" value="2" accesskey="&pref-share4research2.y.ak;"  selected="true"/>
       </radiogroup>
     </groupbox> 
+    <groupbox>
+      <caption label="&pref-autoImportance.label;"/>
+      <radiogroup id="rg-autoImportance" value="2" preference="pref-autoImportance">
+        <radio label="&pref-share4research2.checkboxN;" value="1" accesskey="&pref-autoImportance.n.ak;"/>
+        <radio label="&pref-share4research2.checkboxY;" value="2" accesskey="&pref-autoImportance.y.ak;"  selected="true"/>
+      </radiogroup>
+    </groupbox>  
+    <groupbox>
+      <caption label="&pref-autoInputOutput.label;"/>
+      <radiogroup id="rg-autoImportance" value="2" preference="pref-autoInputOutput">
+        <radio label="&pref-share4research2.checkboxN;" value="1" accesskey="&pref-autoInputOutput.n.ak;"/>
+        <radio label="&pref-share4research2.checkboxY;" value="2" accesskey="&pref-autoInputOutput.y.ak;"  selected="true"/>
+      </radiogroup>
+    </groupbox>  
     <!-- groupbox -->
       <!-- hbox --><!-- caption label="&pref-fileManagerCaption1.label;"/ --><!-- /hbox -->
       <!-- hbox --><!-- caption label="&pref-fileManagerCaption2.label;"/ --><!-- /hbox -->

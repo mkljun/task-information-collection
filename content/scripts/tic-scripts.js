@@ -28,6 +28,7 @@ var elementsR = []; //for detaching resizing when elements are edited
 var dragged = false; //for checking if an item got moved in case of clicking on a link and moving
 var autosave = []; //for clearing autosave ... bug when dragging text from a note to the same note
 var myScrollable = []; // custom scrollbar on notes - to remove and re-enalbe when draged or resized
+var firefoxExtPrefs = []; //for checking if yutoimportance preference is set to true or 2
 
 /***************************************************************************
 Functions strated and events added to DOM elements when the page loads up
@@ -36,6 +37,9 @@ The function is called: after DOM loads
 window.addEvent('domready', function() { //adding different events to DOM elements
 
 	Locale.use('en-US');
+
+	//get firefox preferences
+	getPreferences();
 
 	//create empty object
 	data = {};
@@ -73,6 +77,7 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 		drawTICElements();
 		drawPICCircles();
 	}
+
 });
 
 //save the state of a task every X mili seconds - 3000000 ms is 5 minutes
@@ -1099,13 +1104,16 @@ function drawTICElements() {
 			}
 		}
 
-		//model input & output information
-		modelInputOutput(key);
-		//model importance ... emphasize items based on weighted criteria matrix
-		modelImportance(key);
+		//automatically assign importance leves if it is set in preferences
+		if (firefoxExtPrefs["autoImportance"] ==  2) {
+			modelImportance(key);
+		}
+		//automatically assign input & output arrows if it is set in preferences
+		if (firefoxExtPrefs["autoInputOutput"] ==  2) {
+			modelInputOutput(key);
+		}		
+
 	});
-
-
 }
 
 function drawTICElementsPastStates(pastStatesId) {
@@ -2786,13 +2794,9 @@ compareAndCleanStages(): see beow detailed description
 	- databaseMaintenance(): before the reindex and vacuuming
 ****************************************************************************/
 function databaseDump() {
+	
 	//get the preference of shared4research2 value and send data only if it is yes == 2
-	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
-						  .getService(Components.interfaces.nsIPrefService);
-	var branch = prefs.getBranch("extensions.tic.");
-	var share4research2 = branch.getIntPref("share4research2");
-
-	if (share4research2 == 2) {
+	if (firefoxExtPrefs["share4research2"] == 2) {
 		var dumpText = "";
 		//Get the userid and last date the db was dumped and sent over
 		var statement = connection.createStatement("SELECT * FROM user");
@@ -5016,9 +5020,12 @@ function getPreferences(){
 						  .getService(Components.interfaces.nsIPrefService);
 	var branch = prefs.getBranch("extensions.tic.");
 	var children = branch.getChildList("", {});
-	var share4research2 = branch.getIntPref("share4research2");
-	var fileManager = branch.getCharPref("fileManager");
+	firefoxExtPrefs["share4research2"] = branch.getIntPref("share4research2");
+	firefoxExtPrefs["fileManager"] = branch.getCharPref("fileManager");
+	firefoxExtPrefs["autoImportance"] = branch.getIntPref("autoImportance");
+	firefoxExtPrefs["autoInputOutput"] = branch.getIntPref("autoInputOutput");
 }
+
 
 
 

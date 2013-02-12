@@ -6,4 +6,7 @@ pref("extensions.tic.openMode", 2);
 pref("extensions.tic.firstRunButtons", false);
 //the path to the fime manager
 pref("extensions.tic.fileManager", "");
-
+//automatically find importance: 2- yes and 1- no
+pref("extensions.tic.autoImportance", 2);
+//automatically find inout or output info to the project: 2- yes and 1- no
+pref("extensions.tic.autoInputOutput", 2);

@@ -17,3 +17,9 @@
 <!ENTITY  pref-fileManagerCaption2.label 	"managers are already included so try opening files and folders first.">
 <!ENTITY  pref-fileManager.label "Linux (and alike) only: "> 
 <!ENTITY  pref-fileManager.ak	"f">
+<!ENTITY  pref-autoImportance.label 	"Automatically assign importance?">
+<!ENTITY  pref-autoImportance.y.ak	"y">
+<!ENTITY  pref-autoImportance.n.ak	"n">
+<!ENTITY  pref-autoInputOutput.label 	"Automatically assign input/output arrows to files' links?">
+<!ENTITY  pref-autoInputOutput.y.ak	"y">
+<!ENTITY  pref-autoInputOutput.n.ak	"n">
