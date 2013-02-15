@@ -3090,7 +3090,7 @@ function compareAndCleanStages(){
 
 	//traverse through all tasks
 	for (var j = 0; j < tasksArray.length; j++ ) {
-		var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");
+		var statement = connection.createStatement("SELECT COUNT(*) AS l FROM tasks_collections WHERE task_id = :tid");		
 		statement.params.tid = tasksArray[j];
 		//MOZ_STORAGE_STATEMENT_READY 	1 	The SQL statement is ready to be executed.
 		if (statement.state == 1) {
@@ -4946,7 +4946,6 @@ function compareDataObject(data1, data2) {
 							index == "numOfClicks" || index == "lastClick"
 							) {
 							countChangesT = countChangesT + 1;
-							$("msg").innerHTML += "1-";
 						}
 						if (index == "name"  || index == "arrow"  || index == "vote" || 
 							//if the below tags did exist before it means that their values had been 
@@ -4954,7 +4953,6 @@ function compareDataObject(data1, data2) {
 							index == "email" || index == "person" || index == "url"  || 
 							index == "note"  || index == "date"
 							) {
-							$("msg").innerHTML += "2-";
 							countChangesF = countChangesF + 1;
 						}
 					}
@@ -4971,20 +4969,15 @@ function compareDataObject(data1, data2) {
 							index == "date"
 							) {
 							countChangesT = countChangesT + 1;
-							$("msg").innerHTML += "3-";
 						}
 						if (index == "name" || index == "arrow" || index == "vote") {
 							countChangesF = countChangesF + 1;
-							$("msg").innerHTML += "4-";
 						}
 				}
 				
 			});
 
 		});
-
-$("msg").innerHTML += "<br>";
-
 		if (countChangesF > 0){
 			return false;
 		} else {
