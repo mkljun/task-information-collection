@@ -1274,6 +1274,19 @@ function drawTICElementsPastStates(pastStatesId) {
 								if ($("information" + key).getStyle("display") == "none") {
 									$("information" + key).setStyle('display','block');
 									$("revealimg" + key).set('src', "images/icons_general/reveal-close.png");
+									var hideMoreInfoFunction = function(event){
+										//if one of the parents of the clicked element doesn't contain
+										//our div's parent ... hide our div
+										//or if the delete button is clicked 
+										if (!$(event.target).getParents().contains($("item" + key)) || 
+											$(event.target).getParents().contains($("delete" + key))) {
+											$("information" + key).setStyle('display','none');
+										 	$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
+										 	$("body").removeEvent('click', hideMoreInfoFunction);
+										}
+									}									
+									//add event ... call the above bla
+									$("body").addEvent('click', hideMoreInfoFunction);									
 								} else {
 									$("information" + key).setStyle('display','none');
 									$("revealimg" + key).set('src', "images/icons_general/reveal-open.png");
@@ -1611,8 +1624,7 @@ function drawTICElementsPastStates(pastStatesId) {
 					//get current modificaion time and make it human readable
 					if (index == "modified"){
 						if (value["type"] == "FILE" || value["type"] == "FOLDER") {
-							var updatedModified = fileModified(data[key]["path"]);
-							data[key]["modified"] = updatedModified;
+							var updatedModified = fileModified(value["path"]);
 							if (updatedModified == "not available") {
 								item = updatedModified;
 							} else {
@@ -1733,6 +1745,13 @@ checkDateElement(date,key): check if the due date is approaching and emphasize t
 	- drawTICElements(): called for every item if it needs to be emphasized
 	- addElementValue(key,tag,value): check if the newly added value is date
 	  and it needs to be amphasized
+addNumberOfClicksToElement(key): adds this items attribute if the item is clicked on
+	- drawTICElements(): when user clicks to open a file/folder/URL or when notes
+	  are edited
+modelImportance(key): automatically calculates importance and emhasises itmes
+	- drawTICElements(): if the preferences of the add-on are set to yes
+modelInputOutput(key): automatically edits input/output arrows of the element
+	- drawTICElements(): if the preferences of the add-on are set to yes
 ****************************************************************************/
 
 function addElementValue(key,tag,value) { //adding a value/tag of the information item
@@ -2991,7 +3010,7 @@ function databaseMaintenance() {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
 						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
-								printOut("Query canceled or aborted!");
+								printOut("Query canceled or aborted 1!");
 						} else {
 							//printOut(aReason.message);
 						}
@@ -3012,7 +3031,7 @@ function databaseMaintenance() {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
 						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
-								printOut("Query canceled or aborted!");
+								printOut("Query canceled or aborted 2!");
 						} else {
 							//printOut(aReason.message);
 						}
@@ -3034,7 +3053,7 @@ function databaseMaintenance() {
 				connection.executeAsync([statement], 1,  {
 					handleCompletion : function(aReason) {
 						if (aReason != Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED) {
-								printOut("Query canceled or aborted!");
+								printOut("Query canceled or aborted 3!");
 						} else {
 							//printOut(aReason.message);
 						}
@@ -3056,7 +3075,7 @@ function databaseMaintenance() {
 }
 
 //if the DB grows too big delete our rows from tasks_collections that have no significant changes
-//compare all consequent states of a task and delete based on compareDataObjectXYZ function
+//compare all consequent states of a task and delete based on compareDataObject function
 //if two consequent stages differ only in certain tags(s) it deletes the oldes one
 function compareAndCleanStages(){
 	var tasksArray = [];
@@ -3093,7 +3112,7 @@ function compareAndCleanStages(){
 					statement.executeStep();
 					var obj2 = JSON.decode(statement.row.coll_items);
 					var tmpId2 = statement.row.coll_id;
-					if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
+					if (compareDataObject(obj1, obj2) != false) {
 						tmpArray.append([tmpId1]);
 					}
 					while (statement.executeStep()) {
@@ -3101,7 +3120,7 @@ function compareAndCleanStages(){
 						tmpId1 = tmpId2;
 						obj2 = JSON.decode(statement.row.coll_items);
 						tmpId2 = statement.row.coll_id;
-						if (compareDataObjectCoordinates(obj1, obj2) != false || compareDataObjectSizeMod(obj1, obj2) != false) {
+						if (compareDataObject(obj1, obj2) != false) {
 							tmpArray.append([tmpId1]);
 						}
 					}
@@ -3441,7 +3460,7 @@ function databaseShowArchivedTasks() {
 
 /***************************************************************************
 Function gets the task name from the task id. The function is called:
-	- drawTICElements(): when overlapping tasks to show a name if mouseovered
+	- drawTICElements(): when overlapping tasks to show a name if mouse gets over
 	  the overlapping number in a circle above the item icon
 	- drawTICElementsPastStates(pastStatesId): the same as above
 	- printTaskNameCentre(taskId): to print a name in the centre of the page
@@ -3967,7 +3986,7 @@ function databaseSaveTaskCollection(callback, param) {
 			callback(param);
 		} else {
 			//The STRINGS are NOT the same .. DO some more comparison
-			if (compareDataObjectSizeMod(data, JSON.decode(dataTMP)) != false) {
+			if (compareDataObject(data, JSON.decode(dataTMP)) != false) {
 				//if true the objects differ in size and modification time only and we delete the old one
 				databaseDeleteTaskStage(previousStageId);
 			}
@@ -4125,8 +4144,6 @@ Dragged types:
 * TEXT - (texmaker, OOo, Word)
 	text/html 2: (string) : [Pay particular interest ...]
 	text/plain 2: (string) : [Pay particular interest ...] - USE THIS
-* EMAIL - Thunderbird
-	text/x-moz-url 1: (object) : [null]
 * HTML text from WEB (URL)
 	text/_moz_htmlcontext 4: (string) : []
 	text/_moz_htmlinfo 4: (string) : [0,0]
@@ -4415,6 +4432,7 @@ function addNewNote() {
 			name : "Double click on the text to edit note.<br><br>Click elsewhere to save.",
 			coordinatex : "75",
 			coordinatey : "60",
+			initialTimestamp : getTimestamp(),			
 			timestamp : getTimestamp(),
 			modified : getTimestamp(),
 			width: "150",
@@ -4581,9 +4599,9 @@ folder or file names).
 The functions are called:
 getFolderStats (dirtmp) dirtmp = local file path
 	- drawTICElements(): to update statistics
-getRecursiveFolderData1 (dir, NUMBER): dir = nsIFile, NUMBER is a level to
+getRecursiveFolderCount (dir, NUMBER): dir = nsIFile, NUMBER is a level to
 	recursively traverse the tree (0 is all levels, 2 is up to the second level)
-	- getFolderData (dirtmp): depends how deep we want the stats to be
+	- getFolderStats(dirtmp): depends how deep we want the stats to be
 ****************************************************************************/
 
 function getFolderStats (dirtmp) {
@@ -4725,7 +4743,7 @@ function clearBackgroundTimelineItems(){
 }
 
 /***************************************************************************
-Tips with mouseover NOT IMPLEMENTED
+Tips with mouse getting over them NOT IMPLEMENTED
 ****************************************************************************/
 function tipShow(el) {
 	var tipText = $(el).getProperty('title');
@@ -4801,9 +4819,13 @@ function cleanHtml(str) {
 }
 
 /***************************************************************************
-Cheks if the note contains just URL and gets the title of this URL
-The function is called:
+validURL(str): Cheks if the note contains just URL and gets the title of this URL
+	The function is called:
 	- doDrop(event): to check whether dragged text is URL and convert it
+getDomain(externalUrl): get the domain of the URL
+	- doDrop(event): when the urls as text is dragged over
+function getTitle(externalUrl,key): when URLs are dragged from other browsers 
+	- doDrop(event): when the urls as text is dragged over
 ****************************************************************************/
 function validURL(str) {
   var pattern = new RegExp('^[a-zA-Z\d]+://(\w+:\w+@)?([a-zA-Z\d.-]+\.[A-Za-z]{2,4})(:\d+)?(/.*)?$');
@@ -4872,24 +4894,22 @@ function randomDate(date1, date2) {
 /***************************************************************************
 Compares specific two data objects and finds the differences between them.
 Never checking: extension, type, path, timestamp
-compareDataObjectSizeMod(data1, data2):
-	returns TRUE: if changed size, modified, numOfClicks, lastClick
-	   event: The last stored state in DB will be deleted after the new one is saved.
-	returns FALSE: if changed coordinates, name, vote, email, person, arrow, url, note, date, vote
+compareDataObject(data1, data2):
+	returns TRUE: if changed coordinates, size, modified, numOfClicks, lastClick
+	   event: prevoius state in the DB will be deleted & the new one saved or preserved		 
+	returns TRUE: if these elements did not exist in previous stage and they are just added
+	              email, person, url, note, date, vote 
+	returns FALSE: if these elements exist in previous state and they changed   
+				  email, person, url, note, date, vote 		 	
+	returns FALSE: if name, vote, arrow 
 	returns FALSE: objects are not of the same length
-	   event: New stage will be saved and no previous deleted
+	   event: prevoius state in the DB will NOT be deleted
 The function is called:
 	- compareAndCleanStages(): deleted stages without significant changes
 	- databaseSaveTaskCollection (callback, param): checked if the new state differs in
 	  size and modofication only
-compareDataObjectCoordinates(data1, data2):
-	returns TRUE: if changed coordinates
-	returns FALSE: if changed size, modified, name, vote, email, person, arrow, url, note, date, vote
-	returns FALSE: objects are not of the same length
-The function is called:	
-	- compareAndCleanStages(): deleted stages without significant changes
 ****************************************************************************/
-function compareDataObjectSizeMod(data1, data2) {
+function compareDataObject(data1, data2) {
 	//check if the objects are of the same length
 	//if they are not return false and the new task will be saved.
 	if (Object.getLength(data1) != Object.getLength(data2)) {
@@ -4917,90 +4937,53 @@ function compareDataObjectSizeMod(data1, data2) {
 			//traverse the item's tags of the longer array
 			//and check which one does not exist in the shorter one and which one changed
 			Object.each(dataOuter, function(item, index){
-				if (dataInner[index] != null) { //check if index exists in the other array
-					if (dataInner[index] != item) { //check if the value has changed
-						if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
+				//if index it tag exists in the other object
+				if (dataInner[index] != null) {
+					//if it does check if the values are the same
+					if (dataInner[index] != item) { 
+						if (index == "coordinatex" || index == "coordinatey" || 
+							index == "modified"    || index == "size"        || 
+							index == "numOfClicks" || index == "lastClick"
+							) {
 							countChangesT = countChangesT + 1;
+							$("msg").innerHTML += "1-";
 						}
-						if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
-							 || index == "email" || index == "person" || index == "arrow" || index == "url"
-							 || index == "note" || index == "date" || index == "vote") {
+						if (index == "name"  || index == "arrow"  || index == "vote" || 
+							//if the below tags did exist before it means that their values had been 
+							//edited and we want to preserve the old values
+							index == "email" || index == "person" || index == "url"  || 
+							index == "note"  || index == "date"
+							) {
+							$("msg").innerHTML += "2-";
 							countChangesF = countChangesF + 1;
 						}
 					}
-				} else { //find out which index (tag of an element) exist in the longer array and not in shorter
-						if (index == "modified" || index == "size" || index == "numOfClicks" || index == "lastClick") {
+				//the element does not exist in the other object
+				} else { 
+						//find out which index (tag of an element) exist in the longer array and not in shorter
+						if (index == "coordinatex" || index == "coordinatey" || 
+							index == "modified"    || index == "size"        || 
+							index == "numOfClicks" || index == "lastClick"   ||
+							//if the below tags do not exist in the previous stage it means that 
+							//they have been added, the old value was null & we can delete the old stage
+							index == "email"       || index == "person"      || 
+							index == "url"         || index == "note"        || 
+							index == "date"
+							) {
 							countChangesT = countChangesT + 1;
+							$("msg").innerHTML += "3-";
 						}
-						if (index == "coordinatex" || index == "coordinatey" || index == "name" || index == "vote"
-							 || index == "email" || index == "person" || index == "arrow" || index == "url"
-							 || index == "note" || index == "date" || index == "vote") {
+						if (index == "name" || index == "arrow" || index == "vote") {
 							countChangesF = countChangesF + 1;
+							$("msg").innerHTML += "4-";
 						}
 				}
+				
 			});
 
 		});
 
-		if (countChangesF > 0){
-			return false;
-		} else {
-			return true;
-		}
-	}
-}
-
-function compareDataObjectCoordinates(data1, data2) {
-	//check if the objects are of the same length
-	//if they are not return false and the new task will be saved.
-	if (Object.getLength(data1) != Object.getLength(data2)) {
-		return false;
-		//this means an item has been added or deleted to the new stage
-		//this can happen because a new state is also saved when items are
-		//added doDrop(event) or deleted deleteElement(key, name)
-	} else {
-		//if they are of the same length compare values
-		var countChangesT = 0; //returning true if not null
-		var countChangesF = 0; //returning false if not null
-		Object.each (data2, function(value, key){
-
-			//CHECK if the arrays are the same length ...
-			//find out which array is longer so we'll start traversing that one ...
-			if (Object.getLength(value) <= Object.getLength(data1[key])) {
-				var dataOuter = data1[key];
-				var dataInner = value;
-			} else {
-				var dataOuter = value;
-				var dataInner = data1[key];
-			}
-
-			//traverse the item' s tags of the longer array (if deleting tags will ever be implemented)
-			//and check which one does not exist in the shorter one and which one changed
-			Object.each(dataOuter, function(item, index){
-				if (dataInner[index] != null) { //check if index exists in the other array
-					if (dataInner[index] != item) { //check if he value has changed
-						if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
-							countChangesT = countChangesT + 1;
-						}
-						if (index == "modified" || index == "size" || index == "name" || index == "vote"
-							 || index == "email" || index == "person" || index == "arrow" || index == "url"
-							 || index == "note" || index == "date" || index == "vote") {
-							countChangesF = countChangesF + 1;
-						}
-					}
-				} else { //find out which index (tag of an element) exist in th longer array and not in shorter
-						if (index == "coordinatex" || index == "coordinatey" || index == "numOfClicks" || index == "lastClick") {
-							countChangesT = countChangesT + 1;
-						}
-						if (index == "modified" || index == "size" || index == "name" || index == "vote"
-							 || index == "email" || index == "person" || index == "arrow" || index == "url"
-							 || index == "note" || index == "date" || index == "vote") {
-							countChangesF = countChangesF + 1;
-						}
-				}
-			});
-
-		});
+$("msg").innerHTML += "<br>";
 
 		if (countChangesF > 0){
 			return false;
@@ -5011,9 +4994,9 @@ function compareDataObjectCoordinates(data1, data2) {
 }
 
 /***************************************************************************
-Print out preferences.
+Get preferences of the extension.
 The function is called:
-	- for testing purposes only
+	- window.addEvent('domready', function(): when TIC is opened
 ****************************************************************************/
 function getPreferences(){
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"]
