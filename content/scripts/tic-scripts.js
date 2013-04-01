@@ -2202,51 +2202,53 @@ function addInfoIcons(key,tag,value) {
 		var tmpValue = value.substring(0,100);
 	}	
 	
-	$("addInfo" + key).adopt( 
-		new Element("a#AddInfo" + tag + key, {		
-			href : "#",
-			title : tmpValue,
-			styles : {
-				width : "19px",
-				height : "19px",
-				"float": "left",
-				"line-height" : "19px",
-				display : "inline-block",
-				"text-align" : "center"
-			}
-		}).adopt(
-			new Element("img#editnameImg" + key, {
-				src : imgSrc,
+	if (value!="") {
+		$("addInfo" + key).adopt( 
+			new Element("a#AddInfo" + tag + key, {		
+				href : "#",
+				title : tmpValue,
 				styles : {
-					"margin-left" : "1px",
-					width : "18px",
-					height : "18px",		
-					opacity : "0.5"
-				},
-				events : {
-					click : function(){
-						if (tag == "note") {						    
-							var profileBox = new LightFace({
-								width: 800,
-								draggable: true,
-								title: '',
-								content: value,
-								buttons: [
-									{ title: 'Close', event: function() { this.close(); }}
-								]
-							}).open();
+					width : "19px",
+					height : "19px",
+					"float": "left",
+					"line-height" : "19px",
+					display : "inline-block",
+					"text-align" : "center"
+				}
+			}).adopt(
+				new Element("img#editnameImg" + key, {
+					src : imgSrc,
+					styles : {
+						"margin-left" : "1px",
+						width : "18px",
+						height : "18px",		
+						opacity : "0.5"
+					},
+					events : {
+						click : function(){
+							if (tag == "note") {						    
+								var profileBox = new LightFace({
+									width: 800,
+									draggable: true,
+									title: '',
+									content: value,
+									buttons: [
+										{ title: 'Close', event: function() { this.close(); }}
+									]
+								}).open();
+							}
+							if (tag == "person") {
+								window.open("mailto:" + value, "_self");
+							}
+							if (tag == "url") {
+								window.open(value, '_blank');							
+							}
 						}
-						if (tag == "person") {
-							window.open("mailto:" + value, "_self");
-						}
-						if (tag == "url") {
-							window.open(value, '_blank');							
-						}
-					}
-				}						
-			})
-		)
-	);		
+					}						
+				})
+			)
+		);		
+	}
 }
 
 function checkDateElement(date,key) { //check if the due date is approaching and emphasize the value
