@@ -559,7 +559,7 @@ function drawTICElements() {
 			data[key]["name"] = value["name"];
 			if (value["width"] && value["height"]) {
 				var xleft = value["width"]-10;
-				var ytop = value["height"]-10;
+				var ytop = value["height"]-17;
 			} else {
 				var xleft = "135";
 				var ytop  = "130";
@@ -749,7 +749,7 @@ function drawTICElements() {
 			)
 		);
 
-		//ADDITINAL INFO
+		// ### ADDITINAL INFO
 		$("item" + key).adopt( //"div#information" + key
 			new Element("div#information" + key,  {
 				styles : {
@@ -848,7 +848,7 @@ function drawTICElements() {
 							if (value["url"]) {
 								urltmp = value["url"];
 							} else {
-								urltmp = "http ://";
+								urltmp = "http://";
 							}
 							//call function that saves the changed text
 							var url = prompt("Please enter the URL address associated with this information",urltmp);
@@ -963,7 +963,9 @@ function drawTICElements() {
 			if ((index != "display") && (index != "coordinatex") && (index != "coordinatey")
 				&& (index != "extension") && (index != "type")  && (index != "arrow")
 				&& (index != "vote") && (index != "width") && (index != "timestamp")
-				&& (index != "height") && (index != "stats")) {
+				&& (index != "height") && (index != "stats")
+				&& (index != "numOfClicks") && (index != "lastClick") && (index != "initialSize") && (index != "initialTimestamp") && (index != "modified")
+				) {
 
 				var indivElement  = new Element("div#list" + index + key);
 
@@ -1041,30 +1043,40 @@ function drawTICElements() {
 			}
 		});
 
+		
+		// ### TOP of the ITEM - OVERLAPPING PROJECTS and additioanl information items
+		$("item" + key).adopt( //"span#icon"
+			new Element("div#addInfo" + key, {
+				styles : {
+					position : "absolute",
+					left : "6px",
+					top : "-20px",
+					height : "20px",
+					display : "inline-block"
+				}
+			})
+		);	
 		//check for overlaping tasks for the informatuon item -
 		// if they share information items get array of tasks IDs
 		if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 			//get the table and erease the id of the selected task
 		 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
-		 	var leftStep = -13;
 		 	if (overlapingTasks.length != 0) {
 				Array.each(overlapingTasks, function(id, index){
-					leftStep = leftStep + 21;
-					$("item" + key).adopt( //"span#icon"
+					$("addInfo" + key).adopt( //"span#icon"
 						new Element("a", {
 							href : "#jumpToTask",
 							text : id,
 							title : "Jump to task '" + databaseGetTaskName(id) + "'",
 							styles : {
-								position : "absolute",
-								left : leftStep + "px",
-								top : "-20px",
-								width : "20px",
-								height : "20px",
-								"font-size" : "11px",
-								"line-height" : "20px",
+								"min-width" : "19px",
+								height : "19px",
+								"margin-left": "1px",
+								"float": "left",
+								"font-size" : "10px",
+								"line-height" : "19px",
 								display : "inline-block",
-								"border-radius" : "20px",
+								"border-radius" : "19px",
 								"background-color" : "rgba(112,138,144,0.6)",
 								"text-align" : "center"
 							},
@@ -1077,7 +1089,18 @@ function drawTICElements() {
 					);
 				});
 			}
+		}				
+		//make also additional inforation such as sharing, urls and notes of information visible
+		//put them besides overlapping projects/tasks
+		if (!!value["person"]) {
+			addInfoIcons(key,"person",value["person"])		
 		}
+		if (!!value["url"]) {
+			addInfoIcons(key,"url",value["url"])			
+		}		
+		if (!!value["note"]) {
+			addInfoIcons(key,"note",value["note"])	
+		}			
 
 		//make elements movable
 		elementMoveEnable(key);
@@ -1432,7 +1455,7 @@ function drawTICElementsPastStates(pastStatesId) {
 
 				if (value["width"] && value["height"]) {
 					var xleft = value["width"]-10;
-					var ytop = value["height"]-10;
+					var ytop = value["height"]-17;
 				} else {
 					var xleft = "135px";
 					var ytop  = "130px";
@@ -1442,10 +1465,9 @@ function drawTICElementsPastStates(pastStatesId) {
 						styles : {
 							top: "2px",
 							width: xleft + "px",
-							height: ytop + "px",
+							height: ytop+12 + "px",
 							position : "absolute",
-							"overflow-y" : "hidden", //"scroll"
-							"overflow-x" : "hidden"
+							"overflow" : "hidden"
 						}
 					}).adopt(
 						new Element("div#nametext" + key, {
@@ -1466,6 +1488,7 @@ function drawTICElementsPastStates(pastStatesId) {
 						})
 					)
 				);
+				myScrollable[key] = new Scrollable($("textbox" + key));
 			}
 
 			//IMPORTANCE Upvote or Downvote VOTE & EMPHASIZE
@@ -1650,30 +1673,39 @@ function drawTICElementsPastStates(pastStatesId) {
 				}
 			});
 
+			//### OVERLAPPING PROJECTS and additioanl information items
+			$("item" + key).adopt( //"span#icon"
+				new Element("div#addInfo" + key, {
+					styles : {
+						position : "absolute",
+						left : "6px",
+						top : "-20px",
+						height : "20px",
+						display : "inline-block"
+					}
+				})
+			);	
 			//check for overlaping tasks for the informatuon item -
 			// if they share information items get array of tasks IDs
 			if ((value["type"] == "FILE") || (value["type"] == "FOLDER") || (value["type"] == "URL")) {
 				//get the table and erease the id of the selected task
-			 	var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
-			 	var leftStep = -13;
-			 	if (overlapingTasks.length != 0) {
+				var overlapingTasks = databaseOverlapingTasks(value["path"]).erase(currentTaskId);
+				if (overlapingTasks.length != 0) {
 					Array.each(overlapingTasks, function(id, index){
-						leftStep = leftStep + 21;
-						$("item" + key).adopt( //"span#icon"
+						$("addInfo" + key).adopt( //"span#icon"
 							new Element("a", {
 								href : "#jumpToTask",
 								text : id,
 								title : "Jump to task '" + databaseGetTaskName(id) + "'",
 								styles : {
-									position : "absolute",
-									left : leftStep + "px",
-									top : "-20px",
-									width : "20px",
-									height : "20px",
-									"font-size" : "11px",
-									"line-height" : "20px",
+									"min-width" : "19px",
+									height : "19px",
+									"margin-left": "1px",
+									"float": "left",
+									"font-size" : "10px",
+									"line-height" : "19px",
 									display : "inline-block",
-									"border-radius" : "20px",
+									"border-radius" : "19px",
 									"background-color" : "rgba(112,138,144,0.6)",
 									"text-align" : "center"
 								},
@@ -1686,7 +1718,22 @@ function drawTICElementsPastStates(pastStatesId) {
 						);
 					});
 				}
+			}				
+			//make also additional inforation such as sharing, urls and notes of information visible
+			//put them besides overlapping projects/tasks
+			if (!!value["person"]) {
+				addInfoIcons(key,"person",value["person"])		
 			}
+			if (!!value["url"]) {
+				addInfoIcons(key,"url",value["url"])			
+			}		
+			if (!!value["note"]) {
+				addInfoIcons(key,"note",value["note"])	
+			}			
+			
+
+
+
 		});
 		//empty the object as it cannot be edited and we don't need it anymore.
 		dataPastStates = {};
@@ -1793,6 +1840,12 @@ function addElementValue(key,tag,value) { //adding a value/tag of the informatio
 	if (tag == "date") {
 		checkDateElement(value,key);
 	}
+
+	//add icons of additional info on top of an element
+	if (tag == "person" || tag == "url" || tag == "note") {
+		addInfoIcons(key,tag,value)
+	}
+		
 }
 
 function editElementName(key) { //edit the name=content of notes
@@ -2129,6 +2182,71 @@ function deleteElement(key, name) { //deleting the information item
 	//save the task collection
 	databaseSaveTaskCollection(databaseDrawTaskCollection, currentTaskId);
 	printOut("Information item " + name + " was successfully deleted.");
+}
+
+function addInfoIcons(key,tag,value) {
+	if ($("addInfo" + key).contains($("AddInfo" + tag + key))) {
+		$("AddInfo" + tag + key).dispose();
+	}
+
+	if (tag == "person") {
+		var imgSrc = "images/icons_general/User.png";
+		var tmpValue = value;
+	}
+	if (tag == "url") {
+		var imgSrc = "images/icons_general/Internet.png";
+		var tmpValue = value.substring(0,100);
+	}
+	if (tag == "note") {
+		var imgSrc = "images/icons_content/notes.png";
+		var tmpValue = value.substring(0,100);
+	}	
+	
+	$("addInfo" + key).adopt( 
+		new Element("a#AddInfo" + tag + key, {		
+			href : "#",
+			title : tmpValue,
+			styles : {
+				width : "19px",
+				height : "19px",
+				"float": "left",
+				"line-height" : "19px",
+				display : "inline-block",
+				"text-align" : "center"
+			}
+		}).adopt(
+			new Element("img#editnameImg" + key, {
+				src : imgSrc,
+				styles : {
+					"margin-left" : "1px",
+					width : "18px",
+					height : "18px",		
+					opacity : "0.5"
+				},
+				events : {
+					click : function(){
+						if (tag == "note") {						    
+							var profileBox = new LightFace({
+								width: 800,
+								draggable: true,
+								title: '',
+								content: value,
+								buttons: [
+									{ title: 'Close', event: function() { this.close(); }}
+								]
+							}).open();
+						}
+						if (tag == "person") {
+							window.open("mailto:" + value, "_self");
+						}
+						if (tag == "url") {
+							window.open(value, '_blank');							
+						}
+					}
+				}						
+			})
+		)
+	);		
 }
 
 function checkDateElement(date,key) { //check if the due date is approaching and emphasize the value
