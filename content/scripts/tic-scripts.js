@@ -308,8 +308,7 @@ function drawTICElements() {
 		if (value["type"] == "FILE" || value["type"] == "FOLDER") {
 			var updatedModified = fileModified(data[key]["path"]);
 			data[key]["modified"] = updatedModified;
-
-
+			//from the same computer but path does not exist
 			if (updatedModified == "not available") {
 				$("item" + key).adopt( //"div#icon"
 					new Element("img#brokenimg" + key, {
@@ -339,7 +338,7 @@ function drawTICElements() {
 					})
 				);
 			}
-
+			//from another computer
 			if (updatedModified == "not on this computer") {
 				$("item" + key).adopt( //"div#icon"
 					new Element("img#brokenimg" + key, {
@@ -2563,7 +2562,7 @@ function elementMoveEnable(key){
 			if (data[key].coordinatex < 40) {
 				data[key].coordinatex = 40;
 				$("item" + key).setStyle('left' , data[key].coordinatex + "px");
-			}
+			}			
 			//ARROW pointing to the CENTRE
 			var angle = getAngle($("item" + key).offsetLeft,$("item" + key).offsetTop);
 			$("arrow" + key).setStyle("-moz-transform", "rotate(" + angle[0] + "deg)");
@@ -2604,19 +2603,19 @@ function elementResizeEnable(key){
 			if ($("item" + key).contains($("nametext" + key))) {
 				$("nametext" + key).set('html', data[key]["name"]);
 			}
-			data[key].width = ($("item" + key).getSize().x - 6);
-			data[key].height = ($("item" + key).getSize().y - 6);
+			data[key].width = ($("item" + key).getSize().x);
+			data[key].height = ($("item" + key).getSize().y);		
 			elementMoveEnable(key);
 			},
 		onDrag: function(){
 			var newWidth = $("item" + key).getSize().x - 12;
 			var newHeight = $("item" + key).getSize().y - 12;
 			//$("iconimg" + key).setStyle('left', newWidth);
-			$("previmg" + key).setStyle('left', newWidth+2 + "px");
-			$("upvoteimg" + key).setStyle('left', newWidth + "px");
-			$("downvoteimg" + key).setStyle('left', newWidth + "px");
-			$("vote" + key).setStyle('left', newWidth+1 + "px");
-			$("textbox" + key).setStyles({'width': newWidth + "px", 'height': newHeight+12 + "px"});
+			$("previmg" + key).setStyle('left', newWidth+3 + "px");
+			$("upvoteimg" + key).setStyle('left', newWidth+3 + "px");
+			$("downvoteimg" + key).setStyle('left', newWidth+3 + "px");
+			$("vote" + key).setStyle('left', newWidth+3 + "px");
+			$("textbox" + key).setStyles({'width': newWidth + "px", 'height': newHeight+12-9 + "px"});
 			if ($("item" + key).contains($("nametext" + key))) {
 				$("nametext" + key).setStyles({'width': newWidth + "px", 'height': newHeight-5 + "px"});
 			}
@@ -2624,8 +2623,8 @@ function elementResizeEnable(key){
 			$("information" + key).setStyle('top', newHeight+15 + "px");
 			if ($("item" + key).contains($("emphasizedate" + key))) {
 				$("emphasizedate" + key).setStyles({'left': (newWidth)/2-25 + "px", 'top': newHeight+7 + "px"});
-			}
-			}
+			}		
+		}
 	});
 }
 

@@ -121,7 +121,7 @@ var Scrollable = new Class({
 			var containerSize = this.container.getSize();
 
 			this.container.setStyle('height', this.size['height']).setPosition({
-				x: (this.position.x+this.size['totalWidth']-containerSize.x + 13),
+				x: (this.position.x+this.size['totalWidth']-containerSize.x + 10),
 				y: (this.position.y+this.size['computedTop'])
 			});
 			this.slider.autosize();
