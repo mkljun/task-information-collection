@@ -1969,7 +1969,7 @@ function editElementNameNotes(key) { //edit the name=content of notes
 			styles : {
 				position : "absolute",
 				width : "144px",
-				top : "-46px",
+				top : "-66px",
 				left : "-1px",
 				visibility : "visible",
 				"font-size" : "12px",
@@ -2002,6 +2002,17 @@ function editElementNameNotes(key) { //edit the name=content of notes
 					}
 				}
 			})
+		).adopt(
+			new Element("img#editorUnderine" + key, {
+				src: "images/icons_editor/underline.png",
+				title: "Underline",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('underline');
+					}
+				}
+			})			
 		).adopt(
 			new Element("img#editorUndo" + key, {
 				src: "images/icons_editor/undo.png",
@@ -2142,6 +2153,86 @@ function editElementNameNotes(key) { //edit the name=content of notes
 				events: {
 					click : function(){
 						formatDoc('forecolor','#9B999E');
+					}
+				}
+			})
+		).adopt(
+			new Element("img#editorLink" + key, {
+				src: "images/icons_editor/link.png",
+				title: "URL link",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						var linkURL = prompt("Please enter the details of a person associated with this information","http://");
+						//formatDoc('createLink',linkURL);
+						var jsLinkURL = "javascript:openLink('" + linkURL + "')";
+						formatDoc('createLink',jsLinkURL);
+					}
+				}
+			})	
+		).adopt(
+			new Element("img#editorUnlink" + key, {
+				src: "images/icons_editor/unlink.png",
+				title: "URL unlink",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('unlink');
+					}
+				}
+			})	
+		).adopt(
+			new Element("img#editorIncrease" + key, {
+				src: "images/icons_editor/increase.png",
+				title: "Increase size",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('increaseFontSize');
+					}
+				}
+			})
+		).adopt(
+			new Element("img#editorDecrease" + key, {
+				src: "images/icons_editor/decrease.png",
+				title: "Decrease size",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('decreaseFontSize');
+					}
+				}
+			})					
+		).adopt(
+			new Element("img#editorStrike" + key, {
+				src: "images/icons_editor/strikeout.png",
+				title: "Strikeout",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('strikeThrough');
+					}
+				}
+			})			
+		).adopt(
+			new Element("img#editorRule" + key, {
+				src: "images/icons_editor/rule.png",
+				title: "Horizontal rule",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('insertHorizontalRule');
+					}
+				}
+			})	
+		).adopt(
+			new Element("img#editorRemove" + key, {
+				src: "images/icons_editor/remove_format.png",
+				title: "Remove formatting",
+				class: "editorButtons",
+				events: {
+					click : function(){
+						formatDoc('removeFormat');
 					}
 				}
 			})
@@ -5137,6 +5228,16 @@ function compareDataObject(data1, data2) {
 			return true;
 		}
 	}
+}
+
+/***************************************************************************
+Opens a link (e.g. from notes) in a new window
+compareDataObject(data1, data2):
+
+****************************************************************************/
+function openLink(URI){
+	win = window.open(URI,"_blank","");
+	win.focus;
 }
 
 /***************************************************************************

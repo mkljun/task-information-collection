@@ -8,7 +8,7 @@ function initDoc(elementID) {
 function formatDoc(sCmd, sValue) {
   if (validateMode()) { document.execCommand(sCmd, false, sValue); oDoc.focus(); }
 }
- 
+
 function validateMode() {
   return true;
 }
