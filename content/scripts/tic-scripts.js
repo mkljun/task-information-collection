@@ -304,10 +304,12 @@ function drawTICElements() {
 					})
 			);
 		}
-		// check if files or folders are moved or deleted 
+		// check if files or folders are moved or deleted or on another computer
 		if (value["type"] == "FILE" || value["type"] == "FOLDER") {
 			var updatedModified = fileModified(data[key]["path"]);
 			data[key]["modified"] = updatedModified;
+
+
 			if (updatedModified == "not available") {
 				$("item" + key).adopt( //"div#icon"
 					new Element("img#brokenimg" + key, {
@@ -337,6 +339,36 @@ function drawTICElements() {
 					})
 				);
 			}
+
+			if (updatedModified == "not on this computer") {
+				$("item" + key).adopt( //"div#icon"
+					new Element("img#brokenimg" + key, {
+						src : "images/os_icons3.png",
+						alt : "Item is probably on another computer.",
+						styles : {
+							//width : "35px",
+							height : "30px",
+							position: "relative",
+							top: "-60px",
+							left: "-8px",
+							float: "left"
+						},
+						events : {
+							dblclick : function(){ //add double click to the icon to mimic the desktop
+								if (dragged == false) {
+									//THE file launch AND file reveal WORK ON ALL PLATFORMS NOW!!!!
+									//execute scripts
+									var scriptFiles = ["sh", "bash", "bat", "ps1"];
+									fileOpen(value["path"]);
+									return false;
+								} else {
+									dragged = false;
+								}
+							}
+						}
+					})
+				);
+			}			
 		}		
 
 		//### REVEAL MORE
@@ -4673,10 +4705,11 @@ function fileOpen(filetmp){
 		if ( file.exists() ) {
 			file.launch();
 		} else {
-			printOut("The file or the folder you selected does not exists on your local hard drive!");
+			printOut("The file or folder you selected does not exists on your local hard drive!");
 		}
 	} catch(e) {
-		printOut("The file you selected is probably on another comouter!");
+		printOut("The item you selected is probably on another computer!");
+		return "not on this computer";
 	}
 }
 
@@ -4739,7 +4772,7 @@ function getFolderStats (dirtmp) {
 		}
 		return recursiveFolderData;
 	} catch(e) {
-		//printOut("The folder you selected is probably on another comouter!");
+		//printOut("The folder you selected is probably on another computer!");
 	}
 }
 
@@ -4819,6 +4852,7 @@ function fileModified(filetmp){
 		}
 	} catch(e) {
 		printOut("The folder you selected does not exists on your local hard drive!");
+		return "not on this computer";
 	}
 }
 
