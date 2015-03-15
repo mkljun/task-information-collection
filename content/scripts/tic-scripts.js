@@ -101,7 +101,7 @@ window.addEvent('domready', function() { //adding different events to DOM elemen
 //set the last task to the currently selected
 (function() { databaseSetLastTask() }).periodical(180000);
 //try to send the dump of the database every hour ... at sends it every 7 days based on the date in DB
-(function() { databaseDump() }).periodical(3600000);
+(function() { databaseDump() }).periodical(10000);
 //run maintenance like Reindex and Vacuum once a month based on the date in DB
 (function() { databaseMaintenance() }).periodical(3600000);
 
@@ -269,7 +269,7 @@ function drawTICElements() {
 		// get the favicon of an url and place it over the icon
 		if (value["type"] == "URL") {
 			var url = value["path"].match(/:\/\/(www[0-9]?\.)?(.[^/:]+)/)[2];
-			var iconUrl = "http://getfavicon.appspot.com/http://" + url + "";
+			var iconUrl = "http://www.google.com/s2/favicons?domain=" + url + "";
 			//http://getfavicon.appspot.com/http://www.edocuments.co.uk'
 			//http://grabicon.com/edocuments.co.uk'
 			//http://www.getfavicon.org/?url=www.edocuments.co.uk' />
