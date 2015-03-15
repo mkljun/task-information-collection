@@ -65,7 +65,4 @@ Everyone is welcome to contribute and join the project:
 
 Please e-mail us any time with any questions, concerns or comments that you may have.
 
-TIC research group - tic
-Professor Alan Dix - dixa comp.lancs.ac.uk
-Professor John Mariani - jam comp.lancs.ac.uk
-Graduate research lead Matjaž Kljun - m.kljun comp.lancs.ac.uk
+Research lead Matjaž Kljun - matjaz.kljun@upr.si 
